@@ -1,11 +1,8 @@
 import random, sys
 
-def main(argv):
-    if len(argv) != 2:
-        print("Usage: python graphGenerator.py <number of vertices> <name of the file>")
-        return
-    N = int(argv[0])
-    name = argv[1]
+def generateGraph(vertices : int, fileName : str) -> None:
+    N = int(vertices)
+    name = str(fileName)
     f = open(f"{name}.txt", "x")
     f.write(f"{N}\n")
     for i in range(N):
@@ -19,4 +16,8 @@ def main(argv):
                 print(f"{i} {j} {val}")
     f.close()
 
-main(sys.argv[1:])
+if __name__ == "__main__":
+    if len(sys.argv[1:]) != 2:
+        print("Usage: python graphGenerator.py <number of vertices> <name of the file>")
+    else:
+        generateGraph(sys.argv[1], sys.argv[2])
