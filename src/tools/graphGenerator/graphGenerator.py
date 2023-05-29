@@ -18,6 +18,6 @@ def generateGraph(vertices : int, fileName : str) -> None:
 
 if __name__ == "__main__":
     if len(sys.argv[1:]) != 2:
-        print("Usage: python graphGenerator.py <number of vertices> <name of the file>")
+        print("Usage: python3 graphGenerator.py <number of vertices> <name of the file>")
     else:
         generateGraph(sys.argv[1], sys.argv[2])
