@@ -1,8 +1,8 @@
 import random, sys
 
-def generateGraph(inputFileName : str, outputFileName : str) -> None:
-    f_in = open(inputFileName, "r")
-    f_out = open(outputFileName, "x")
+def generate_graph(input_file_name : str, output_file_name : str) -> None:
+    f_in = open(input_file_name, "r")
+    f_out = open(output_file_name, "x")
 
     flag = False
     while not flag:
@@ -32,4 +32,4 @@ if __name__ == "__main__":
     if len(sys.argv[1:]) != 2:
         print("Usage: python3 (or python on windows) graphGeneratorV2.py <input_file> <output_file>")
     else:
-        generateGraph(sys.argv[1], sys.argv[2])
+        generate_graph(sys.argv[1], sys.argv[2])
