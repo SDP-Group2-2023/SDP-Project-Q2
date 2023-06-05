@@ -33,6 +33,7 @@
 
 # the build directory
 build
+cmake-build-debug
 
 # vscode directory
 .vscode
