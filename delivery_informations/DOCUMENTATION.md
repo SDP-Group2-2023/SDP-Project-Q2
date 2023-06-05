@@ -1,0 +1,3 @@
+A DOCUMENTATION text file (written in Word, Latex, Mark-down, etc.) including a short “designer manual”, i.e., a document including: 
+- All main design choices (how the reading part has been performed, how the data structure has been organized, how the parallelism has been designed, etc.) 
+- The experimental evaluation of the tools, i.e., tables or graphics reporting a reasonable set of experimental results. The experimental evidence should include a comparison (in terms of memory and of elapsed time) between the original sequential version  of the tool and the 2-3 parallel versions with different parallelization levels (i.e., with 1, 2, 4, 8, etc., threads) and different size of the input graph (up to millions of nodes).
