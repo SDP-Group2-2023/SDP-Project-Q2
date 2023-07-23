@@ -40,3 +40,9 @@ cmake-build-debug
 
 # graphs directory
 graphs
+
+# cmake files
+CMakeFiles
+CMakeCache.txt
+cmake_install.cmake
+Makefile
