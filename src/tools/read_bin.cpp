@@ -20,14 +20,16 @@ int main(int argc, char**argv){
         return 1;
     }
 
-    int num_nodes, num_edges;
+    int num_nodes;
+    int num_edges;
     input.read((char*)&num_nodes, sizeof(int));
     input.read((char*)&num_edges, sizeof(int));
     cout << "num_nodes" << num_nodes << endl;
     cout << "num_edges" << num_edges << endl;
     output << num_nodes << " " << num_edges << endl;
 
-    int node, node_weight;
+    int node;
+    int node_weight;
     for (int i = 0;  i<num_nodes ; i++) {
         input.read((char*)&node, sizeof(int));
         input.read((char*)&node_weight, sizeof(int));
@@ -35,12 +37,14 @@ int main(int argc, char**argv){
         output << node << " " << node_weight << endl;
     }
 
-    int partenza, destinazione, distanza;
+    int source;
+    int dest;
+    int distance;
     for(int i = 0; i<num_edges; i++){
-        input.read((char*)&partenza, sizeof(int));
-        input.read((char*)&destinazione, sizeof(int));
-        input.read((char*)&distanza, sizeof(int));
-        cout << partenza << " " << destinazione << " " << distanza << endl;
-        output << partenza << " " << destinazione << " " << distanza << endl;
+        input.read((char*)&source, sizeof(int));
+        input.read((char*)&dest, sizeof(int));
+        input.read((char*)&distance, sizeof(int));
+        cout << source << " " << dest << " " << distance << endl;
+        output << source << " " << dest << " " << distance << endl;
     }
 }
