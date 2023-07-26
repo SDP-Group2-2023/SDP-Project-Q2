@@ -1,3 +1,6 @@
+#ifndef GRAPH_H
+#define GRAPH_H
+
 #include <vector>
 #include <map>
 
@@ -17,3 +20,5 @@ public:
     int getNodeWeight(int node);
     void print();
 };
+
+#endif
