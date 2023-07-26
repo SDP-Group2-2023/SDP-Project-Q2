@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <random>
 
 using namespace std;
 int main(int argc, char *argv[]){
@@ -7,6 +8,10 @@ int main(int argc, char *argv[]){
         cout << "Usage: " << argv[0] << " <input file> <output file>"  << endl;
         return 1;
     }
+
+    random_device rd;
+    mt19937 gen(rd());
+    uniform_int_distribution<int> distribution(1, 1000);
 
     ifstream input(argv[1]);
     if(!input.is_open()){
@@ -25,11 +30,13 @@ int main(int argc, char *argv[]){
     char line[1024];
     input.getline(line, 1024);input.getline(line, 1024);
     input.getline(line, 1024);input.getline(line, 1024);
-    string a; int num_nodes, num_edges; char endline;
-    input >> a >> a >> num_nodes >> num_edges >> endline;
+    string a; int num_nodes, num_edges; char end_line;
+    input >> a >> a >> num_nodes >> num_edges >> end_line;
     output.write((char*)&num_nodes, sizeof(int));
+    num_edges /= 2;
     output.write((char*)&num_edges, sizeof(int));
     cout << num_nodes << " " << num_edges << endl;
+
     input.getline(line, 1024);
     input.getline(line, 1024);
 
@@ -37,21 +44,22 @@ int main(int argc, char *argv[]){
     cout << "Writing nodes..." << endl;
     for(int i = 1; i<=num_nodes; i++){
         output.write((char*)&i, sizeof(int));
-        int random = rand()%1000+1;
+        int random = distribution(gen);
         output.write((char*)&random, sizeof(int));
     }
 
     cout << "Writing edges..." << endl;
-    for(int i = 0; i<num_edges; i++){
-        input >> a >> partenza >> destinazione >> distanza;
-        //cout << partenza << " " << destinazione << " " << distanza << endl;
-        output.write((char*)&partenza, sizeof(int));
-        output.write((char*)&destinazione, sizeof(int));
-        output.write((char*)&distanza, sizeof(int));
+    for(int i = 0; i<num_edges; i++) {
+        input >> a >> partenza >> destinazione >> distanza >> end_line;
+        output.write((char *) &partenza, sizeof(int));
+        output.write((char *) &destinazione, sizeof(int));
+        output.write((char *) &distanza, sizeof(int));
+        input.getline(line, 1024);
     }
 
     cout << "Done!" << endl;
     input.close();
     output.close();
+
     return 0;
 }

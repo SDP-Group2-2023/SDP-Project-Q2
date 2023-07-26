@@ -13,16 +13,26 @@ int main(int argc, char**argv){
         cout << "Error opening file " << argv[1] << endl;
         return 1;
     }
+
+    ofstream output("temp.txt", ios::out);
+    if(!output.is_open()){
+        cout << "Error opening file temp.txt" << endl;
+        return 1;
+    }
+
     int num_nodes, num_edges;
     input.read((char*)&num_nodes, sizeof(int));
     input.read((char*)&num_edges, sizeof(int));
-    cout << num_nodes << " " << num_edges << endl;
+    cout << "num_nodes" << num_nodes << endl;
+    cout << "num_edges" << num_edges << endl;
+    output << num_nodes << " " << num_edges << endl;
 
     int node, node_weight;
     for (int i = 0;  i<num_nodes ; i++) {
         input.read((char*)&node, sizeof(int));
         input.read((char*)&node_weight, sizeof(int));
         cout << node << " " << node_weight << endl;
+        output << node << " " << node_weight << endl;
     }
 
     int partenza, destinazione, distanza;
@@ -31,5 +41,6 @@ int main(int argc, char**argv){
         input.read((char*)&destinazione, sizeof(int));
         input.read((char*)&distanza, sizeof(int));
         cout << partenza << " " << destinazione << " " << distanza << endl;
+        output << partenza << " " << destinazione << " " << distanza << endl;
     }
 }
