@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include "partitioning_algorithms.h"
 
 using namespace std;
 
