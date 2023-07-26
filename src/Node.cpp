@@ -1,11 +1,4 @@
-class Node {
-private:
-  int weight;
-  int id;
-public:
-  Node(int id, int weight);
-  int getWeight();
-};
+#include "Node.h"
 
 Node::Node(int id, int weight) {
     this->id = id;
