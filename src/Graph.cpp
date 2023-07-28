@@ -7,8 +7,13 @@ Graph::Graph(int num_nodes):
     {}
 
 void Graph::addEdge(int source, int dest, int weight) {
-    adjacencyMap[source][dest] = weight;
-    adjacencyMap[dest][source] = weight;
+    if(source < dest) { // swap so the source is the greatest num
+        source ^= dest;
+        dest ^= source;
+        source ^= dest;
+    }
+
+    adjacencyMap[make_pair(source, dest)] = weight;
     num_edges++;
 }
 
@@ -25,11 +30,15 @@ int Graph::getNumEdges() const {
 }
 
 int Graph::getEdge(int source, int dest) const{
-    if(adjacencyMap.find(source) == adjacencyMap.end())
+    if(source < dest) { // swap so the source is the greatest num
+        source ^= dest;
+        dest ^= source;
+        source ^= dest;
+    }
+
+    if(adjacencyMap.find(make_pair(source, dest)) == adjacencyMap.end())
         return 0;
-    if(adjacencyMap.at(source).find(dest) == adjacencyMap.at(source).end())
-        return 0;
-    return adjacencyMap.at(source).at(dest);
+    return adjacencyMap.at(make_pair(source, dest));
 }
 
 void Graph::print(){
@@ -41,8 +50,9 @@ void Graph::print(){
     for(int i = 0; i<num_nodes; i++){
         cout << i << ": " << endl;
         for(int j = 0; j<num_nodes; j++){
-            if(this->getEdge(i, j) != 0)
-                cout << "\tdest:" <<j << " weight:"<< adjacencyMap[i][j] << endl;
+            int weight = this->getEdge(i, j);
+            if (weight != 0)
+                cout << "\tdest:" <<j << " weight:"<< weight << endl;
         }
         cout << endl;
     }

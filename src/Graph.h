@@ -4,6 +4,8 @@
 #include <vector>
 #include <unordered_map>
 #include <string>
+#include <utility>
+#include "utils/hash_pair.h"
 
 using namespace std;
 class Graph{
@@ -11,7 +13,7 @@ private:
     int num_nodes;
     int num_edges = 0;
     unordered_map<int, int> nodes_weights;
-    unordered_map<int, unordered_map<int, int>> adjacencyMap;
+    unordered_map<pair<int, int>, int, hash_pair> adjacencyMap;
     void read_nodes(const string& path, unsigned long offset, int to_read);
     void read_edges(const string& path, unsigned long offset, int to_read);
 
