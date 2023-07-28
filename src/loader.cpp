@@ -11,6 +11,7 @@ using namespace std;
 
 Graph::Graph(const string& path):
     num_nodes(0){
+    int num_edges;
     ifstream in(path, ios::binary);
     if(!in.is_open()){
         cout << "Error opening file" << endl;
@@ -20,12 +21,12 @@ Graph::Graph(const string& path):
     cout << "Loading graph" << endl;
 
     in.read((char *) &this->num_nodes, sizeof(int));
-    in.read((char *) &this->num_edges, sizeof(int));
+    in.read((char *) &num_edges, sizeof(int));
 
     in.close();
 
     unsigned int node_readers_num = this->num_nodes / NODES_PER_THREAD + 1;
-    unsigned int edge_readers_num = this->num_edges / EDGES_PER_THREAD + 1;
+    unsigned int edge_readers_num = num_edges / EDGES_PER_THREAD + 1;
 
     vector<thread *> nodes_readers;
     vector<thread *> edges_readers;
@@ -39,7 +40,7 @@ Graph::Graph(const string& path):
     for (unsigned int i = 0; i < edge_readers_num - 1; i++)
         edges_readers.push_back(new thread(&Graph::read_edges, this, path, (1 + this->num_nodes) * 2 * sizeof(int) + i * 3 * EDGES_PER_THREAD * sizeof(int), EDGES_PER_THREAD));
     edges_readers.push_back(new thread(&Graph::read_edges, this, path, (1 + this->num_nodes) * 2 * sizeof(int) + (edge_readers_num - 1) * 3 * EDGES_PER_THREAD * sizeof(int),
-                                       this->num_edges % EDGES_PER_THREAD));
+                                       num_edges % EDGES_PER_THREAD));
 
     for (auto t : nodes_readers) {
         t->join();
