@@ -4,29 +4,53 @@
 #include <vector>
 #include <unordered_map>
 #include <string>
-#include <utility>
-#include "utils/hash_pair.h"
+#include <set>
+#include <barrier>
+#include <mutex>
 
 using namespace std;
-class Graph{
-private:
-    int num_nodes;
-    int num_edges = 0;
-    unordered_map<int, int> nodes_weights;
-    unordered_map<pair<int, int>, int, hash_pair> adjacencyMap;
-    void read_nodes(const string& path, unsigned long offset, int to_read);
-    void read_edges(const string& path, unsigned long offset, int to_read);
 
-public:
-    Graph(int num_nodes);
-    Graph(const string& path);
-    void addEdge(int source, int dest, int weight);
-    void addNodeWeight(int node, int weight);
-    int getNumNodes() const;
-    int getNumEdges() const;
-    int getNodeWeight(int node);
-    void print();
-    int getEdge(int source, int dest) const;
+struct Node{
+    int id;
+    int weight;
+};
+
+struct Edge{
+    int source;
+    int dest;
+    int weight;
+
+    bool operator<(const Edge &a) const {
+        return this->weight > a.weight;
+    }
+
+    bool operator>(const Edge &a) const {
+        return this->weight < a.weight;
+    }
+
+    bool operator==(const Edge &c) const {
+        return this->source == c.source && this->dest == c.dest;
+    }
+};
+
+class Graph{
+    private:
+        set<Edge> edges;
+        vector<Node> nodes;
+        mutex mNode;
+        mutex mEdge;
+        void thread_reader(const string &path, unsigned long offset_from_start_nodes,
+                                  int nodes_to_read, unsigned long offset_from_start_edges, 
+                                  int edges_to_read);
+    public:
+        Graph(const string& path);
+        void add_node(int id, int weight);
+        void add_edge(int source, int dest, int weight);
+        Node get_node(int id);
+        Edge get_edge(int source, int dest);
+        Edge get_next_max_edge(vector<bool> &matched, vector<int> &partitions);
+        int get_num_nodes();
+        int get_num_edges();
 };
 
 #endif

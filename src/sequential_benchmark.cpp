@@ -28,7 +28,25 @@ int main(int argc, char** argv) {
 
     //graph.print();
 
+    vector<bool> matched(graph.get_num_nodes(), false);
+    vector<int> partitions(graph.get_num_nodes());
+    for(int i = 0; i<graph.get_num_nodes(); i++){
+        partitions[i] = i;
+    }
 
+    for(int i = 0; i<5; i++) {
+        auto nextEdge = graph.get_next_max_edge(matched, partitions);
+
+        cout << "Max edge: source " << nextEdge.source
+             << ", dest: " << nextEdge.dest
+             << ", weight: " << nextEdge.weight << endl;
+
+        matched[nextEdge.source] = true;
+        matched[nextEdge.dest] = true;
+        partitions[nextEdge.dest] = partitions[nextEdge.source];
+
+
+    }
     //graphPartitioning(graph, 50);
 
 
@@ -37,9 +55,9 @@ int main(int argc, char** argv) {
 
 int calculatePartitionCost(Graph& graph, int partition, vector<int>& partitions){
     int cost = 0;
-    for(int i = 0; i<graph.getNumNodes(); i++){
+    for(int i = 0; i<graph.get_num_nodes(); i++){
         if(partitions[i] == partition){
-            cost += graph.getNodeWeight(i);
+            cost += graph.get_node(i).weight;
         }
     }
     return cost;
@@ -47,7 +65,7 @@ int calculatePartitionCost(Graph& graph, int partition, vector<int>& partitions)
 
 void graphPartitioning(Graph& graph, int num_partitions){
 
-    int num_nodes = graph.getNumNodes();
+    int num_nodes = graph.get_num_nodes();
     vector<int> partitions(num_nodes);
     for(int i = 0; i<num_nodes; i++){
         partitions[i] = i;
@@ -77,7 +95,7 @@ void coarseGraph(Graph& graph, vector<int>& partitions, int requested_num_partit
 
 int heavyEdgeCoarsening(Graph& graph, vector<int>& partitions){
 
-    int num_nodes = graph.getNumNodes();
+    int num_nodes = graph.get_num_nodes();
     vector<bool> matched(num_nodes, false);
     bool improvement = true;
     while(improvement) {
@@ -109,13 +127,13 @@ void uncoarseGraph(Graph& graph){
 }
 
 pair<int, int> find_max_edge(Graph& graph, vector<int>& partitions, vector<bool>& matched){
-    int num_nodes = graph.getNumNodes();
+    int num_nodes = graph.get_num_nodes();
     int localMax = 0;
     int edgeWeight;
     int node1, node2;
     for(int i = 0; i<num_nodes; i++){
         for(int j = 0; j<num_nodes; j++){
-            edgeWeight = graph.getEdge(i, j);
+            edgeWeight = graph.get_edge(i, j).weight;
             if(j!=i && !matched[i] && !matched[j] && partitions[i] != partitions[j] && edgeWeight != 0){
                 if(edgeWeight > localMax) {
                     localMax = edgeWeight;

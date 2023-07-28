@@ -1,63 +1,67 @@
 #include "Graph.h"
-#include <iostream>
 
 using namespace std;
-Graph::Graph(int num_nodes):
-    num_nodes(num_nodes)
-    {}
 
-void Graph::addEdge(int source, int dest, int weight) {
-    if(source < dest) { // swap so the source is the greatest num
-        source ^= dest;
-        dest ^= source;
-        source ^= dest;
+/* bool Graph::cmp(const Edge &a, const Edge &b) {
+    return a.weight > b.weight;
+} */
+
+void Graph::add_node(int id, int weight){
+	Node nNode{id, weight};
+
+	unique_lock<mutex> lock(mNode);	
+	nodes.emplace_back(nNode);
+}
+
+void Graph::add_edge(int source, int dest, int weight){
+	if(source < dest) swap(source, dest);
+	Edge nEdge{source, dest, weight};
+
+	unique_lock<mutex> lock(mEdge);	
+	edges.insert(nEdge);
+}
+
+
+Node Graph::get_node(int id){
+    return nodes[id];
+}
+
+Edge Graph::get_edge(int source, int dest){
+    if(source < dest)
+        swap(source, dest);
+
+    set<Edge>::iterator it;
+    for(it = edges.begin(); it!= edges.end(); ++it){
+        Edge tempEdge = *it;
+        if(tempEdge.source == source && tempEdge.dest == dest)
+            return tempEdge;
     }
 
-    adjacencyMap[make_pair(source, dest)] = weight;
-    num_edges++;
+    throw runtime_error("Edge not found");
 }
 
-void Graph::addNodeWeight(int node, int weight) {
-    nodes_weights[node] = weight;
-}
-
-int Graph::getNumNodes() const {
-    return num_nodes;
-}
-
-int Graph::getNumEdges() const {
-    return num_edges;
-}
-
-int Graph::getEdge(int source, int dest) const{
-    if(source < dest) { // swap so the source is the greatest num
-        source ^= dest;
-        dest ^= source;
-        source ^= dest;
+Edge Graph::get_next_max_edge(vector<bool>& matched, vector<int>& partitions){
+    set<Edge>::iterator it;
+    int source;
+    int dest;
+    for (it = edges.begin(); it != edges.end(); ++it)
+    {
+        source = it->source;
+        dest = it->dest;
+        if (!matched[source] && !matched[dest] && partitions[source] != partitions[dest])
+            return (*it);
     }
 
-    if(adjacencyMap.find(make_pair(source, dest)) == adjacencyMap.end())
-        return 0;
-    return adjacencyMap.at(make_pair(source, dest));
+    throw runtime_error("No more edges");
 }
 
-void Graph::print(){
-    cout << "num_nodes: " << num_nodes << endl;
-    cout << "num_edges: " << num_edges << endl;
-    for(auto & nodes_weight : nodes_weights){
-        cout << nodes_weight.first << " " << nodes_weight.second << endl;
-    }
-    for(int i = 0; i<num_nodes; i++){
-        cout << i << ": " << endl;
-        for(int j = 0; j<num_nodes; j++){
-            int weight = this->getEdge(i, j);
-            if (weight != 0)
-                cout << "\tdest:" <<j << " weight:"<< weight << endl;
-        }
-        cout << endl;
-    }
+
+int Graph::get_num_edges(){
+    return edges.size();
 }
 
-int Graph::getNodeWeight(int node) {
-    return nodes_weights[node];
+int Graph::get_num_nodes(){
+    return nodes.size();
 }
+
+
