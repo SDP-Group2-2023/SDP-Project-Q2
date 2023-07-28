@@ -1,5 +1,5 @@
 #include "hash_pair.h"
-#include <bits/stdc++.h>
+#include <hashtable.h>
 
 using namespace std;
 
