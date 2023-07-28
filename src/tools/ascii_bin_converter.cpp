@@ -43,9 +43,11 @@ int main(int argc, char *argv[]){
     cout << num_nodes << " " << num_edges << endl;
     skip_lines(input, 2);
 
-    int source, dest, distance;
+    int source;
+    int dest;
+    int distance;
     cout << "Writing nodes..." << endl;
-    for(int i = 1; i<=num_nodes; i++){
+    for(int i = 0; i<num_nodes; i++){
         output.write((char*)&i, sizeof(int));
         int random = distribution(gen);
         output.write((char*)&random, sizeof(int));
@@ -69,8 +71,8 @@ int main(int argc, char *argv[]){
 }
 
 void skip_lines(ifstream& input, int num_lines){
-    char line[1024];
+    string line;
     for(int i = 0; i<num_lines; i++){
-        input.getline(line, 1024);
+        getline(input, line);
     }
 }

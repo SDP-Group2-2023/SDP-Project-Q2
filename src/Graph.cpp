@@ -3,13 +3,15 @@
 #include <iostream>
 
 using namespace std;
-Graph::Graph(int num_nodes, int num_edges) : num_nodes(num_nodes), num_edges(num_edges){
-    adj_matrix = vector<vector<int>>(num_nodes, vector<int>(num_nodes, 0));
-}
+Graph::Graph(int num_nodes):
+    num_nodes(num_nodes),
+    adj_matrix(vector<vector<int>>(num_nodes, vector<int>(num_nodes, 0)))
+    {}
 
 void Graph::addEdge(int source, int dest, int weight) {
     adj_matrix[source][dest] = weight;
     adj_matrix[dest][source] = weight;
+    num_edges++;
 }
 
 void Graph::addNodeWeight(int node, int weight) {
@@ -24,7 +26,7 @@ int Graph::getNumEdges() const {
     return num_edges;
 }
 
-int Graph::getEdge(int source, int dest) {
+int Graph::getEdge(int source, int dest) const{
     return adj_matrix[source][dest];
 }
 
