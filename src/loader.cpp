@@ -1,16 +1,23 @@
 #include "Graph.h"
 #include <fstream>
-#include <string>
 #include <thread>
 #include <vector>
+#include <iostream>
 
 #define NODES_PER_THREAD 1000000
 #define EDGES_PER_THREAD 2500000
 
 using namespace std;
 
-Graph::Graph(string path) {
+Graph::Graph(const string& path):
+    num_nodes(0){
     ifstream in(path, ios::binary);
+    if(!in.is_open()){
+        cout << "Error opening file" << endl;
+        exit(1);
+    }
+
+    cout << "Loading graph" << endl;
 
     in.read((char *) &this->num_nodes, sizeof(int));
     in.read((char *) &this->num_edges, sizeof(int));
@@ -23,13 +30,13 @@ Graph::Graph(string path) {
     vector<thread *> nodes_readers;
     vector<thread *> edges_readers;
 
-    adj_matrix = vector<vector<int>>(this->num_nodes, vector<int>(this->num_nodes, 0));
+    //adj_matrix = vector<vector<int>>(this->num_nodes, vector<int>(this->num_nodes, 0));
 
     for (unsigned int i = 0; i < node_readers_num - 1; i++)
         nodes_readers.push_back(new thread(&Graph::read_nodes, this, path, (1 + i * NODES_PER_THREAD) * 2 * sizeof(int), NODES_PER_THREAD));
     nodes_readers.push_back(new thread(&Graph::read_nodes, this, path, (1 + (node_readers_num - 1)) * 2 * sizeof(int), this->num_nodes % NODES_PER_THREAD));
 
-    for (unsigned int i = 0; edge_readers_num - 1; i++)
+    for (unsigned int i = 0; i < edge_readers_num - 1; i++)
         edges_readers.push_back(new thread(&Graph::read_edges, this, path, (1 + this->num_nodes) * 2 * sizeof(int) + i * 3 * EDGES_PER_THREAD * sizeof(int), EDGES_PER_THREAD));
     edges_readers.push_back(new thread(&Graph::read_edges, this, path, (1 + this->num_nodes) * 2 * sizeof(int) + (edge_readers_num - 1) * 3 * EDGES_PER_THREAD * sizeof(int),
                                        this->num_edges % EDGES_PER_THREAD));
@@ -42,17 +49,21 @@ Graph::Graph(string path) {
         t->join();
         delete t;
     }
+
+    cout << "Graph loaded" << endl;
 }
 
-void Graph::read_nodes(std::string path, unsigned long offset, int to_read) {
+void Graph::read_nodes(const string &path, unsigned long offset, int to_read) {
     ifstream in(path, ios::binary);
     in.seekg(offset);
 
-    int id, weight;
+    int id;
+    int weight;
 
     for (int i = 0; i < to_read; i++) {
         in.read((char *) &id, sizeof(int));
         in.read((char *) &weight, sizeof(int));
+        //cout << id << " " << weight << endl;
 
         this->addNodeWeight(id, weight);
     }
@@ -60,16 +71,19 @@ void Graph::read_nodes(std::string path, unsigned long offset, int to_read) {
     in.close();
 }
 
-void Graph::read_edges(std::string path, unsigned long offset, int to_read) {
+void Graph::read_edges(const string& path, unsigned long offset, int to_read) {
     ifstream in(path, ios::binary);
     in.seekg(offset);
 
-    int from, to, weight;
+    int from;
+    int to;
+    int weight;
 
     for (int i = 0; i < to_read; i++) {
         in.read((char *) &from, sizeof(int));
         in.read((char *) &to, sizeof(int));
         in.read((char *) &weight, sizeof(int));
+        //cout << from << " " << to << " " << weight << endl;
 
         this->addEdge(from, to, weight);
     }

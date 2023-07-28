@@ -1,9 +1,7 @@
 #include "partitioning_algorithms.h"
-#include <fstream>
 #include <iostream>
 #include <chrono>
 #include <vector>
-#include <random>
 #include <set>
 
 using namespace std;
@@ -15,40 +13,24 @@ void localImprovement(Graph& graph);
 void uncoarseGraph(Graph& graph);
 pair<int, int> find_max_edge(Graph& graph, vector<int>& partitions, vector<bool>& matched);
 
-int main() {
+int main(int argc, char** argv) {
 
-    ifstream file("test.txt", std::ios::in);
-    if (!file.is_open()) {
-        std::cout << "Error opening file" << std::endl;
+    if(argc != 2){
+        cout << "Usage: sequential_benchmark <path_to_graph>" << endl;
         return 1;
     }
-    int num_nodes, num_edges;
-    file >> num_nodes >> num_edges;
-    Graph graph(num_nodes);
-    int id;
-    int weight;
-    for (int i = 0; i < num_nodes; i++) {
-        file >> id >> weight;
-        graph.addNodeWeight(id, weight);
-    }
-    int source;
-    int dest;
-    int distance;
-    for (int i = 0; i < num_edges; i++) {
-        file >> source >> dest >> distance;
-        graph.addEdge(source, dest, distance);
-    }
-    file.close();
-
-    //graph.print();
-    cout << "Sequential partitioning" << endl;
 
     auto start_time = chrono::high_resolution_clock::now();
-    graphPartitioning(graph, 2);
+    Graph graph(argv[1]);
     auto end_time = chrono::high_resolution_clock::now();
-
     auto duration = chrono::duration_cast<chrono::milliseconds>(end_time - start_time);
     cout << "Duration: " << duration.count() << " ms" << endl;
+
+    //graph.print();
+
+
+    //graphPartitioning(graph, 50);
+
 
     return 0;
 }
@@ -88,7 +70,7 @@ void coarseGraph(Graph& graph, vector<int>& partitions, int requested_num_partit
     if(actual_num_partitions <= requested_num_partitions){
         return;
     }
-
+    cout << "actual: " << actual_num_partitions << endl;
     actual_num_partitions = heavyEdgeCoarsening(graph, partitions);
     coarseGraph(graph, partitions, requested_num_partitions, actual_num_partitions);
 }
@@ -133,8 +115,8 @@ pair<int, int> find_max_edge(Graph& graph, vector<int>& partitions, vector<bool>
     int node1, node2;
     for(int i = 0; i<num_nodes; i++){
         for(int j = 0; j<num_nodes; j++){
-            if(j!=i && !matched[i] && !matched[j] && partitions[i] != partitions[j]){
-                edgeWeight = graph.getEdge(i, j);
+            edgeWeight = graph.getEdge(i, j);
+            if(j!=i && !matched[i] && !matched[j] && partitions[i] != partitions[j] && edgeWeight != 0){
                 if(edgeWeight > localMax) {
                     localMax = edgeWeight;
                     node1 = i;

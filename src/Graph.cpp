@@ -1,16 +1,14 @@
 #include "Graph.h"
-#include <vector>
 #include <iostream>
 
 using namespace std;
 Graph::Graph(int num_nodes):
-    num_nodes(num_nodes),
-    adj_matrix(vector<vector<int>>(num_nodes, vector<int>(num_nodes, 0)))
+    num_nodes(num_nodes)
     {}
 
 void Graph::addEdge(int source, int dest, int weight) {
-    adj_matrix[source][dest] = weight;
-    adj_matrix[dest][source] = weight;
+    adjacencyMap[source][dest] = weight;
+    adjacencyMap[dest][source] = weight;
     num_edges++;
 }
 
@@ -27,7 +25,11 @@ int Graph::getNumEdges() const {
 }
 
 int Graph::getEdge(int source, int dest) const{
-    return adj_matrix[source][dest];
+    if(adjacencyMap.find(source) == adjacencyMap.end())
+        return 0;
+    if(adjacencyMap.at(source).find(dest) == adjacencyMap.at(source).end())
+        return 0;
+    return adjacencyMap.at(source).at(dest);
 }
 
 void Graph::print(){
@@ -39,8 +41,8 @@ void Graph::print(){
     for(int i = 0; i<num_nodes; i++){
         cout << i << ": " << endl;
         for(int j = 0; j<num_nodes; j++){
-            if(adj_matrix[i][j] != 0)
-                cout << "\tdest:" <<j << " weight:"<< adj_matrix[i][j] << endl;
+            if(this->getEdge(i, j) != 0)
+                cout << "\tdest:" <<j << " weight:"<< adjacencyMap[i][j] << endl;
         }
         cout << endl;
     }
