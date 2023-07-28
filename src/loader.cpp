@@ -10,7 +10,7 @@
 using namespace std;
 
 Graph::Graph(const string& path):
-    num_nodes(0){
+    num_edges(0){
     int num_edges;
     ifstream in(path, ios::binary);
     if(!in.is_open()){
