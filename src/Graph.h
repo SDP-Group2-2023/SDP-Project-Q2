@@ -16,11 +16,11 @@ struct Edge{
     int weight;
 
     bool operator<(const Edge &a) const {
-        return (this->weight > a.weight) || (this->weight == a.weight && this->source > a.source);
+        return (this->weight > a.weight) || (this->weight == a.weight && (this->source > a.source || (this->source == a.source && this->dest > a.dest)));
     }
 
     bool operator>(const Edge &a) const {
-        return (this->weight < a.weight) || (this->weight == a.weight && this->source < a.source);
+        return (this->weight < a.weight) || (this->weight == a.weight && (this->source < a.source || (this->source == a.source && this->dest < a.dest)));
     }
 
     bool operator==(const Edge &c) const {
