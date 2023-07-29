@@ -70,6 +70,11 @@ Graph::Graph(const string& path) {
     // cout << "Graph loaded" << endl;
 }
 
+struct readNode {
+    int id;
+    int weight;
+};
+
 void Graph::thread_reader(const string &path, unsigned long offset_from_start_nodes, 
 int nodes_to_read,unsigned long offset_from_start_edges, int edges_to_read) {
     ifstream in(path, ios::binary);
@@ -82,16 +87,12 @@ int nodes_to_read,unsigned long offset_from_start_edges, int edges_to_read) {
         in.read((char *) &n_id, sizeof(int));
         in.read((char *) &n_weight, sizeof(int));
         //cout << n_id << " " << n_weight << endl;
-
-        this->add_node(n_id, n_weight);
+        this->add_node(n_id, n_weight, n_id);
     }
 
-    //cout << "Thread " << this_thread::get_id() << " finished reading nodes" << endl;
     bar.arrive_and_wait();
 
     in.seekg(offset_from_start_edges);
-
-    //cout << "Thread " << this_thread::get_id() << " started reading edges" << endl;
 
     int e_source;
     int e_dest;
@@ -103,6 +104,7 @@ int nodes_to_read,unsigned long offset_from_start_edges, int edges_to_read) {
         in.read((char *) &e_weight, sizeof(int));
 
         this->add_edge(e_source, e_dest, e_weight);
+
         //cout << e_source << " " << e_dest << " " << e_weight << endl;
 
     }

@@ -1,4 +1,5 @@
 #include "partitioning_algorithms.h"
+#include "Graph.h"
 #include <iostream>
 #include <chrono>
 #include <vector>
@@ -6,12 +7,10 @@
 
 using namespace std;
 
-void graphPartitioning(Graph& graph, int num_partitions);
-void coarseGraph(Graph& graph, vector<int>& partitions, int requested_num_partitions, int actual_num_partitions);
-int heavyEdgeCoarsening(Graph& graph, vector<int>& partitions);
-void localImprovement(Graph& graph);
-void uncoarseGraph(Graph& graph);
-pair<int, int> find_max_edge(Graph& graph, vector<int>& partitions, vector<bool>& matched);
+void graphPartitioning(Graph &graph, int num_partitions);
+void coarseGraph(Graph &graph, vector<int> &partitions, int requested_num_partitions, int actual_num_partitions);
+int calculate_weight(Graph& graph, Node n1, Node n2);
+
 
 int main(int argc, char** argv) {
 
@@ -28,27 +27,11 @@ int main(int argc, char** argv) {
 
     //graph.print();
 
-    vector<bool> matched(graph.get_num_nodes(), false);
-    vector<int> partitions(graph.get_num_nodes());
-    for(int i = 0; i<graph.get_num_nodes(); i++){
-        partitions[i] = i;
-    }
+    int num_partitions;
+    cout << "Enter number of partitions: ";
+    cin >> num_partitions;
 
-    for(int i = 0; i<5; i++) {
-        auto nextEdge = graph.get_next_max_edge(matched, partitions);
-
-        cout << "Max edge: source " << nextEdge.source
-             << ", dest: " << nextEdge.dest
-             << ", weight: " << nextEdge.weight << endl;
-
-        matched[nextEdge.source] = true;
-        matched[nextEdge.dest] = true;
-        partitions[nextEdge.dest] = partitions[nextEdge.source];
-
-
-    }
-    //graphPartitioning(graph, 50);
-
+    graphPartitioning(graph, num_partitions);
 
     return 0;
 }
@@ -65,87 +48,77 @@ int calculatePartitionCost(Graph& graph, int partition, vector<int>& partitions)
 
 void graphPartitioning(Graph& graph, int num_partitions){
 
-    int num_nodes = graph.get_num_nodes();
-    vector<int> partitions(num_nodes);
-    for(int i = 0; i<num_nodes; i++){
-        partitions[i] = i;
-    }
-    coarseGraph(graph, partitions, num_partitions, num_nodes);
-    localImprovement(graph);
-    uncoarseGraph(graph);
-
-    set<int> unique_partitions;
-    for(int i = 0; i<num_nodes; i++){
-        if(unique_partitions.find(partitions[i]) == unique_partitions.end()) {
-            unique_partitions.insert(partitions[i]);
-            cout << "Partition: " << partitions[i] <<" cost: "
-                 << calculatePartitionCost(graph, partitions[i], partitions) << endl;
-        }
-    }
-}
-
-void coarseGraph(Graph& graph, vector<int>& partitions, int requested_num_partitions, int actual_num_partitions){
-    if(actual_num_partitions <= requested_num_partitions){
-        return;
-    }
-    cout << "actual: " << actual_num_partitions << endl;
-    actual_num_partitions = heavyEdgeCoarsening(graph, partitions);
-    coarseGraph(graph, partitions, requested_num_partitions, actual_num_partitions);
-}
-
-int heavyEdgeCoarsening(Graph& graph, vector<int>& partitions){
+    graph.print();
 
     int num_nodes = graph.get_num_nodes();
     vector<bool> matched(num_nodes, false);
-    bool improvement = true;
-    while(improvement) {
-        improvement = false;
-        pair<int, int> edge = find_max_edge(graph, partitions, matched);
-        if(edge.first != -1 && edge.second != -1){
-            improvement = true;
-            matched[edge.first] = true;
-            matched[edge.second] = true;
-            partitions[edge.first] = partitions[edge.second];
+    set<Edge> matched_edges;
+    Graph coarse_graph;
+    int partition_index = 0;
+
+    while(true) {
+        try{
+            Edge e = graph.get_next_max_edge(matched);
+            int source_id = e.source;
+            int dest_id = e.dest;
+            int distance = e.weight;
+            matched[source_id] = true;
+            matched[dest_id] = true;
+            //cout << "Matched: " << source_id << " " <<dest_id << " " << distance << endl;
+            matched_edges.insert(e);
+
+            int source_weight = graph.get_node(source_id).weight;
+            int dest_weight = graph.get_node(dest_id).weight;
+
+            graph.set_node_partition(source_id, partition_index);
+            graph.set_node_partition(dest_id, partition_index);
+
+            coarse_graph.add_node(partition_index, source_weight + dest_weight, -1);
         }
+        catch(exception& e){
+            cout << e.what() << endl;
+            break;
+        }
+        partition_index++;
     }
 
-    set<int> unique_partitions;
-    for(int i = 0; i<num_nodes; i++){
-        unique_partitions.insert(partitions[i]);
-        cout << "Node:\t" << i << " Part:\t" << partitions[i] << endl;
-    }
-    cout << "Unique partitions: " << unique_partitions.size() << endl << endl;
-    return (int)unique_partitions.size();
-}
+    auto edges = graph.get_edges();
 
-void localImprovement(Graph& graph){
-
-}
-
-void uncoarseGraph(Graph& graph){
-
-}
-
-pair<int, int> find_max_edge(Graph& graph, vector<int>& partitions, vector<bool>& matched){
-    int num_nodes = graph.get_num_nodes();
-    int localMax = 0;
-    int edgeWeight;
-    int node1, node2;
-    for(int i = 0; i<num_nodes; i++){
-        for(int j = 0; j<num_nodes; j++){
-            edgeWeight = graph.get_edge(i, j).weight;
-            if(j!=i && !matched[i] && !matched[j] && partitions[i] != partitions[j] && edgeWeight != 0){
-                if(edgeWeight > localMax) {
-                    localMax = edgeWeight;
-                    node1 = i;
-                    node2 = j;
-                }
+    set<Edge>::iterator it;
+    for(it = edges.begin(); it!= edges.end(); ++it){
+        Edge tempEdge = *it;
+        if(matched_edges.find(tempEdge) == matched_edges.end()){
+            Node source = graph.get_node(tempEdge.source);
+            Node dest = graph.get_node(tempEdge.dest);
+            try{
+                auto e = coarse_graph.get_edge(source.partition, dest.partition);
+                coarse_graph.increase_edge(source.partition, dest.partition, tempEdge.weight);
+                
+            }catch(exception& e){
+                coarse_graph.add_edge(source.partition, dest.partition, tempEdge.weight);
             }
-
         }
     }
-    if(localMax == 0)
-        return make_pair(-1, -1);
-    //cout << "Max edge: " << node1 << " " << node2 << " " << localMax << endl;
-    return make_pair(node1, node2);
+
+    coarse_graph.print();
+
+}
+
+int calculate_weight(Graph& graph, Node n1, Node n2){
+
+    cout << "Calculating weight between " << n1.id << " and " << n2.id << ": ";
+
+    if(n1.id == -1 || n2.id == -1){
+        return 0;
+    }
+    try{
+        int weight = graph.get_edge(n1.id, n2.id).weight;
+        cout << weight << endl;
+        return weight;
+    }
+    catch(exception& e){
+        cout << e.what() << endl;
+        return 0;
+    }
+
 }
