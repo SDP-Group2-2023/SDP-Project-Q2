@@ -58,13 +58,14 @@ Graph::Graph(const string &path) {
 
         readers.emplace_back(&Graph::thread_reader, this, path, offset_nodes, nodes_per_thread + extra_node, offset_edges, edges_per_thread + extra_edge);
 
-        offset_nodes += (nodes_per_thread + extra_node) * sizeof(int) * 2;
-        offset_edges += (edges_per_thread + extra_edge) * sizeof(int) * 3;
+        offset_nodes += (int)(nodes_per_thread + extra_node) * sizeof(int) * 2;
+        offset_edges += (int)(edges_per_thread + extra_edge) * sizeof(int) * 3;
     }
 
     for (auto &t : readers)
         t.join();
 
+    resetMaxIterator();
     // cout << "Graph loaded" << endl;
 }
 
@@ -89,7 +90,7 @@ void Graph::thread_reader(const string &path, unsigned long offset_from_start_no
 
     bar.arrive_and_wait();
 
-    in.seekg(offset_from_start_edges);
+    in.seekg((int)offset_from_start_edges);
 
     int e_source;
     int e_dest;

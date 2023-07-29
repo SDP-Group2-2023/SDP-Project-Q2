@@ -14,6 +14,7 @@ struct Edge{
     int source;
     int dest;
     int weight;
+    bool matched;
 
     bool operator<(const Edge &a) const {
         return (this->weight > a.weight) || (this->weight == a.weight && (this->source > a.source || (this->source == a.source && this->dest > a.dest)));
@@ -40,6 +41,7 @@ class Graph{
         vector<Node> nodes;
         mutex mNode;
         mutex mEdge;
+        set<Edge>::iterator maxIterator;
         void thread_reader(const string &path, unsigned long offset_from_start_nodes,
                                   int nodes_to_read, unsigned long offset_from_start_edges, 
                                   int edges_to_read);
@@ -57,6 +59,7 @@ class Graph{
         void print();
         void set_node_partition(int id, int partition);
         set<Edge> get_edges();
+        void resetMaxIterator();
 };
 
 #endif

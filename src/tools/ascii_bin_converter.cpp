@@ -57,6 +57,8 @@ int main(int argc, char *argv[]){
     for(int i = 0; i<num_edges; i++) {
         input >> useless_chars
         >> source >> dest >> distance >> end_line;
+        source--;
+        dest--;
         output.write((char *) &source, sizeof(int));
         output.write((char *) &dest, sizeof(int));
         output.write((char *) &distance, sizeof(int));

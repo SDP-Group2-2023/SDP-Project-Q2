@@ -24,8 +24,8 @@ int main(int argc, char**argv){
     int num_edges;
     input.read((char*)&num_nodes, sizeof(int));
     input.read((char*)&num_edges, sizeof(int));
-    cout << "num_nodes" << num_nodes << endl;
-    cout << "num_edges" << num_edges << endl;
+    cout << "num_nodes " << num_nodes << endl;
+    cout << "num_edges " << num_edges << endl;
     output << num_nodes << " " << num_edges << endl;
 
     int node;
@@ -33,8 +33,17 @@ int main(int argc, char**argv){
     for (int i = 0;  i<num_nodes ; i++) {
         input.read((char*)&node, sizeof(int));
         input.read((char*)&node_weight, sizeof(int));
+
         cout << node << " " << node_weight << endl;
-        output << node << " " << node_weight << endl;
+        //output << node << " " << node_weight << endl;
+
+        if(node > num_nodes-1) {
+            cout << "Error: node " << node << " is greater than num_nodes " << num_nodes << endl;
+            return 1;
+        }
+
+
+
     }
 
     int source;
@@ -44,7 +53,17 @@ int main(int argc, char**argv){
         input.read((char*)&source, sizeof(int));
         input.read((char*)&dest, sizeof(int));
         input.read((char*)&distance, sizeof(int));
+
+        if(source > num_nodes-1) {
+            cout << "Error: source " << source << " is greater than num_nodes " << num_nodes << endl;
+            return 1;
+        }
+        if(dest > num_nodes-1) {
+            cout << "Error: dest " << dest << " is greater than num_nodes " << num_nodes << endl;
+            return 1;
+        }
+
         cout << source << " " << dest << " " << distance << endl;
-        output << source << " " << dest << " " << distance << endl;
+        //output << source << " " << dest << " " << distance << endl;
     }
 }

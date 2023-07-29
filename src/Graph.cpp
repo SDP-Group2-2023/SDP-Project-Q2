@@ -3,7 +3,7 @@
 
 using namespace std;
 
-Graph::Graph() {}
+Graph::Graph() = default;
 
 void Graph::add_node(int id, int weight, int partition) {
     Node nNode { id, weight, partition };
@@ -19,8 +19,6 @@ void Graph::add_edge(int source, int dest, int weight) {
 
     lock_guard<mutex> lock(mEdge);
     edges.insert(nEdge);
-    // nodes[source].edges.insert(nEdge);
-    // nodes[dest].edges.insert(nEdge);
 }
 
 Node Graph::get_node(int id) {
@@ -42,13 +40,14 @@ Edge Graph::get_edge(int source, int dest) {
 }
 
 Edge Graph::get_next_max_edge(vector<bool> &matched) {
-    set<Edge>::iterator it;
-    int source, dest;
-    for (it = edges.begin(); it != edges.end(); ++it) {
-        source = it->source;
-        dest   = it->dest;
-        if (!matched[source] && !matched[dest])
+    auto it = this->maxIterator;
+    while(it != edges.end()) {
+        //cout << "Edge: " << it->source << " " << it->dest << " " << it->weight << endl;
+        if (!matched[it->source] && !matched[it->dest]) {;
+            this->maxIterator = it;
             return (*it);
+        }
+        it++;
     }
 
     throw runtime_error("No more edges");
@@ -63,10 +62,22 @@ int Graph::get_num_nodes() {
 }
 
 void Graph::print() {
+
+    for(int i = 0; i < nodes.size(); i++) {
+        Node node = nodes[i];
+        cout <<"n "<< node.id << " " << node.weight << " " << node.partition << endl;
+    }
+
+    int num_nodes = (int) nodes.size();
+
     set<Edge>::iterator it;
     for (it = edges.begin(); it != edges.end(); ++it) {
         Edge tempEdge = *it;
-        cout << tempEdge.source << " " << tempEdge.dest << " " << tempEdge.weight << endl;
+        cout << "a " << tempEdge.source << " " << tempEdge.dest << " " << tempEdge.weight << endl;
+
+        if(tempEdge.source > num_nodes-1 || tempEdge.dest > num_nodes-1)
+            cout << "Edge source or destination out of bounds" << endl;
+
     }
 }
 
@@ -82,4 +93,8 @@ void Graph::increase_edge(int source, int dest, int weight_increment) {
     this->edges.erase(e);
     e.weight += weight_increment;
     this->edges.insert(e);
+}
+
+void Graph::resetMaxIterator(){
+    this->maxIterator = this->edges.begin();
 }
