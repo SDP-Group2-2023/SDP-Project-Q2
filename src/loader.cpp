@@ -1,15 +1,14 @@
 #include "Graph.h"
 #include <fstream>
+#include <iostream>
 #include <thread>
 #include <vector>
-#include <iostream>
 
 using namespace std;
 
-barrier bar{thread::hardware_concurrency()};
+barrier bar { thread::hardware_concurrency() };
 
-Graph::Graph(const string& path) {
-
+Graph::Graph(const string &path) {
     unsigned int numThreads = thread::hardware_concurrency();
 
     cout << "Number of threads: " << numThreads << endl;
@@ -18,12 +17,12 @@ Graph::Graph(const string& path) {
     int num_nodes;
     vector<thread> readers;
     ifstream in(path, ios::binary);
-    if (!in.is_open()){
-            cout << "Error opening file" << endl;
-            exit(1);
+    if (!in.is_open()) {
+        cout << "Error opening file" << endl;
+        exit(1);
     }
 
-    //cout << "Loading graph" << endl;
+    // cout << "Loading graph" << endl;
 
     in.read((char *) &num_nodes, sizeof(int));
     in.read((char *) &num_edges, sizeof(int));
@@ -46,19 +45,18 @@ Graph::Graph(const string& path) {
     int extra_edge;
 
     for (int i = 0; i < numThreads; i++) {
-        if(reminder_nodes > 0){
+        if (reminder_nodes > 0) {
             extra_node = 1;
             reminder_nodes--;
-        }
-        else extra_node = 0;
-        if(reminder_edges > 0){
+        } else
+            extra_node = 0;
+        if (reminder_edges > 0) {
             extra_edge = 1;
             reminder_edges--;
-        }
-        else extra_edge = 0;
+        } else
+            extra_edge = 0;
 
-        readers.emplace_back(&Graph::thread_reader, this, path,
-            offset_nodes, nodes_per_thread + extra_node, offset_edges, edges_per_thread + extra_edge);
+        readers.emplace_back(&Graph::thread_reader, this, path, offset_nodes, nodes_per_thread + extra_node, offset_edges, edges_per_thread + extra_edge);
 
         offset_nodes += (nodes_per_thread + extra_node) * sizeof(int) * 2;
         offset_edges += (edges_per_thread + extra_edge) * sizeof(int) * 3;
@@ -75,8 +73,7 @@ struct readNode {
     int weight;
 };
 
-void Graph::thread_reader(const string &path, unsigned long offset_from_start_nodes, 
-int nodes_to_read,unsigned long offset_from_start_edges, int edges_to_read) {
+void Graph::thread_reader(const string &path, unsigned long offset_from_start_nodes, int nodes_to_read, unsigned long offset_from_start_edges, int edges_to_read) {
     ifstream in(path, ios::binary);
     in.seekg(offset_from_start_nodes);
 
@@ -86,7 +83,7 @@ int nodes_to_read,unsigned long offset_from_start_edges, int edges_to_read) {
     for (int i = 0; i < nodes_to_read; i++) {
         in.read((char *) &n_id, sizeof(int));
         in.read((char *) &n_weight, sizeof(int));
-        //cout << n_id << " " << n_weight << endl;
+        // cout << n_id << " " << n_weight << endl;
         this->add_node(n_id, n_weight, n_id);
     }
 
@@ -105,11 +102,10 @@ int nodes_to_read,unsigned long offset_from_start_edges, int edges_to_read) {
 
         this->add_edge(e_source, e_dest, e_weight);
 
-        //cout << e_source << " " << e_dest << " " << e_weight << endl;
-
+        // cout << e_source << " " << e_dest << " " << e_weight << endl;
     }
 
-    //cout << "Thread " << this_thread::get_id() << " finished reading edges" << endl;
+    // cout << "Thread " << this_thread::get_id() << " finished reading edges" << endl;
 
     in.close();
 }
