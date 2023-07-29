@@ -3,6 +3,18 @@
 
 using namespace std;
 
+bool Edge::operator<(const Edge &a) const {
+        return (this->weight > a.weight) || (this->weight == a.weight && (this->source > a.source || (this->source == a.source && this->dest > a.dest)));
+    }
+
+    bool Edge::operator>(const Edge &a) const {
+        return (this->weight < a.weight) || (this->weight == a.weight && (this->source < a.source || (this->source == a.source && this->dest < a.dest)));
+    }
+
+    bool Edge::operator==(const Edge &c) const {
+        return this->source == c.source && this->dest == c.dest;
+    }
+
 Graph::Graph() = default;
 
 void Graph::add_node(int id, int weight, int partition) {
@@ -41,9 +53,9 @@ Edge Graph::get_edge(int source, int dest) {
 
 Edge Graph::get_next_max_edge(vector<bool> &matched) {
     auto it = this->maxIterator;
-    while(it != edges.end()) {
-        //cout << "Edge: " << it->source << " " << it->dest << " " << it->weight << endl;
-        if (!matched[it->source] && !matched[it->dest]) {;
+    while (it != edges.end()) {
+        // cout << "Edge: " << it->source << " " << it->dest << " " << it->weight << endl;
+        if (!matched[it->source] && !matched[it->dest]) {
             this->maxIterator = it;
             return (*it);
         }
@@ -62,10 +74,9 @@ int Graph::get_num_nodes() {
 }
 
 void Graph::print() {
-
-    for(int i = 0; i < nodes.size(); i++) {
+    for (int i = 0; i < nodes.size(); i++) {
         Node node = nodes[i];
-        cout <<"n "<< node.id << " " << node.weight << " " << node.partition << endl;
+        cout << "n " << node.id << " " << node.weight << " " << node.partition << endl;
     }
 
     int num_nodes = (int) nodes.size();
@@ -75,9 +86,8 @@ void Graph::print() {
         Edge tempEdge = *it;
         cout << "a " << tempEdge.source << " " << tempEdge.dest << " " << tempEdge.weight << endl;
 
-        if(tempEdge.source > num_nodes-1 || tempEdge.dest > num_nodes-1)
+        if (tempEdge.source > num_nodes - 1 || tempEdge.dest > num_nodes - 1)
             cout << "Edge source or destination out of bounds" << endl;
-
     }
 }
 
@@ -95,6 +105,6 @@ void Graph::increase_edge(int source, int dest, int weight_increment) {
     this->edges.insert(e);
 }
 
-void Graph::resetMaxIterator(){
+void Graph::resetMaxIterator() {
     this->maxIterator = this->edges.begin();
 }
