@@ -65,8 +65,6 @@ Graph::Graph(const string &path) {
 
     for (auto &t : readers)
         t.join();
-
-    resetMaxIterator();
     // cout << "Graph loaded" << endl;
 }
 

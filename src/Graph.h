@@ -2,6 +2,7 @@
 #define GRAPH_H
 
 #include <barrier>
+#include <map>
 #include <mutex>
 #include <set>
 #include <string>
@@ -35,7 +36,7 @@ private:
     vector<Node> nodes;
     mutex mNode;
     mutex mEdge;
-    set<Edge>::iterator maxIterator;
+    map<int, map<int, int>> edges_look_up;
     void node_reader(const string &path, unsigned long offset_from_start_nodes, int nodes_to_read);
     void edge_reader(const string &path, unsigned long offset_from_start_edges, int edges_to_read);
 
@@ -49,13 +50,11 @@ public:
     void increase_edge(int source, int dest, int weight_increment);
     Node get_node(int id);
     Edge get_edge(int source, int dest);
-    Edge get_next_max_edge(vector<bool> &matched);
     int get_num_nodes();
     int get_num_edges();
     void print();
     void set_node_partition(int id, int partition);
-    set<Edge> get_edges();
-    void resetMaxIterator();
+    void graphPartitioning(int num_partitions, int p_iteration);
 };
 
 #endif

@@ -30,12 +30,23 @@ void Graph::add_edge(int source, int dest, int weight) {
     if (source < dest)
         swap(source, dest);
     Edge nEdge { source, dest, weight };
+
+    if (edges_look_up[source].contains(dest))
+        return;
+
+    edges_look_up[source][dest] = weight;
+
     edges.insert(nEdge);
 }
 
 void Graph::add_edge(Edge n_edge) {
     if(n_edge.source < n_edge.dest)
         swap(n_edge.source, n_edge.dest);
+
+    if (edges_look_up[n_edge.source].contains(n_edge.dest))
+        return;
+
+    edges_look_up[n_edge.source][n_edge.dest] = n_edge.weight;
     edges.insert(n_edge);
 }
 
@@ -47,28 +58,10 @@ Edge Graph::get_edge(int source, int dest) {
     if (source < dest)
         swap(source, dest);
 
-    set<Edge>::iterator it;
-    for (it = edges.begin(); it != edges.end(); ++it) {
-        Edge tempEdge = *it;
-        if (tempEdge.source == source && tempEdge.dest == dest)
-            return tempEdge;
-    }
+    if(edges_look_up[source].contains(dest))
+        return Edge(source, dest, edges_look_up[source][dest]);
 
     throw runtime_error("Edge not found");
-}
-
-Edge Graph::get_next_max_edge(vector<bool> &matched) {
-    auto it = this->maxIterator;
-    while (it != edges.end()) {
-        // cout << "Edge: " << it->source << " " << it->dest << " " << it->weight << endl;
-        if (!matched[it->source] && !matched[it->dest]) {
-            this->maxIterator = it;
-            return (*it);
-        }
-        it++;
-    }
-
-    throw runtime_error("No more edges");
 }
 
 int Graph::get_num_edges() {
@@ -101,9 +94,6 @@ void Graph::set_node_partition(int id, int partition) {
     nodes[id].partition = partition;
 }
 
-set<Edge> Graph::get_edges() {
-    return edges;
-}
 void Graph::increase_edge(int source, int dest, int weight_increment) {
     Edge e = this->get_edge(source, dest);
     this->edges.erase(e);
@@ -111,6 +101,3 @@ void Graph::increase_edge(int source, int dest, int weight_increment) {
     this->edges.insert(e);
 }
 
-void Graph::resetMaxIterator() {
-    this->maxIterator = this->edges.begin();
-}
