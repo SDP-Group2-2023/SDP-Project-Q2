@@ -98,6 +98,7 @@ void Graph::increase_edge(int source, int dest, int weight_increment) {
     Edge e = this->get_edge(source, dest);
     this->edges.erase(e);
     e.weight += weight_increment;
+    this->edges_look_up[e.source][e.dest] += weight_increment;
     this->edges.insert(e);
 }
 
