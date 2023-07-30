@@ -36,13 +36,16 @@ private:
     mutex mNode;
     mutex mEdge;
     set<Edge>::iterator maxIterator;
-    void thread_reader(const string &path, unsigned long offset_from_start_nodes, int nodes_to_read, unsigned long offset_from_start_edges, int edges_to_read);
+    void node_reader(const string &path, unsigned long offset_from_start_nodes, int nodes_to_read);
+    void edge_reader(const string &path, unsigned long offset_from_start_edges, int edges_to_read);
 
 public:
     Graph();
     Graph(const string &path);
     void add_node(int id, int weight, int partition);
+    void add_node(const Node &n_node);
     void add_edge(int source, int dest, int weight);
+    void add_edge(Edge n_edge);
     void increase_edge(int source, int dest, int weight_increment);
     Node get_node(int id);
     Edge get_edge(int source, int dest);

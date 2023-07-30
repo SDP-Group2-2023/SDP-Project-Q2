@@ -19,18 +19,24 @@ Graph::Graph() = default;
 
 void Graph::add_node(int id, int weight, int partition) {
     Node nNode { id, weight, partition };
-
-    lock_guard<mutex> lock(mNode);
     nodes.emplace_back(nNode);
+}
+
+void Graph::add_node(const Node &n_node) {
+    nodes.emplace_back(n_node);
 }
 
 void Graph::add_edge(int source, int dest, int weight) {
     if (source < dest)
         swap(source, dest);
     Edge nEdge { source, dest, weight };
-
-    lock_guard<mutex> lock(mEdge);
     edges.insert(nEdge);
+}
+
+void Graph::add_edge(Edge n_edge) {
+    if(n_edge.source < n_edge.dest)
+        swap(n_edge.source, n_edge.dest);
+    edges.insert(n_edge);
 }
 
 Node Graph::get_node(int id) {
