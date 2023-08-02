@@ -9,11 +9,6 @@ Node* Graph::add_node(int id, int weight){
     return n;
 }
 
-Node* Graph::add_node(Node* node){
-    nodes.push_back(node);
-    this->V++;
-    return node;
-}
 
 Edge* Graph::add_edge(int source, int dest, int distance) {
     Node* node1 = nodes[source];
@@ -21,9 +16,6 @@ Edge* Graph::add_edge(int source, int dest, int distance) {
     Edge* e = new Edge(distance, node1, node2);
     node1->edges.push_back(e);
     node2->edges.push_back(e);
-    //edges.push_back(e);
-    //edge_map[source][dest] = e;
-    //edge_map[dest][source] = e;
     this->E++;
     return e;
 }
@@ -51,10 +43,6 @@ void Graph::free(){
         delete node;
         node = nullptr;
     }
-    /*for(auto & edge : edges) {
-        delete edge;
-        edge = nullptr;
-    }*/
 }
 
 void Graph::add_or_sum_edge(int source, int dest, int distance) {

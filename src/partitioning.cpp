@@ -19,7 +19,13 @@ void partitioning(Graph*g, int requestedPartitions){
         allGraphs.push_back(coarsedGraph);
     }
 
-    auto partitions = kernighanLin(allGraphs.back(), 50);
+    Graph* coarsestGraph = allGraphs.back();
+    vector<int> partitions(coarsestGraph->V);
+    for(int i = 0; i<coarsestGraph->V; i++){
+        partitions[i] = i % requestedPartitions;
+    }
+
+    kernighanLin(coarsestGraph, 50, partitions);
     for(int i = 0; i<partitions.size(); i++){
         cout << "Node " << i << " in partition " << partitions[i] << endl;
     }
