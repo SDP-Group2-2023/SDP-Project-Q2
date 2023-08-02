@@ -1,60 +1,63 @@
-#ifndef GRAPH_H
-#define GRAPH_H
+#ifndef GRAPHPARTITIONING_GRAPH_H
+#define GRAPHPARTITIONING_GRAPH_H
 
-#include <barrier>
-#include <map>
-#include <mutex>
-#include <set>
-#include <string>
-#include <unordered_map>
 #include <vector>
+#include <unordered_map>
 
 using namespace std;
-
-struct Edge {
-    int source;
-    int dest;
+struct Node;
+struct Edge{
+    Edge(int weight, Node* node1, Node* node2){
+        this->weight = weight;
+        this->node1 = node1;
+        this->node2 = node2;
+    }
     int weight;
-    bool matched;
+    Node* node1;
+    Node* node2;
 
-    bool operator<(const Edge &a) const;
-
-    bool operator>(const Edge &a) const;
-
-    bool operator==(const Edge &c) const;
+    bool operator==(const Edge& other) const{
+        return (node1 == other.node1 && node2 == other.node2) ||
+               (node1 == other.node2 && node2 == other.node1);
+    }
 };
 
-struct Node {
+struct Node{
+    Node(int id, int weight){
+        this->id = id;
+        this->weight = weight;
+        this->parent1 = nullptr;
+        this->parent2 = nullptr;
+        this->child = nullptr;
+    }
     int id;
     int weight;
-    int partition;
+    Node *parent1;
+    Node *parent2;
+    Node *child;
+    vector<Edge*> edges;
+
+    bool operator<(const Node& other) const{
+        return weight > other.weight;
+    }
+
+
 };
 
 class Graph {
-private:
-    set<Edge> edges;
-    vector<Node> nodes;
-    mutex mNode;
-    mutex mEdge;
-    map<int, map<int, int>> edges_look_up;
-    void node_reader(const string &path, unsigned long offset_from_start_nodes, int nodes_to_read);
-    void edge_reader(const string &path, unsigned long offset_from_start_edges, int edges_to_read);
-
 public:
-    Graph();
-    Graph(const string &path);
-    void add_node(int id, int weight, int partition);
-    void add_node(const Node &n_node);
-    void add_edge(int source, int dest, int weight);
-    void add_edge(Edge n_edge);
-    void increase_edge(int source, int dest, int weight_increment);
-    Node get_node(int id);
-    Edge get_edge(int source, int dest);
-    int get_num_nodes();
-    int get_num_edges();
+    int V = 0;
+    int E = 0;
+    vector<Node *> nodes;
+    //vector<Edge *> edges;
+    //unordered_map<int, unordered_map<int, Edge*>> edge_map;
+    Node *add_node(int id, int weight);
+    Node *add_node(Node*node);
+    Edge *add_edge(int source, int dest, int distance);
     void print();
-    void set_node_partition(int id, int partition);
-    void graphPartitioning(int num_partitions, int p_iteration);
-};
+    void free();
+    void add_or_sum_edge(int source, int dest, int distance);
+    };
 
-#endif
+
+#endif //GRAPHPARTITIONING_GRAPH_H

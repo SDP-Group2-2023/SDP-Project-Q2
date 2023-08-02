@@ -1,77 +1,42 @@
 #include <iostream>
-#include <fstream>
-#include <string>
-#include "partitioning_algorithms.h"
+#include <list>
+#include "partitioning.h"
 
 using namespace std;
+int main(int argc, char **argv){
+    if(argc < 2){
+        cout << "Usage: " << argv[0] << " <input file>"  << endl;
+        return 1;
+    }
 
-void loadGraph();
-void unloadGraph();
-void calculateSequential();
-void calculateParallel();
-void compareSolutions();
+    cout << "Loading graph..." << endl;
+    auto start_time = chrono::high_resolution_clock::now();
+    Graph*g = loadFromFile(argv[1]);
+    auto end_time = chrono::high_resolution_clock::now();
+    auto duration = chrono::duration_cast<chrono::milliseconds>(end_time - start_time);
+    cout << "Time to load graph: " << duration.count() << "ms" << endl;
 
-int main(int argc, char* argv[]) {
-int choice;
-  bool valid = true;
+    int actual_num_partitions = g->V;
 
-  do{
-    cout << "1 - Load a graph from file" << endl;
-    cout << "2 - Unload the graph" << endl;
-    cout << "3 - Calculate a partition in a sequential way" << endl;
-    cout << "4 - Calculate a partition in a parallel way" << endl;
-    cout << "5 - Compare the sequential and parallel partition" << endl;
-    cout << "6 - Exit" << "\n" << endl;
-      cin >> choice;
-      if(cin.bad() || cin.fail()) {
-        cout << "Invalid choice" << endl;
-        cin.clear(); cin.ignore(10000, '\n');
-        continue;
-        }
-     switch (choice)
-  {
-  case 1:
-    loadGraph();
-    break;
-  case 2:
-    unloadGraph();
-    break;
-  case 3:
-    calculateSequential();
-    break;
-  case 4:
-    calculateParallel();
-    break;
-  case 5:
-    compareSolutions();
-    break;
-  case 6:
-    cout << "Good bye" << endl;
-    break;
-  default:
-    cout << "Invalid choice" << endl;
-    break;
-  }
-  } while (choice != 6);
-      return 0;
-}
+    list<Graph*> allGraphs;
+    allGraphs.push_back(g);
 
-void loadGraph() {
-  cout << "Loading graph" << endl;
-}
+    int iterations = 0;
+    while( actual_num_partitions > 50 && iterations++ < 50){
+        cout << "Iteration " << iterations << endl;
+        Graph* coarsedGraph = coarseGraph(allGraphs.back(), 0);
+        //coarsedGraph->print();
+        actual_num_partitions = coarsedGraph->V;
+        allGraphs.push_back(coarsedGraph);
+    }
 
-void unloadGraph() {
-  cout << "Unloading graph" << endl;
-}
+    allGraphs.back()->print();
 
-void calculateSequential() {
-  cout << "Calculating sequential" << endl;
-}
+    for(auto&gr : allGraphs)
+        gr->free();
 
-void calculateParallel() {
-  cout << "Calculating parallel" << endl;
-}
+    cout << "Partitions: " << actual_num_partitions << endl;
 
-void compareSolutions() {
-  cout << "Comparing solutions" << endl;
+
+
 }

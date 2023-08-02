@@ -2,103 +2,69 @@
 #include <iostream>
 
 using namespace std;
-
-bool Edge::operator<(const Edge &a) const {
-        return (this->weight > a.weight) || (this->weight == a.weight && (this->source > a.source || (this->source == a.source && this->dest > a.dest)));
-    }
-
-    bool Edge::operator>(const Edge &a) const {
-        return (this->weight < a.weight) || (this->weight == a.weight && (this->source < a.source || (this->source == a.source && this->dest < a.dest)));
-    }
-
-    bool Edge::operator==(const Edge &c) const {
-        return this->source == c.source && this->dest == c.dest;
-    }
-
-Graph::Graph() = default;
-
-void Graph::add_node(int id, int weight, int partition) {
-    Node nNode { id, weight, partition };
-    nodes.emplace_back(nNode);
+Node* Graph::add_node(int id, int weight){
+    Node* n = new Node(id, weight);
+    nodes.push_back(n);
+    this->V++;
+    return n;
 }
 
-void Graph::add_node(const Node &n_node) {
-    nodes.emplace_back(n_node);
+Node* Graph::add_node(Node* node){
+    nodes.push_back(node);
+    this->V++;
+    return node;
 }
 
-void Graph::add_edge(int source, int dest, int weight) {
-    if (source < dest)
-        swap(source, dest);
-    Edge nEdge { source, dest, weight };
-
-    if (edges_look_up[source].contains(dest))
-        return;
-
-    edges_look_up[source][dest] = weight;
-
-    edges.insert(nEdge);
+Edge* Graph::add_edge(int source, int dest, int distance) {
+    Node* node1 = nodes[source];
+    Node* node2 = nodes[dest];
+    Edge* e = new Edge(distance, node1, node2);
+    node1->edges.push_back(e);
+    node2->edges.push_back(e);
+    //edges.push_back(e);
+    //edge_map[source][dest] = e;
+    //edge_map[dest][source] = e;
+    this->E++;
+    return e;
 }
 
-void Graph::add_edge(Edge n_edge) {
-    if(n_edge.source < n_edge.dest)
-        swap(n_edge.source, n_edge.dest);
-
-    if (edges_look_up[n_edge.source].contains(n_edge.dest))
-        return;
-
-    edges_look_up[n_edge.source][n_edge.dest] = n_edge.weight;
-    edges.insert(n_edge);
-}
-
-Node Graph::get_node(int id) {
-    return nodes[id];
-}
-
-Edge Graph::get_edge(int source, int dest) {
-    if (source < dest)
-        swap(source, dest);
-
-    if(edges_look_up[source].contains(dest))
-        return Edge(source, dest, edges_look_up[source][dest]);
-
-    throw runtime_error("Edge not found");
-}
-
-int Graph::get_num_edges() {
-    return (int) edges.size();
-}
-
-int Graph::get_num_nodes() {
-    return (int) nodes.size();
-}
-
-void Graph::print() {
-    for (int i = 0; i < nodes.size(); i++) {
-        Node node = nodes[i];
-        cout << "n " << node.id << " " << node.weight << " " << node.partition << endl;
-    }
-
-    int num_nodes = (int) nodes.size();
-
-    set<Edge>::iterator it;
-    for (it = edges.begin(); it != edges.end(); ++it) {
-        Edge tempEdge = *it;
-        cout << "a " << tempEdge.source << " " << tempEdge.dest << " " << tempEdge.weight << endl;
-
-        if (tempEdge.source > num_nodes - 1 || tempEdge.dest > num_nodes - 1)
-            cout << "Edge source or destination out of bounds" << endl;
+void Graph::print(){
+    cout << "Graph with " << this->V << " nodes and " << this->E << " edges" << endl;
+    for(int i = 0; i<V; i++){
+        Node* n = nodes[i];
+        cout << "Node " << n->id << " with weight " << n->weight << endl;
+        for(auto & edge : n->edges) {
+            int source, dest;
+            source = edge->node1->id;
+            dest = edge->node2->id;
+            if(source != n->id)
+                swap(source, dest);
+            cout << "\tEdge " << source << " -> "
+                 << dest << " with weight "
+                 << edge->weight << endl;
+        }
     }
 }
 
-void Graph::set_node_partition(int id, int partition) {
-    nodes[id].partition = partition;
+void Graph::free(){
+    for(auto & node : nodes) {
+        delete node;
+        node = nullptr;
+    }
+    /*for(auto & edge : edges) {
+        delete edge;
+        edge = nullptr;
+    }*/
 }
 
-void Graph::increase_edge(int source, int dest, int weight_increment) {
-    Edge e = this->get_edge(source, dest);
-    this->edges.erase(e);
-    e.weight += weight_increment;
-    this->edges_look_up[e.source][e.dest] += weight_increment;
-    this->edges.insert(e);
+void Graph::add_or_sum_edge(int source, int dest, int distance) {
+    Node* node1 = nodes[source];
+    Node* node2 = nodes[dest];
+    for(auto & edge : node1->edges) {
+        if(edge->node1 == node2 || edge->node2 == node2){
+            edge->weight += distance;
+            return;
+        }
+    }
+    add_edge(source, dest, distance);
 }
-
