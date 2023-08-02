@@ -5,6 +5,8 @@
 
 Graph* loadFromFile(const string& path);
 Graph* coarseGraph(Graph* graph, int num_partitions);
+void partitioning(Graph*g, int requestedPartitions);
+vector<int> kernighanLin(Graph* graph, int num_partitions);
 
 
 #endif //GRAPHPARTITIONING_PARTITIONING_H

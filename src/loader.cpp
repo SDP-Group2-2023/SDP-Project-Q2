@@ -2,9 +2,14 @@
 
 #include <iostream>
 #include <fstream>
+#include <chrono>
 
 using namespace std;
 Graph* loadFromFile(const string& path){
+
+    cout << "Loading graph..." << endl;
+    auto start_time = chrono::high_resolution_clock::now();
+
     auto g = new Graph();
     ifstream file(path, ios::binary);
     if(!file.is_open()){
@@ -30,6 +35,10 @@ Graph* loadFromFile(const string& path){
         file.read((char*)&distance, sizeof(int));
         g->add_edge(source, dest, distance);
     }
+
+    auto end_time = chrono::high_resolution_clock::now();
+    auto duration = chrono::duration_cast<chrono::milliseconds>(end_time - start_time);
+    cout << "Time to load graph: " << duration.count() << "ms" << endl;
 
     return g;
 }

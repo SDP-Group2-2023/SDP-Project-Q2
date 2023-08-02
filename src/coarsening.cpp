@@ -1,5 +1,4 @@
 #include "partitioning.h"
-#include <set>
 
 vector<Node*> sortNodes(const vector<Node*>& nodes) {
     vector<Node *> sortedNodes = nodes;
