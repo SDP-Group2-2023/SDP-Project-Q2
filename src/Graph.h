@@ -2,6 +2,7 @@
 #define GRAPHPARTITIONING_GRAPH_H
 
 #include <vector>
+#include <iostream>
 
 using namespace std;
 
@@ -18,7 +19,7 @@ struct Node{
     Node *parent1;
     Node *parent2;
     Node *child;
-    vector<struct Edge*> edges;
+    vector<shared_ptr<struct Edge>> edges;
 };
 
 struct Edge{
@@ -39,12 +40,13 @@ public:
     int V = 0;
     int E = 0;
     vector<Node *> nodes;
+    vector<shared_ptr<Edge>> edges;
     Node *add_node(int id, int weight);
-    Edge *add_edge(int source, int dest, int distance);
+    shared_ptr<Edge> add_edge(int source, int dest, int distance);
     void print();
-    void free();
     void add_or_sum_edge(int source, int dest, int distance);
-    };
+    ~Graph();
+ };
 
 
 #endif //GRAPHPARTITIONING_GRAPH_H

@@ -14,6 +14,5 @@ int main(int argc, char **argv){
     int requestedPartitions = 50;
     partitioning(g, requestedPartitions);
 
-    g->free();
-
+    delete g;
 }

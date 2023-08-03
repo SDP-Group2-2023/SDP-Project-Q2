@@ -19,7 +19,7 @@ Graph* coarseGraph(Graph* originalGraph, int num_partitions){
         bool flag = false;
 
         auto sortedEdges = n->edges;
-        sort(sortedEdges.begin(), sortedEdges.end(), [](Edge *e1, Edge *e2) {
+        sort(sortedEdges.begin(), sortedEdges.end(), [](auto e1, auto e2) {
             return e1->weight > e2->weight;
         });
 

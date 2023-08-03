@@ -10,10 +10,11 @@ Node* Graph::add_node(int id, int weight){
 }
 
 
-Edge* Graph::add_edge(int source, int dest, int distance) {
+shared_ptr<Edge> Graph::add_edge(int source, int dest, int distance) {
     Node* node1 = nodes[source];
     Node* node2 = nodes[dest];
-    Edge* e = new Edge(distance, node1, node2);
+    shared_ptr<Edge> e = make_shared<Edge>(distance, node1, node2);
+    edges.push_back(e);
     node1->edges.push_back(e);
     node2->edges.push_back(e);
     this->E++;
@@ -38,8 +39,11 @@ void Graph::print(){
     }
 }
 
-void Graph::free(){
+Graph::~Graph(){
     for(auto & node : nodes) {
+        for(auto & edge : node->edges) {
+            edge = nullptr;
+        }
         delete node;
         node = nullptr;
     }

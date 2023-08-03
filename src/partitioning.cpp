@@ -46,7 +46,7 @@ void partitioning(Graph*g, int requestedPartitions){
     }
 
     for(int i = 1; i<allGraphs.size(); i++){
-        allGraphs[i]->free();
+        delete allGraphs[i];
     }
 }
 
