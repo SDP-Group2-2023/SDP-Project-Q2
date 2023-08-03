@@ -18,8 +18,13 @@ Graph* loadFromFile(const string& path){
     }
     int num_nodes;
     int num_edges;
+
+
     file.read((char*)&num_nodes, sizeof(int));
     file.read((char*)&num_edges, sizeof(int));
+
+    cout << "num_nodes: " << num_nodes << endl;
+
 
     int id, node_weight;
     for(int i= 0; i<num_nodes; i++){

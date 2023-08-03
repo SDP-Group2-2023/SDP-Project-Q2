@@ -4,6 +4,15 @@
 #include <iostream>
 
 using namespace std;
+vector<int> uncoarsenGraph(Graph* g, vector<int>& partitions){
+    vector<int> newPartitions(g->V);
+
+    for(auto&n : g->nodes)
+        newPartitions[n->id] = partitions[n->child->id];
+
+    return newPartitions;
+}
+
 void partitioning(Graph*g, int requestedPartitions){
     int actual_num_partitions = g->V;
 
@@ -19,18 +28,25 @@ void partitioning(Graph*g, int requestedPartitions){
         allGraphs.push_back(coarsedGraph);
     }
 
-    Graph* coarsestGraph = allGraphs.back();
+    Graph* coarsestGraph = allGraphs[allGraphs.size()-1];
     vector<int> partitions(coarsestGraph->V);
     for(int i = 0; i<coarsestGraph->V; i++){
         partitions[i] = i % requestedPartitions;
     }
 
-    kernighanLin(coarsestGraph, 50, partitions);
+    kernighanLin(coarsestGraph, requestedPartitions, partitions);
+
+    for(auto i = (int)allGraphs.size()-2; i>=0; i--){
+        partitions = uncoarsenGraph(allGraphs[i], partitions);
+        kernighanLin(allGraphs[i], requestedPartitions, partitions);
+    }
+
     for(int i = 0; i<partitions.size(); i++){
-        cout << "Node " << i << " in partition " << partitions[i] << endl;
+        //cout << "Node " << i << " in partition " << partitions[i] << endl;
     }
 
     for(int i = 1; i<allGraphs.size(); i++){
         allGraphs[i]->free();
     }
 }
+
