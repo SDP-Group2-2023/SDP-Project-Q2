@@ -9,9 +9,8 @@ int main(int argc, char **argv){
         return 1;
     }
 
-    Graph*g = loadFromFile(argv[1]);
-
-    int requestedPartitions = 50;
+    auto g = loadFromFile(argv[1]);
+    int requestedPartitions = 100;
     partitioning(g, requestedPartitions);
 
     delete g;

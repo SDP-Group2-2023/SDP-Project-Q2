@@ -20,7 +20,7 @@ void partitioning(Graph*g, int requestedPartitions){
     allGraphs.push_back(g);
 
     int iterations = 0;
-    while( actual_num_partitions > requestedPartitions * 15 && iterations++ < 50){
+    while( actual_num_partitions > requestedPartitions * 15  && iterations++ < 50){
         cout << "Iteration " << iterations << endl;
         Graph* coarsedGraph = coarseGraph(allGraphs.back(), 0);
         //coarsedGraph->print();
@@ -42,7 +42,7 @@ void partitioning(Graph*g, int requestedPartitions){
     }
 
     for(int i = 0; i<partitions.size(); i++){
-        //cout << "Node " << i << " in partition " << partitions[i] << endl;
+        cout << "Node " << i << " in partition " << partitions[i] << endl;
     }
 
     for(int i = 1; i<allGraphs.size(); i++){

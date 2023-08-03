@@ -49,14 +49,12 @@ Graph::~Graph(){
     }
 }
 
-void Graph::add_or_sum_edge(int source, int dest, int distance) {
-    Node* node1 = nodes[source];
-    Node* node2 = nodes[dest];
-    for(auto & edge : node1->edges) {
-        if(edge->node1 == node2 || edge->node2 == node2){
+void Graph::add_or_sum_edge(Node*n1, Node*n2, int distance) {
+    for(auto & edge : n1->edges) {
+        if(edge->node1 == n2 || edge->node2 == n2){
             edge->weight += distance;
             return;
         }
     }
-    add_edge(source, dest, distance);
+    add_edge(n1->id, n2->id, distance);
 }

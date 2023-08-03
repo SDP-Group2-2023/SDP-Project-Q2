@@ -28,8 +28,6 @@ Graph* coarseGraph(Graph* originalGraph, int num_partitions){
                 Node*n1 = e->node1;
                 Node*n2 = e->node2;
                 Node*newNode = coarse_graph->add_node(index, n1->weight + n2->weight);
-                newNode->parent1 = n1;
-                newNode->parent2 = n2;
                 n1->child = newNode;
                 n2->child = newNode;
 
@@ -41,7 +39,6 @@ Graph* coarseGraph(Graph* originalGraph, int num_partitions){
         }
         if(!flag && !matchedNodes[n->id]){
             Node*newNode = coarse_graph->add_node(index, n->weight);
-            newNode->parent1 = n;
             n->child = newNode;
             index++;
         }
@@ -49,8 +46,10 @@ Graph* coarseGraph(Graph* originalGraph, int num_partitions){
 
     for(auto&n : originalGraph->nodes){
         for(auto&e : n->edges){
-            if(e->node1->child != e->node2->child)
-                coarse_graph->add_or_sum_edge(e->node1->child->id,e->node2->child->id, e->weight);
+            if(!e->flag && e->node1->child != e->node2->child) {
+                coarse_graph->add_or_sum_edge(e->node1->child, e->node2->child, e->weight);
+                e->flag = true;
+            }
         }
     }
 

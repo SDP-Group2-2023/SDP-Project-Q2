@@ -11,14 +11,10 @@ struct Node{
     Node(int id, int weight){
         this->id = id;
         this->weight = weight;
-        parent1 = nullptr;
-        parent2 = nullptr;
         child = nullptr;
     }
     int id;
     int weight;
-    Node *parent1;
-    Node *parent2;
     Node *child;
     vector<shared_ptr<struct Edge>> edges;
 };
@@ -28,10 +24,12 @@ struct Edge{
         this->weight = weight;
         this->node1 = node1;
         this->node2 = node2;
+        this->flag = false;
     }
     int weight;
     Node* node1;
     Node* node2;
+    bool flag ;
 };
 
 
@@ -45,7 +43,7 @@ public:
     Node *add_node(int id, int weight);
     shared_ptr<Edge> add_edge(int source, int dest, int distance);
     void print();
-    void add_or_sum_edge(int source, int dest, int distance);
+    void add_or_sum_edge(Node*n1, Node*n2, int distance);
     ~Graph();
  };
 
