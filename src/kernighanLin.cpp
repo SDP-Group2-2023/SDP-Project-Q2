@@ -51,10 +51,12 @@ int gain(Graph *graph, vector<int> &partitions, Node *node_to_move, int to_parti
 
 void kernighanLin(Graph *graph, int num_partitions, vector<int> &partitions) {
     bool improved;
+    int cut_size      = calculateCutSize(graph, partitions);
+    int best_cut_size = cut_size;
+    vector<int> best_partitions(partitions);
     do {
         improved = false;
-        vector<int> best_partitions(partitions);
-        //constraint (see article explanation : each node must be moved only once in the innermost loop
+        // constraint (see article explanation : each node must be moved only once in the innermost loop
         vector<bool> moved(graph->V, false);
         // set<change> changes; // possibili cambi
         set<Change> possible_changes;
@@ -88,33 +90,32 @@ void kernighanLin(Graph *graph, int num_partitions, vector<int> &partitions) {
             Change best_change;
             for (auto &c : possible_changes) {
                 if (countPartitionWeight(graph, partitions[c.node->id], partitions) >= graph->node_weight_global / num_partitions &&
-                    countPartitionWeight(graph, c.new_partition, partitions) <= graph->node_weight_global / num_partitions &&
-                    !moved[c.node->id]) {
-                    best_change = c;
+                    countPartitionWeight(graph, c.new_partition, partitions) <= graph->node_weight_global / num_partitions && !moved[c.node->id] && c.gain != 0) {
+                    best_change       = c;
                     moved[c.node->id] = true;
                     break;
                 }
             }
-            //if no change satisfies swapping criteria exit loop
-            if(best_change.new_partition == -1)
+            // if no change satisfies swapping criteria exit loop
+            if (best_change.new_partition == -1)
                 break;
 
             tot_moves++;
 
-            if(best_change.gain <= 0)
+            if (best_change.gain <= 0)
                 negative_gains++;
             else
                 negative_gains = 0;
 
             // swap according to best change found
-            // int old_partition                = partitions[best_change.node->id];
+            int old_partition                = partitions[best_change.node->id];
             partitions[best_change.node->id] = best_change.new_partition;
             possible_changes.erase(best_change);
             // managing stopping criterion
             sum_of_gains += best_change.gain;
             // update necessary gain values in the set (neighbours)
             // no longer useful since every node is moved only once in one iteration of inner loop
-            /*for (int i = 0; i < num_partitions; i++) {
+            for (int i = 0; i < num_partitions; i++) {
                 // removing selected change from possible changes set
                 if (i != partitions[best_change.node->id]) {
                     Change new_change;
@@ -131,7 +132,7 @@ void kernighanLin(Graph *graph, int num_partitions, vector<int> &partitions) {
                     // update node gain mapping for further references
                     node_gain_mapping[new_change.node][i] = gain(graph, partitions, new_change.node, i);
                 }
-            }*/
+            }
             // update gains of all neighbouring nodes of new_change.node
             for (auto n : best_change.node->get_neighbors()) {
                 for (int i = 0; i < num_partitions; i++) {
@@ -152,9 +153,13 @@ void kernighanLin(Graph *graph, int num_partitions, vector<int> &partitions) {
                     }
                 }
             }
-            if (calculateCutSize(graph, partitions) < calculateCutSize(graph, best_partitions)) {
+
+            cut_size -= best_change.gain;
+
+            if (cut_size < best_cut_size) {
                 best_partitions = partitions;
                 improved        = true;
+                best_cut_size   = cut_size;
             }
         }
 
@@ -163,6 +168,7 @@ void kernighanLin(Graph *graph, int num_partitions, vector<int> &partitions) {
         //      improved = true;
 
         partitions = best_partitions;
+        cut_size   = best_cut_size;
 
         cout << "With " << tot_moves << " moves, we moved the cut size to " << calculateCutSize(graph, partitions) << endl;
 
