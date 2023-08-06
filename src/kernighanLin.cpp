@@ -188,10 +188,6 @@ void kernighanLin(Graph *graph, int num_partitions, vector<int> &partitions) {
         partitions_weights = best_partitions_weights;
 
         cout << "With " << tot_moves << " moves, we moved the cut size to " << cut_size << endl;
-        if(calculateCutSize(graph, partitions) != cut_size) {
-            cout << "ERRORRR" << calculateCutSize(graph, partitions) << endl;
-            exit(1);
-        }
 
     } while (improved);
 }
