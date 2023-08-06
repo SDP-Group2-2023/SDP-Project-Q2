@@ -56,7 +56,7 @@ void kernighanLin(Graph *graph, int num_partitions, vector<int> &partitions) {
     vector<int> best_partitions(partitions);
 
     // keep track of the partitions weights
-    vector<int> partitions_weights(num_partitions);
+    vector<int> partitions_weights(num_partitions);     // this could possible be made a graph attribute, so to speed up, since it doesn't change from iteration to iteration
     for (int i = 0; i < num_partitions; i++)
         partitions_weights[i] = countPartitionWeight(graph, i, partitions);
 
@@ -96,7 +96,7 @@ void kernighanLin(Graph *graph, int num_partitions, vector<int> &partitions) {
         while (sum_of_gains >= stop_threshold && negative_gains < graph->max_node_degree()) {
             // from the set select the best (if leads to balanced partitions) gain movement and perform it (update partitions vector)
             Change best_change;
-            for (auto &c : possible_changes) {
+            for (auto &c : possible_changes) { // consider the possibility of removing or not adding some possible changes to speed up subsequent iterations
                 if (partitions_weights[partitions[c.node->id]] >= graph->node_weight_global / num_partitions &&
                     partitions_weights[c.new_partition] <= graph->node_weight_global / num_partitions && !moved[c.node->id] && c.gain != 0) {
                     best_change       = c;
