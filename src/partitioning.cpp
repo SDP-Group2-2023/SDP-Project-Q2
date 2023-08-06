@@ -34,9 +34,7 @@ void partitioning(Graph*g, int requestedPartitions){
         partitions[i] = i % requestedPartitions;
     }
 
-    cout << "Before requested partitions: " << requestedPartitions << endl;
-    cout << "Before address of partitions: " << &partitions << endl;
-    kernighanLin(coarsestGraph, requestedPartitions, partitions);
+    kernighanLin(coarsestGraph, 100, partitions);
 
     for(auto i = (int)allGraphs.size()-2; i>=0; i--){
         partitions = uncoarsenGraph(allGraphs[i], partitions);

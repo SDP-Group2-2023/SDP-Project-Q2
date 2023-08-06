@@ -50,8 +50,6 @@ int gain(Graph *graph, vector<int> &partitions, Node *node_to_move, int to_parti
 // we use a set and a double hash map the structure:
 
 void kernighanLin(Graph *graph, int num_partitions, vector<int> &partitions) {
-    cout << "after numpartition as :" << num_partitions << endl;
-    cout << "after partitions address: " << &partitions << endl;
     bool improved;
     do {
         improved = false;
