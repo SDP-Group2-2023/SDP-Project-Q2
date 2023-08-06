@@ -104,8 +104,8 @@ void kernighanLin(Graph *graph, int num_partitions, vector<int> &partitions) {
             // managing stopping criterion
             sum_of_gains += best_change.gain;
             // update necessary gain values in the set (neighbours)
-            // update
-            for (int i = 0; i < num_partitions; i++) {
+            // no longer useful since every node is moved only once in one iteration of inner loop
+            /*for (int i = 0; i < num_partitions; i++) {
                 // removing selected change from possible changes set
                 if (i != partitions[best_change.node->id]) {
                     Change new_change;
