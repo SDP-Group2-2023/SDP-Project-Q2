@@ -66,7 +66,6 @@ void kernighanLin(Graph *graph, int num_partitions, vector<int> &partitions) {
         // int prev_cutsize_difference = cutsize_current_Partition-cutsize_current_bestPartition
 
         // loop to calculate all initial gains
-        int swap_allowed = true;
         for (int i = 0; i < graph->V; i++) {
             Node *current_node = graph->nodes[i];
 
@@ -81,12 +80,12 @@ void kernighanLin(Graph *graph, int num_partitions, vector<int> &partitions) {
         // stopping criterion (page 7 of A Parallel Graph Partitioning algorithm for a message passing multiprocessor)
         int stop_threshold = -graph->max_node_degree();
         int sum_of_gains   = 0;
+        int tot_moves      = 0;
+        int negative_gains = 0;
 
-
-        while (sum_of_gains < stop_threshold) {
+        while (sum_of_gains >= stop_threshold && negative_gains < graph->max_node_degree()) {
             // from the set select the best (if leads to balanced partitions) gain movement and perform it (update partitions vector)
             Change best_change;
-            best_change.new_partition = -1;
             for (auto &c : possible_changes) {
                 if (countPartitionWeight(graph, partitions[c.node->id], partitions) >= graph->node_weight_global / num_partitions &&
                     countPartitionWeight(graph, c.new_partition, partitions) <= graph->node_weight_global / num_partitions &&
@@ -100,7 +99,12 @@ void kernighanLin(Graph *graph, int num_partitions, vector<int> &partitions) {
             if(best_change.new_partition == -1)
                 break;
 
+            tot_moves++;
 
+            if(best_change.gain <= 0)
+                negative_gains++;
+            else
+                negative_gains = 0;
 
             // swap according to best change found
             // int old_partition                = partitions[best_change.node->id];
@@ -159,5 +163,8 @@ void kernighanLin(Graph *graph, int num_partitions, vector<int> &partitions) {
         //      improved = true;
 
         partitions = best_partitions;
-    } while (!improved);
+
+        cout << "With " << tot_moves << " moves, we moved the cut size to " << calculateCutSize(graph, partitions) << endl;
+
+    } while (improved);
 }
