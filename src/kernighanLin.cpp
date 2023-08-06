@@ -27,7 +27,7 @@ long calculateCutSize(Graph *graph, vector<int> &partitions) {
                 cutsize += edge->weight;
         }
     }
-    return cutsize;
+    return cutsize / 2;
 }
 
 int gain(Graph *graph, vector<int> &partitions, Node *node_to_move, int to_partition) {
@@ -54,6 +54,14 @@ void kernighanLin(Graph *graph, int num_partitions, vector<int> &partitions) {
     int cut_size      = calculateCutSize(graph, partitions);
     int best_cut_size = cut_size;
     vector<int> best_partitions(partitions);
+
+    // keep track of the partitions weights
+    vector<int> partitions_weights(num_partitions);
+    for (int i = 0; i < num_partitions; i++)
+        partitions_weights[i] = countPartitionWeight(graph, i, partitions);
+
+    vector<int> best_partitions_weights(partitions_weights);
+
     do {
         improved = false;
         // constraint (see article explanation : each node must be moved only once in the innermost loop
@@ -89,8 +97,8 @@ void kernighanLin(Graph *graph, int num_partitions, vector<int> &partitions) {
             // from the set select the best (if leads to balanced partitions) gain movement and perform it (update partitions vector)
             Change best_change;
             for (auto &c : possible_changes) {
-                if (countPartitionWeight(graph, partitions[c.node->id], partitions) >= graph->node_weight_global / num_partitions &&
-                    countPartitionWeight(graph, c.new_partition, partitions) <= graph->node_weight_global / num_partitions && !moved[c.node->id] && c.gain != 0) {
+                if (partitions_weights[partitions[c.node->id]] >= graph->node_weight_global / num_partitions &&
+                    partitions_weights[c.new_partition] <= graph->node_weight_global / num_partitions && !moved[c.node->id] && c.gain != 0) {
                     best_change       = c;
                     moved[c.node->id] = true;
                     break;
@@ -100,22 +108,28 @@ void kernighanLin(Graph *graph, int num_partitions, vector<int> &partitions) {
             if (best_change.new_partition == -1)
                 break;
 
+            // increment moves for this cycle
             tot_moves++;
 
+            // if the gain is negative increment the counter, otherwise reset it
             if (best_change.gain <= 0)
                 negative_gains++;
             else
                 negative_gains = 0;
 
+            // update the weights
+            partitions_weights[partitions[best_change.node->id]] -= best_change.node->weight;
+            partitions_weights[best_change.new_partition] += best_change.node->weight;
+
             // swap according to best change found
-            int old_partition                = partitions[best_change.node->id];
+            // int old_partition                = partitions[best_change.node->id];
             partitions[best_change.node->id] = best_change.new_partition;
             possible_changes.erase(best_change);
             // managing stopping criterion
             sum_of_gains += best_change.gain;
             // update necessary gain values in the set (neighbours)
             // no longer useful since every node is moved only once in one iteration of inner loop
-            for (int i = 0; i < num_partitions; i++) {
+            /*for (int i = 0; i < num_partitions; i++) {
                 // removing selected change from possible changes set
                 if (i != partitions[best_change.node->id]) {
                     Change new_change;
@@ -132,7 +146,7 @@ void kernighanLin(Graph *graph, int num_partitions, vector<int> &partitions) {
                     // update node gain mapping for further references
                     node_gain_mapping[new_change.node][i] = gain(graph, partitions, new_change.node, i);
                 }
-            }
+            }*/
             // update gains of all neighbouring nodes of new_change.node
             for (auto n : best_change.node->get_neighbors()) {
                 for (int i = 0; i < num_partitions; i++) {
@@ -154,12 +168,14 @@ void kernighanLin(Graph *graph, int num_partitions, vector<int> &partitions) {
                 }
             }
 
+            // update the cut size
             cut_size -= best_change.gain;
 
             if (cut_size < best_cut_size) {
-                best_partitions = partitions;
-                improved        = true;
-                best_cut_size   = cut_size;
+                best_partitions         = partitions;
+                improved                = true;
+                best_cut_size           = cut_size;
+                best_partitions_weights = partitions_weights;
             }
         }
 
@@ -167,10 +183,15 @@ void kernighanLin(Graph *graph, int num_partitions, vector<int> &partitions) {
         //      assign the best to current (partitions)
         //      improved = true;
 
-        partitions = best_partitions;
-        cut_size   = best_cut_size;
+        partitions         = best_partitions;
+        cut_size           = best_cut_size;
+        partitions_weights = best_partitions_weights;
 
-        cout << "With " << tot_moves << " moves, we moved the cut size to " << calculateCutSize(graph, partitions) << endl;
+        cout << "With " << tot_moves << " moves, we moved the cut size to " << cut_size << endl;
+        if(calculateCutSize(graph, partitions) != cut_size) {
+            cout << "ERRORRR" << calculateCutSize(graph, partitions) << endl;
+            exit(1);
+        }
 
     } while (improved);
 }
