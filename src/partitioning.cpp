@@ -34,6 +34,8 @@ void partitioning(Graph*g, int requestedPartitions){
         partitions[i] = i % requestedPartitions;
     }
 
+    cout << "Before requested partitions: " << requestedPartitions << endl;
+    cout << "Before address of partitions: " << &partitions << endl;
     kernighanLin(coarsestGraph, requestedPartitions, partitions);
 
     for(auto i = (int)allGraphs.size()-2; i>=0; i--){

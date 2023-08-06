@@ -48,19 +48,16 @@ int gain(Graph *graph, vector<int> &partitions, Node *node_to_move, int to_parti
 
 // Fiduccia and Mattheyses version KL-inspired
 // we use a set and a double hash map the structure:
-/*
-    struct change {
-        int new_partition;
-        Node *node;
-        int gain;
-        bool operator< (const change &other);
-    };
-*/
+
 void kernighanLin(Graph *graph, int num_partitions, vector<int> &partitions) {
+    cout << "after numpartition as :" << num_partitions << endl;
+    cout << "after partitions address: " << &partitions << endl;
     bool improved;
     do {
         improved = false;
         vector<int> best_partitions(partitions);
+        //constraint (see article explanation : each node must be moved only once in the innermost loop
+        vector<bool> moved(graph->V, false);
         // set<change> changes; // possibili cambi
         set<Change> possible_changes;
         // map<Node*, map<int, int>> // other
@@ -87,18 +84,28 @@ void kernighanLin(Graph *graph, int num_partitions, vector<int> &partitions) {
         int stop_threshold = -graph->max_node_degree();
         int sum_of_gains   = 0;
 
+
         while (sum_of_gains < stop_threshold) {
             // from the set select the best (if leads to balanced partitions) gain movement and perform it (update partitions vector)
             Change best_change;
+            best_change.new_partition = -1;
             for (auto &c : possible_changes) {
                 if (countPartitionWeight(graph, partitions[c.node->id], partitions) >= graph->node_weight_global / num_partitions &&
-                    countPartitionWeight(graph, c.new_partition, partitions) <= graph->node_weight_global / num_partitions) {
+                    countPartitionWeight(graph, c.new_partition, partitions) <= graph->node_weight_global / num_partitions &&
+                    !moved[c.node->id]) {
                     best_change = c;
+                    moved[c.node->id] = true;
                     break;
                 }
             }
+            //if no change satisfies swapping criteria exit loop
+            if(best_change.new_partition == -1)
+                break;
+
+
+
             // swap according to best change found
-            int old_partition                = partitions[best_change.node->id];
+            // int old_partition                = partitions[best_change.node->id];
             partitions[best_change.node->id] = best_change.new_partition;
             possible_changes.erase(best_change);
             // managing stopping criterion
@@ -122,7 +129,7 @@ void kernighanLin(Graph *graph, int num_partitions, vector<int> &partitions) {
                     // update node gain mapping for further references
                     node_gain_mapping[new_change.node][i] = gain(graph, partitions, new_change.node, i);
                 }
-            }
+            }*/
             // update gains of all neighbouring nodes of new_change.node
             for (auto n : best_change.node->get_neighbors()) {
                 for (int i = 0; i < num_partitions; i++) {
