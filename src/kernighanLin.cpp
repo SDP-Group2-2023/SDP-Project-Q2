@@ -96,10 +96,15 @@ void kernighanLin(Graph *graph, int num_partitions, vector<int> &partitions) {
         int tot_moves      = 0;
         int negative_gains = 0;
 
+        int num_iteration = 0;
+        int iteration, max_iteration = 0, avg_iteration = 0;
+
         while (sum_of_gains >= stop_threshold && negative_gains < graph->max_node_degree()) {
             // from the set select the best (if leads to balanced partitions) gain movement and perform it (update partitions vector)
             Change best_change;
+            iteration = 0;
             for (auto &c : possible_changes) { // consider the possibility of removing or not adding some possible changes to speed up subsequent iterations
+                iteration++;
                 if (partitions_weights[partitions[c.node->id]] >= graph->node_weight_global / num_partitions &&
                     partitions_weights[c.new_partition] <= graph->node_weight_global / num_partitions && !moved[c.node->id] && c.gain != 0) {
                     best_change       = c;
@@ -107,6 +112,11 @@ void kernighanLin(Graph *graph, int num_partitions, vector<int> &partitions) {
                     break;
                 }
             }
+
+            if(iteration > max_iteration)
+                    max_iteration = iteration;
+            avg_iteration += iteration;
+
             // if no change satisfies swapping criteria exit loop
             if (best_change.new_partition == -1)
                 break;
@@ -125,14 +135,14 @@ void kernighanLin(Graph *graph, int num_partitions, vector<int> &partitions) {
             partitions_weights[best_change.new_partition] += best_change.node->weight;
 
             // swap according to best change found
-            // int old_partition                = partitions[best_change.node->id];
+            int old_partition                = partitions[best_change.node->id];
             partitions[best_change.node->id] = best_change.new_partition;
             possible_changes.erase(best_change);
             // managing stopping criterion
             sum_of_gains += best_change.gain;
             // update necessary gain values in the set (neighbours)
             // no longer useful since every node is moved only once in one iteration of inner loop
-            /*for (int i = 0; i < num_partitions; i++) {
+            for (int i = 0; i < num_partitions; i++) {
                 // removing selected change from possible changes set
                 if (i != partitions[best_change.node->id]) {
                     Change new_change;
@@ -144,12 +154,12 @@ void kernighanLin(Graph *graph, int num_partitions, vector<int> &partitions) {
                         possible_changes.erase(new_change);
                     }
                     // update gain of selected node to all other partitions and insert change in set
-                    new_change.gain = gain(graph, partitions, new_change.node, i);
-                    possible_changes.insert(new_change);
+                    // new_change.gain = gain(graph, partitions, new_change.node, i);
+                    // possible_changes.insert(new_change);
                     // update node gain mapping for further references
-                    node_gain_mapping[new_change.node][i] = gain(graph, partitions, new_change.node, i);
+                    // node_gain_mapping[new_change.node][i] = gain(graph, partitions, new_change.node, i);
                 }
-            }*/
+            }
             // update gains of all neighbouring nodes of new_change.node
             for (auto n : best_change.node->get_neighbors()) {
                 for (int i = 0; i < num_partitions; i++) {
@@ -180,6 +190,7 @@ void kernighanLin(Graph *graph, int num_partitions, vector<int> &partitions) {
                 best_cut_size           = cut_size;
                 best_partitions_weights = partitions_weights;
             }
+            num_iteration++;
         }
 
         // if best != current
@@ -191,6 +202,7 @@ void kernighanLin(Graph *graph, int num_partitions, vector<int> &partitions) {
         partitions_weights = best_partitions_weights;
 
         cout << "With " << tot_moves << " moves, we moved the cut size to " << cut_size << endl;
+        cout << "last iterations: " << iteration << " max_iteration: " << max_iteration << " avg_iteration " << avg_iteration / num_iteration << endl;
 
     } while (improved);
 }
