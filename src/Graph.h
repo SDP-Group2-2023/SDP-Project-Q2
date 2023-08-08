@@ -30,6 +30,7 @@ struct Graph {
     int E                  = 0;    // edges_num
     int node_weight_global = 0;
     int _max_node_degree   = 0;
+    vector<int> *partitions_size = nullptr;
     vector<Node *> nodes;
     vector<shared_ptr<Edge>> edges;
     Node *add_node(int id, int weight);

@@ -35,12 +35,15 @@ void partitioning(Graph*g, int requestedPartitions){
     }
 
     kernighanLin(coarsestGraph, requestedPartitions, partitions);
-
-    for(auto i = (int)allGraphs.size()-2; i>=0; i--){
+    
+    for (auto i = (int) allGraphs.size() - 2; i >= 0; i--) {
         partitions = uncoarsenGraph(allGraphs[i], partitions);
         cout << "Uncoarsening step " << i << endl;
+        allGraphs[i]->partitions_size = allGraphs[i + 1]->partitions_size;
         kernighanLin(allGraphs[i], requestedPartitions, partitions);
     }
+
+    delete coarsestGraph->partitions_size;
 
     for(int i = 0; i<partitions.size(); i++){
         cout << "Node " << i << " in partition " << partitions[i] << endl;
