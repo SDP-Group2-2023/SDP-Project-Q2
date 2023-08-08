@@ -55,7 +55,10 @@ void kernighanLin(Graph *graph, int num_partitions, vector<int> &partitions) {
     int best_cut_size = cut_size;
     vector<int> best_partitions(partitions);
 
-    // keep track of the partitions weights
+    // keep track of the partitions weights (we added this anticipated calculation to improve performance timing,
+    // indeed changes are proportional to V*P (nodes*partitions) and recomputing partition weight is proportional
+    // to V --> complexity of for loop on possible_changes was P*V^2. With this change complexity in worst case remains V*P
+    // indeed algorithm becomes slower from iteration 4 instead of 8 now with the improvement
     vector<int> partitions_weights(num_partitions);     // this could possible be made a graph attribute, so to speed up, since it doesn't change from iteration to iteration
     for (int i = 0; i < num_partitions; i++)
         partitions_weights[i] = countPartitionWeight(graph, i, partitions);
