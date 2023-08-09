@@ -12,16 +12,15 @@ int main(int argc, char **argv){
 
 
     cout << "Please select action:" << endl;
-    cout << "To load graph - g " << endl;
-    cout << "To partition graph - s (sequential), p (parallel), c (speed comparison)" << endl;
+    cout << "G - to load graph " << endl;
+    cout << "S - sequential partitioning " << endl;
+    cout << "P - parallel partitioning " << endl;
+    cout << "C - sequential vs parallel comparison " << endl;
     cout << "To exit program -e " << endl;
     while(command!= 'e'){
         cin >> command;
-        cout << "How many partitions should be found in graph?" << endl;
-        cin >> requestedPartitions;
-
         switch (command) {
-            case 'g' :
+            case 'G' :
                     if(g == nullptr){
                     cout << "Enter graph path" << endl;
                     char tmp;
@@ -38,14 +37,18 @@ int main(int argc, char **argv){
                             g = loadFromFile(path);
                         }}
                     break;
-            case 's':
+            case 'S':
                 cout << "Running sequential partitioning - (Multilevel KL)" << endl;
+                cout << "How many partitions should be found in graph?" << endl;
+                cin >> requestedPartitions;
                 partitioning(g, requestedPartitions);
                 break;
-            case 'p':
+            case 'P':
                 cout << "Running parallel partitioning - ()" << endl;
+                cout << "How many partitions should be found in graph?" << endl;
+                cin >> requestedPartitions;
                 break;
-            case 'c':
+            case 'C':
                 //get timing to run sequential
                 // get timing to run parallel
                 //compare
