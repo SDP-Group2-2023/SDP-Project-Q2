@@ -17,18 +17,18 @@ int countPartitionWeight(Graph *graph, int partition, vector<int> &partitions) {
     return weight;
 }
 
-long calculateCutSize(Graph *graph, vector<int> &partitions) {
-    long cutsize = 0;
+unsigned long long calculateCutSize(Graph *graph, vector<int> &partitions) {
+    unsigned long long cutsize = 0;
     for (auto &n : graph->nodes) {
         for (auto &edge : n->edges) {
             int source, dest;
             source = edge->node1->id;
             dest   = edge->node2->id;
             if (partitions[source] != partitions[dest])
-                cutsize += edge->weight;
+                cutsize += edge->weight >> 1;   // divided by 2
         }
     }
-    return cutsize / 2;
+    return cutsize;
 }
 
 int gain(Graph *graph, vector<int> &partitions, Node *node_to_move, int to_partition) {
@@ -52,8 +52,8 @@ int gain(Graph *graph, vector<int> &partitions, Node *node_to_move, int to_parti
 
 void kernighanLin(Graph *graph, int num_partitions, vector<int> &partitions) {
     bool improved;
-    int cut_size      = calculateCutSize(graph, partitions);
-    int best_cut_size = cut_size;
+    unsigned long long cut_size      = calculateCutSize(graph, partitions);
+    unsigned long long best_cut_size = cut_size;
     vector<int> best_partitions(partitions);
 
     // keep track of the partitions weights (we added this anticipated calculation to improve performance timing,
