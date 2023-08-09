@@ -9,6 +9,16 @@ Node::Node(int id, int weight) {
     child        = nullptr;
 }
 
+vector<Node *> Node::get_neighbors() {
+    vector<Node *> neighbors;
+
+    for (auto &e : edges) {
+        neighbors.push_back((this == e->node1) ? e->node2 : e->node1);
+    }
+
+    return neighbors;
+}
+
 Edge::Edge(int weight, Node *node1, Node *node2) {
     this->weight = weight;
     this->node1  = node1;
@@ -19,6 +29,7 @@ Edge::Edge(int weight, Node *node1, Node *node2) {
 Node *Graph::add_node(int id, int weight) {
     Node *n = new Node(id, weight);
     nodes.push_back(n);
+    this->node_weight_global += weight;
     this->V++;
     return n;
 }
@@ -68,4 +79,15 @@ void Graph::add_or_sum_edge(Node *n1, Node *n2, int distance) {
         }
     }
     add_edge(n1->id, n2->id, distance);
+}
+
+int Graph::max_node_degree() {
+    if (_max_node_degree != 0)
+        return _max_node_degree;
+    for (Node *n : nodes) {
+        if (_max_node_degree < n->edges.size())
+            _max_node_degree = n->edges.size();
+    }
+
+    return _max_node_degree;
 }
