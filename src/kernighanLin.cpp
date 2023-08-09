@@ -47,8 +47,7 @@ int gain(Graph *graph, vector<int> &partitions, Node *node_to_move, int to_parti
     return result;
 }
 
-// Fiduccia and Mattheyses version KL-inspired
-// we use a set and a double hash map the structure:
+// Fiduccia and Mattheyses version KL-inspired was used to implement the kernighanLin function
 
 void kernighanLin(Graph *graph, int num_partitions, vector<int> &partitions) {
     bool improved;
@@ -56,10 +55,14 @@ void kernighanLin(Graph *graph, int num_partitions, vector<int> &partitions) {
     unsigned long long best_cut_size = cut_size;
     vector<int> best_partitions(partitions);
 
-    // keep track of the partitions weights (we added this anticipated calculation to improve performance timing,
-    // indeed changes are proportional to V*P (nodes*partitions) and recomputing partition weight is proportional
-    // to V --> complexity of for loop on possible_changes was P*V^2. With this change complexity in worst case remains V*P
-    // indeed algorithm becomes slower from iteration 4 instead of 8 now with the improvement
+
+    /* Partition weight calculation has been anticipated outside the do-while in order to improve timing performance:
+     * indeed "possible_changes" computation is proportional to V*P (number of nodes*number of partitions) and recomputing
+     * partitions' weights is proportional to V --> the complexity of the for loop (on the possible_changes) was P*V^2 quadratic in V
+     * With such anticipation the worst case complexity is V*P, linear in V.
+     * We now observe the algorithm bottleneck is moved from "iteration 8" to "iteration 4", which is our new bottleneck, which
+     * we are trying to resolve.
+     */
     if (graph->partitions_size == nullptr) {
         graph->partitions_size =
             new vector<int>(num_partitions);    // this could possible be made a graph attribute, so to speed up, since it doesn't change from iteration to iteration
@@ -70,18 +73,14 @@ void kernighanLin(Graph *graph, int num_partitions, vector<int> &partitions) {
 
     do {
         improved = false;
-        // constraint (see article explanation : each node must be moved only once in the innermost loop
+
+        // constraint (see article explanation : each node must be moved only once inside the innermost loop so we mark it with a flag)
         vector<bool> moved(graph->V, false);
-        // set<change> changes; // possibili cambi
         set<Change> possible_changes;
-        // map<Node*, map<int, int>> // other
         map<Node *, map<int, int>> node_gain_mapping;
 
-        // int cutsize_current_bestPartition;
-        // int cutsize_current_Partition;
-        // int prev_cutsize_difference = cutsize_current_Partition-cutsize_current_bestPartition
-
         timing choices_loop;
+
         // loop to calculate all initial gains
         for (int i = 0; i < graph->V; i++) {
             Node *current_node = graph->nodes[i];
@@ -94,7 +93,8 @@ void kernighanLin(Graph *graph, int num_partitions, vector<int> &partitions) {
             }
         }
         choices_loop.stop();
-        // stopping criterion (page 7 of A Parallel Graph Partitioning algorithm for a message passing multiprocessor)
+
+        // stopping criterion (page 7 of "A Parallel Graph Partitioning algorithm for a message passing multiprocessor" explains this)
         int stop_threshold = -graph->max_node_degree();
         int sum_of_gains   = 0;
         int tot_moves      = 0;
@@ -105,7 +105,7 @@ void kernighanLin(Graph *graph, int num_partitions, vector<int> &partitions) {
         timing choosing_loop(TIMING_DEFER);
 
         while (sum_of_gains >= stop_threshold && negative_gains < graph->max_node_degree()) {
-            // from the set select the best (if leads to balanced partitions) gain movement and perform it (update partitions vector)
+            // from the set select the best (if it leads to balanced partitions) gain movement and perform it (update "partitions" vector)
             Change best_change;
             iteration = 0;
             choosing_loop.start();
@@ -145,33 +145,30 @@ void kernighanLin(Graph *graph, int num_partitions, vector<int> &partitions) {
             int old_partition                = partitions[best_change.node->id];
             partitions[best_change.node->id] = best_change.new_partition;
             possible_changes.erase(best_change);
+
             // managing stopping criterion
             sum_of_gains += best_change.gain;
-            // update necessary gain values in the set (neighbours)
+
+            // update necessary gain values in the set (neighbours of the seòected node)
             // no longer useful since every node is moved only once in one iteration of inner loop
             for (int i = 0; i < num_partitions; i++) {
-                // removing selected change from possible changes set
+
+                // removing selected change from "possible_changes" set
                 if (i != partitions[best_change.node->id]) {
                     Change new_change;
                     new_change.node          = best_change.node;
                     new_change.new_partition = i;
                     if (i != old_partition) {
                         new_change.gain = node_gain_mapping[new_change.node][i];
-
                         possible_changes.erase(new_change);
                     }
-                    // update gain of selected node to all other partitions and insert change in set
-                    // new_change.gain = gain(graph, partitions, new_change.node, i);
-                    // possible_changes.insert(new_change);
-                    // update node gain mapping for further references
-                    // node_gain_mapping[new_change.node][i] = gain(graph, partitions, new_change.node, i);
                 }
             }
+
             // update gains of all neighbouring nodes of new_change.node
             for (auto n : best_change.node->get_neighbors()) {
                 for (int i = 0; i < num_partitions; i++) {
-                    // removing selected change from possible_changes set (remember that
-                    // to remove elements from a set all details of the element must be provided to erase function)
+                    // removing selected change from possible_changes set (remember that to remove elements from a set all details of the element must be provided to erase function)
                     if (i != partitions[n->id]) {
                         Change new_change;
                         new_change.node          = n;
@@ -179,6 +176,7 @@ void kernighanLin(Graph *graph, int num_partitions, vector<int> &partitions) {
 
                         new_change.gain = node_gain_mapping[n][i];
                         possible_changes.erase(new_change);
+
                         // update gain of selected node to all other partitions and insert change in set
                         new_change.gain = gain(graph, partitions, n, i);
                         possible_changes.insert(new_change);
@@ -199,10 +197,6 @@ void kernighanLin(Graph *graph, int num_partitions, vector<int> &partitions) {
             }
             num_iteration++;
         }
-
-        // if best != current
-        //      assign the best to current (partitions)
-        //      improved = true;
 
         partitions                = best_partitions;
         cut_size                  = best_cut_size;
