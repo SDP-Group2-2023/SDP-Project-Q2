@@ -8,7 +8,7 @@ vector<Node*> sortNodes(const vector<Node*>& nodes) {
     return sortedNodes;
 }
 
-Graph* coarseGraph(Graph* originalGraph, int num_partitions){
+Graph* coarseGraph(Graph* originalGraph){
 
     auto coarse_graph = new Graph();
     int index = 0;

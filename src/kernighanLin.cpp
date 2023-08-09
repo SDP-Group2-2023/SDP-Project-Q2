@@ -204,7 +204,7 @@ void kernighanLin(Graph *graph, int num_partitions, vector<int> &partitions) {
 
         cout << "With " << tot_moves << " moves, we moved the cut size to " << cut_size << endl;
         cout << "last iterations: " << iteration << " max_iteration: " << max_iteration << " avg_iteration " << avg_iteration / num_iteration << endl;
-        cout << "Total time spent creating choices: " << choices_loop.getDuration() << " - total time spent making choices: " << choosing_loop.getDuration() << endl;
+        cout << "Total time spent creating choices: " << choices_loop.getDuration().count() << " - total time spent making choices: " << choosing_loop.getDuration().count() << endl;
 
     } while (improved);
 }
