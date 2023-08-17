@@ -25,6 +25,7 @@ void partitioning(Graph*g, int requestedPartitions){
         Graph* coarsedGraph = coarseGraph(allGraphs.back());
         //coarsedGraph->print();
         actual_num_partitions = coarsedGraph->V;
+        cout << "Actual number of partitions: " << actual_num_partitions << endl;
         allGraphs.push_back(coarsedGraph);
     }
 
