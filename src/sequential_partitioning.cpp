@@ -4,6 +4,12 @@
 #include <iostream>
 
 using namespace std;
+/**
+ * @brief Uncoarsen a graph based on the partitions of the coarsed graph
+ * @param g Graph to uncoarsen
+ * @param partitions vector of int with the partitions of the coarsed graph
+ * @return vector of the partitions of the uncompressed graph
+ */
 vector<int> uncoarsenGraph(Graph* g, vector<int>& partitions){
     vector<int> newPartitions(g->V);
 
@@ -13,7 +19,12 @@ vector<int> uncoarsenGraph(Graph* g, vector<int>& partitions){
     return newPartitions;
 }
 
-void partitioning(Graph*g, int requestedPartitions){
+/**
+ * @brief Partition a graph using the Multilevel Kernighan-Lin algorithm
+ * @param g Graph to coarse
+ * @param requestedPartitions number of partitions requested
+ */
+void sequential_partitioning(Graph*g, int requestedPartitions){
     int actual_num_partitions = g->V;
 
     vector<Graph*> allGraphs;
@@ -39,19 +50,16 @@ void partitioning(Graph*g, int requestedPartitions){
     
     for (auto i = (int) allGraphs.size() - 2; i >= 0; i--) {
         partitions = uncoarsenGraph(allGraphs[i], partitions);
-        cout << "Uncoarsening step " << i << endl;
+        cout << "Uncoarsening step " <<  allGraphs.size() - i - 1 << endl;
         allGraphs[i]->partitions_size = allGraphs[i + 1]->partitions_size;
         kernighanLin(allGraphs[i], requestedPartitions, partitions);
     }
-
-    delete coarsestGraph->partitions_size;
 
     for(int i = 0; i<partitions.size(); i++){
         cout << "Node " << i << " in partition " << partitions[i] << endl;
     }
 
-    for(int i = 1; i<allGraphs.size(); i++){
+    for(int i = 1; i<allGraphs.size(); i++)
         delete allGraphs[i];
-    }
 }
 

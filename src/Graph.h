@@ -5,6 +5,7 @@
 #include <iostream>
 #include <memory>
 #include <vector>
+#include <set>
 
 using namespace std;
 
@@ -13,7 +14,7 @@ struct Node {
     int id;
     int weight;
     Node *child;
-    vector<shared_ptr<struct Edge>> edges;
+    vector<struct Edge*> edges;
     vector<Node *> get_neighbors();
 };
 
@@ -25,16 +26,21 @@ struct Edge {
     bool flag;
 };
 
+struct comparator {
+    bool operator()(const Edge*e1, const Edge*e2);
+};
+
 struct Graph {
     int V                  = 0;    // nodes_num
     int E                  = 0;    // edges_num
     int node_weight_global = 0;
     int _max_node_degree   = 0;
-    vector<int> *partitions_size = nullptr;
+    vector<int> partitions_size;
     vector<Node *> nodes;
-    vector<shared_ptr<Edge>> edges;
+    //set<Edge*, comparator> edges;
+    vector<Edge*> edges;
     Node *add_node(int id, int weight);
-    shared_ptr<Edge> add_edge(int source, int dest, int distance);
+    Edge* add_edge(int source, int dest, int distance);
     void print();
     void add_or_sum_edge(Node *n1, Node *n2, int distance);
     int max_node_degree();

@@ -1,5 +1,10 @@
 #include "partitioning.h"
 
+/**
+ * @brief Sort nodes by weight
+ * @param nodes
+ * @return sorted vector of nodes
+ */
 vector<Node*> sortNodes(const vector<Node*>& nodes) {
     vector<Node *> sortedNodes = nodes;
     sort(sortedNodes.begin(), sortedNodes.end(),
@@ -9,8 +14,13 @@ vector<Node*> sortNodes(const vector<Node*>& nodes) {
     return sortedNodes;
 }
 
-vector<shared_ptr<Edge>> sortEdge(const vector<shared_ptr<Edge>>& edges) {
-    vector<shared_ptr<Edge>> sortedEdges = edges;
+/**
+ * @brief Sort edges by weight
+ * @param edges
+ * @return sorted vector of edges
+ */
+vector<Edge*> sortEdge(const vector<Edge*>& edges) {
+    auto sortedEdges = edges;
     sort(sortedEdges.begin(), sortedEdges.end(),
          [](auto e1, auto e2) {
              return e1->weight > e2->weight;
@@ -18,6 +28,11 @@ vector<shared_ptr<Edge>> sortEdge(const vector<shared_ptr<Edge>>& edges) {
     return sortedEdges;
 }
 
+/**
+ * @brief Coarsen the graph based on SHEM algorithm
+ * @param originalGraph
+ * @return coarsened graph
+ */
 Graph* coarseGraph(Graph* originalGraph){
     auto coarse_graph = new Graph();
     int index = 0;

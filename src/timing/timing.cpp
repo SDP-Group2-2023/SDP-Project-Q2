@@ -35,7 +35,7 @@ void timing::reset() {
 }
 
 std::chrono::milliseconds timing::getDuration() {
-    if (running || begins.size() == 0)
+    if (running || begins.empty())
         return duration_cast<milliseconds>(high_resolution_clock::now() - high_resolution_clock::now());
     auto tot_duration = (ends[0] - begins[0]);
 

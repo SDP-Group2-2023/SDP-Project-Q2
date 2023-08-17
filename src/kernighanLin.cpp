@@ -31,7 +31,7 @@ unsigned long long calculateCutSize(Graph *graph, vector<int> &partitions) {
     return cutsize;
 }
 
-int gain(Graph *graph, vector<int> &partitions, Node *node_to_move, int to_partition) {
+int gain(vector<int> &partitions, Node *node_to_move, int to_partition) {
     if (partitions[node_to_move->id] == to_partition)
         return 0;
 
@@ -63,13 +63,11 @@ void kernighanLin(Graph *graph, int num_partitions, vector<int> &partitions) {
      * We now observe the algorithm bottleneck is moved from "iteration 8" to "iteration 4", which is our new bottleneck, which
      * we are trying to resolve.
      */
-    if (graph->partitions_size == nullptr) {
-        graph->partitions_size =
-            new vector<int>(num_partitions);    // this could possible be made a graph attribute, so to speed up, since it doesn't change from iteration to iteration
-        for (int i = 0; i < num_partitions; i++)
-            (*(graph->partitions_size))[i] = countPartitionWeight(graph, i, partitions);
-    }
-    vector<int> best_partitions_weights((*graph->partitions_size));
+    graph->partitions_size = vector<int>(num_partitions);    // this could possible be made a graph attribute, so to speed up, since it doesn't change from iteration to iteration
+    for (int i = 0; i < num_partitions; i++)
+        graph->partitions_size[i] = countPartitionWeight(graph, i, partitions);
+
+    vector<int> best_partitions_weights(graph->partitions_size);
 
     do {
         improved = false;
@@ -87,8 +85,8 @@ void kernighanLin(Graph *graph, int num_partitions, vector<int> &partitions) {
 
             for (int p = 0; p < num_partitions; p++) {    // assign node to all possible partitions other than his
                 if (p != partitions[current_node->id]) {
-                    possible_changes.emplace(p, current_node, gain(graph, partitions, current_node, p));
-                    node_gain_mapping[current_node][p] = gain(graph, partitions, current_node, p);
+                    possible_changes.emplace(p, current_node, gain( partitions, current_node, p));
+                    node_gain_mapping[current_node][p] = gain(partitions, current_node, p);
                 }
             }
         }
@@ -111,8 +109,8 @@ void kernighanLin(Graph *graph, int num_partitions, vector<int> &partitions) {
             choosing_loop.start();
             for (auto &c : possible_changes) {    // consider the possibility of removing or not adding some possible changes to speed up subsequent iterations
                 iteration++;
-                if ((*graph->partitions_size)[partitions[c.node->id]] >= graph->node_weight_global / num_partitions &&
-                    (*graph->partitions_size)[c.new_partition] <= graph->node_weight_global / num_partitions && !moved[c.node->id] && c.gain != 0) {
+                if (graph->partitions_size[partitions[c.node->id]] >= graph->node_weight_global / num_partitions &&
+                    graph->partitions_size[c.new_partition] <= graph->node_weight_global / num_partitions && !moved[c.node->id] && c.gain != 0) {
                     best_change       = c;
                     moved[c.node->id] = true;
                     break;
@@ -138,8 +136,8 @@ void kernighanLin(Graph *graph, int num_partitions, vector<int> &partitions) {
                 negative_gains = 0;
 
             // update the weights
-            (*graph->partitions_size)[partitions[best_change.node->id]] -= best_change.node->weight;
-            (*graph->partitions_size)[best_change.new_partition] += best_change.node->weight;
+            graph->partitions_size[partitions[best_change.node->id]] -= best_change.node->weight;
+            graph->partitions_size[best_change.new_partition] += best_change.node->weight;
 
             // swap according to best change found
             int old_partition                = partitions[best_change.node->id];
@@ -178,10 +176,10 @@ void kernighanLin(Graph *graph, int num_partitions, vector<int> &partitions) {
                         possible_changes.erase(new_change);
 
                         // update gain of selected node to all other partitions and insert change in set
-                        new_change.gain = gain(graph, partitions, n, i);
+                        new_change.gain = gain( partitions, n, i);
                         possible_changes.insert(new_change);
                         // update node gain mapping for further references
-                        node_gain_mapping[n][i] = gain(graph, partitions, n, i);
+                        node_gain_mapping[n][i] = gain( partitions, n, i);
                     }
                 }
             }
@@ -193,18 +191,18 @@ void kernighanLin(Graph *graph, int num_partitions, vector<int> &partitions) {
                 best_partitions         = partitions;
                 improved                = true;
                 best_cut_size           = cut_size;
-                best_partitions_weights = (*graph->partitions_size);
+                best_partitions_weights = graph->partitions_size;
             }
             num_iteration++;
         }
 
         partitions                = best_partitions;
         cut_size                  = best_cut_size;
-        (*graph->partitions_size) = best_partitions_weights;
+        graph->partitions_size    = best_partitions_weights;
 
-        cout << "With " << tot_moves << " moves, we moved the cut size to " << cut_size << endl;
-        cout << "last iterations: " << iteration << " max_iteration: " << max_iteration << " avg_iteration " << avg_iteration / num_iteration << endl;
-        cout << "Total time spent creating choices: " << choices_loop.getDuration().count() << " - total time spent making choices: " << choosing_loop.getDuration().count() << endl;
+        //cout << "With " << tot_moves << " moves, we moved the cut size to " << cut_size << endl;
+        //cout << "last iterations: " << iteration << " max_iteration: " << max_iteration << " avg_iteration " << avg_iteration / num_iteration << endl;
+        //cout << "Total time spent creating choices: " << choices_loop.getDuration().count() << " - total time spent making choices: " << choosing_loop.getDuration().count() << endl;
 
     } while (improved);
 }

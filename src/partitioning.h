@@ -5,7 +5,8 @@
 
 Graph* loadFromFile(const string& path);
 Graph* coarseGraph(Graph* graph);
-void partitioning(Graph*g, int requestedPartitions);
+void parallel_partitioning(Graph* graph, int requestedPartitions, int num_threads);
+void sequential_partitioning(Graph*g, int requestedPartitions);
 void kernighanLin(Graph* graph, int num_partitions, vector<int>& partitions);
 
 

@@ -6,9 +6,10 @@
 #include <chrono>
 #include <vector>
 
+using namespace std::chrono;
 class timing {
-    std::vector<std::chrono::time_point<std::chrono::high_resolution_clock>> begins;
-    std::vector<std::chrono::time_point<std::chrono::high_resolution_clock>> ends;
+    std::vector<time_point<high_resolution_clock>> begins;
+    std::vector<time_point<high_resolution_clock>> ends;
 
     bool running;
 
