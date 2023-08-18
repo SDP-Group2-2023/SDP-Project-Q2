@@ -33,10 +33,12 @@ void sequential_partitioning(Graph*g, int requestedPartitions){
     int iterations = 0;
     while( actual_num_partitions > requestedPartitions * 15  && iterations++ < 50){
         cout << "Iteration " << iterations << endl;
-        Graph* coarsedGraph = coarseGraph(allGraphs.back());
+        auto start = chrono::high_resolution_clock::now();
+        Graph* coarsedGraph = coarseGraph_s(allGraphs.back());
+        auto end = chrono::high_resolution_clock::now();
+        cout << "Coarsening time: " << chrono::duration_cast<chrono::milliseconds>(end - start).count() << "ms" << endl;
         //coarsedGraph->print();
         actual_num_partitions = coarsedGraph->V;
-        cout << "Actual number of partitions: " << actual_num_partitions << endl;
         allGraphs.push_back(coarsedGraph);
     }
 

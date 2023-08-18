@@ -33,7 +33,7 @@ vector<Edge*> sortEdge(const vector<Edge*>& edges) {
  * @param originalGraph
  * @return coarsened graph
  */
-Graph* coarseGraph(Graph* originalGraph){
+Graph* coarseGraph_s(Graph* originalGraph){
     auto coarse_graph = new Graph();
     int index = 0;
     vector<bool> matchedNodes(originalGraph->V, false);

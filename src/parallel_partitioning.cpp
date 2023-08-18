@@ -4,29 +4,27 @@
 #include <iostream>
 #include <thread>
 
-void uncoarsen_graph_step(Graph*g, vector<int>&partitions, vector<int>&newPartitions, int start, int end) {
-    for (int i = start; i < end; i++)
+void uncoarsen_graph_step(Graph*g, vector<int>&partitions,
+                          vector<int>&newPartitions, int num_nodes,
+                          int start, int step) {
+    int i = start;
+    while(i < num_nodes) {
         newPartitions[g->nodes[i]->id] = partitions[g->nodes[i]->child->id];
+        i += step;
+    }
 }
 
 vector<int> uncoarsen_graph_p(Graph*g, vector<int>&partitions, int num_thread){
     int num_nodes = g->V;
     vector<int> newPartitions(num_nodes);
     vector<thread> threads;
-    int step = num_nodes / num_thread;
-    int start;
-    int end;
-    for(int i = 0; i<num_thread - 1; i++){
-        start = i * step;
-        end = start + step - 1;
-        threads.emplace_back(uncoarsen_graph_step, g, ref(partitions), ref(newPartitions), start, end);
-    }
-    start = (num_thread - 1) * step;
-    end = num_nodes - 1;
-    threads.emplace_back(uncoarsen_graph_step, g, ref(partitions),ref(newPartitions), start, end);
 
-    for(auto&t : threads)
+    for(int i = 0; i < num_thread; i++) {
+        threads.push_back(thread(uncoarsen_graph_step, g, ref(partitions), ref(newPartitions), num_nodes, i, num_thread));
+    }
+    for(auto &t : threads) {
         t.join();
+    }
 
     return newPartitions;
 }
@@ -40,10 +38,12 @@ void parallel_partitioning(Graph* g, int requestedPartitions, int num_threads){
     int iterations = 0;
     while( actual_num_partitions > requestedPartitions * 15  && iterations++ < 50){
         cout << "Iteration " << iterations << endl;
-        Graph* coarsedGraph = coarseGraph(allGraphs.back());
+        auto start = chrono::high_resolution_clock::now();
+        Graph* coarsedGraph = coarseGraph_s(allGraphs.back());
+        auto end = chrono::high_resolution_clock::now();
+        cout << "Coarsening time: " << chrono::duration_cast<chrono::milliseconds>(end - start).count() << "ms" << endl;
         //coarsedGraph->print();
         actual_num_partitions = coarsedGraph->V;
-        cout << "Actual number of partitions: " << actual_num_partitions << endl;
         allGraphs.push_back(coarsedGraph);
     }
 

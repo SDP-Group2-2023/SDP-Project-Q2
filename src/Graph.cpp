@@ -78,6 +78,12 @@ Node *Graph::add_node(int id, int weight) {
     return n;
 }
 
+Node*Graph::add_node_with_index(int id, int weight) {
+    Node *n = new Node(id, weight);
+    nodes[id] = n;
+    return n;
+}
+
 /**
  * @brief create and add an edge to the graph
  * @param source

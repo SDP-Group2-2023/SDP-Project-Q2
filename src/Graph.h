@@ -40,6 +40,7 @@ struct Graph {
     //set<Edge*, comparator> edges;
     vector<Edge*> edges;
     Node *add_node(int id, int weight);
+    Node*add_node_with_index(int id, int weight);
     Edge* add_edge(int source, int dest, int distance);
     void print();
     void add_or_sum_edge(Node *n1, Node *n2, int distance);

@@ -5,7 +5,7 @@
 #include <chrono>
 
 using namespace std;
-Graph* loadFromFile(const string& path){
+Graph* loadFromFile_s(const string& path){
     ifstream file(path, ios::binary);
     if(!file.is_open())
         throw std::runtime_error("Error opening file");
