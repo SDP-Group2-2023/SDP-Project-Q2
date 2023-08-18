@@ -16,9 +16,8 @@ struct m_edge{
 };
 
 mutex mtx_e;
-barrier bar(thread::hardware_concurrency());
 void thread_reader(Graph*g,const string &path, unsigned long offset_from_start_nodes,
-                   int nodes_to_read,unsigned long offset_from_start_edges, int edges_to_read);
+                   int nodes_to_read,unsigned long offset_from_start_edges, int edges_to_read, barrier<>& b);
 
 Graph* loadFromFile_p(const string& path){
     cout << "Loading graph..." << endl;
@@ -55,6 +54,8 @@ Graph* loadFromFile_p(const string& path){
     int extra_node;
     int extra_edge;
 
+    barrier bar(numThreads);
+
     for (int i = 0; i < numThreads; i++) {
         if(reminder_nodes > 0){
             extra_node = 1;
@@ -69,7 +70,7 @@ Graph* loadFromFile_p(const string& path){
 
         readers.emplace_back(thread_reader, g, ref(path),
                              offset_nodes, nodes_per_thread + extra_node,
-                             offset_edges, edges_per_thread + extra_edge);
+                             offset_edges, edges_per_thread + extra_edge, ref(bar));
 
         offset_nodes += (nodes_per_thread + extra_node) * sizeof(int) * 2;
         offset_edges += (edges_per_thread + extra_edge) * sizeof(int) * 3;
@@ -86,7 +87,7 @@ Graph* loadFromFile_p(const string& path){
 }
 
 
-void thread_reader(Graph*g, const string &path, unsigned long offset_from_start_nodes,int nodes_to_read,unsigned long offset_from_start_edges, int edges_to_read) {
+void thread_reader(Graph*g, const string &path, unsigned long offset_from_start_nodes,int nodes_to_read,unsigned long offset_from_start_edges, int edges_to_read, barrier<>& bar){
     ifstream in(path, ios::binary);
     in.seekg(offset_from_start_nodes);
 
@@ -97,7 +98,6 @@ void thread_reader(Graph*g, const string &path, unsigned long offset_from_start_
         in.read((char *) &n_weight, sizeof(int));
         g->add_node_with_index(n_id, n_weight);
     }
-    bar.arrive_and_wait();
 
     vector<m_edge> edges(edges_to_read);
     in.seekg(offset_from_start_edges);
@@ -106,6 +106,9 @@ void thread_reader(Graph*g, const string &path, unsigned long offset_from_start_
         in.read((char *) &e, sizeof(m_edge));
         edges[i] = e;
     }
+
+    bar.arrive_and_wait();
+
 
     mtx_e.lock();
     for (auto &e : edges)

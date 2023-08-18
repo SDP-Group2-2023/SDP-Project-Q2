@@ -5,6 +5,7 @@
 
 Graph* loadFromFile_s(const string& path);
 Graph* loadFromFile_p(const string& path);
+Graph* loadFromFile_mmap(const string& path, int num_threads);
 vector<Node*> sortNodes(const vector<Node*>& nodes);
 vector<Edge*> sortEdge(const vector<Edge*>& edges);
 Graph* coarseGraph_s(Graph* graph);

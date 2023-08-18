@@ -10,7 +10,8 @@ int main(int argc, char **argv){
         return 1;
     }
 
-    auto g = loadFromFile_s(argv[1]);
+    auto g = loadFromFile_mmap(argv[1], 8);
+    //auto g = loadFromFile_s(argv[1]);
     //auto g = loadFromFile_p(argv[1]);
     int requestedPartitions = 100;
     auto start = std::chrono::high_resolution_clock::now();
