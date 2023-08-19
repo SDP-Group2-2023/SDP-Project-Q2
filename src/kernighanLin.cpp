@@ -73,14 +73,14 @@ void kernighanLin(Graph *graph, int num_partitions, vector<int> &partitions) {
         improved = false;
 
         // constraint (see article explanation : each node must be moved only once inside the innermost loop so we mark it with a flag)
-        vector<bool> moved(graph->V, false);
+        vector<bool> moved(graph->V(), false);
         set<Change> possible_changes;
         map<Node *, map<int, int>> node_gain_mapping;
 
         timing choices_loop;
 
         // loop to calculate all initial gains
-        for (int i = 0; i < graph->V; i++) {
+        for (int i = 0; i < graph->V(); i++) {
             Node *current_node = graph->nodes[i];
 
             for (int p = 0; p < num_partitions; p++) {    // assign node to all possible partitions other than his

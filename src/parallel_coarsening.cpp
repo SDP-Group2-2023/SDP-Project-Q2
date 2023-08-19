@@ -24,7 +24,7 @@ void operation2(Graph*coarse_graph, Edge*e){
 Graph* coarseGraph_p(Graph* originalGraph){
     auto coarse_graph = new Graph();
     int index = 0;
-    vector<bool> matchedNodes(originalGraph->V, false);
+    vector<bool> matchedNodes(originalGraph->V(), false);
     vector<future<void>> futures;
 
     auto orderedNodes = sortNodes(originalGraph->nodes);

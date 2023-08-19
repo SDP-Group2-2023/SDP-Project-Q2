@@ -11,7 +11,7 @@ using namespace std;
  * @return vector of the partitions of the uncompressed graph
  */
 vector<int> uncoarsenGraph(Graph* g, vector<int>& partitions){
-    vector<int> newPartitions(g->V);
+    vector<int> newPartitions(g->V());
 
     for(auto&n : g->nodes)
         newPartitions[n->id] = partitions[n->child->id];
@@ -25,7 +25,7 @@ vector<int> uncoarsenGraph(Graph* g, vector<int>& partitions){
  * @param requestedPartitions number of partitions requested
  */
 void sequential_partitioning(Graph*g, int requestedPartitions){
-    int actual_num_partitions = g->V;
+    int actual_num_partitions = g->V();
 
     vector<Graph*> allGraphs;
     allGraphs.push_back(g);
@@ -35,13 +35,13 @@ void sequential_partitioning(Graph*g, int requestedPartitions){
         cout << "Iteration " << iterations << endl;
         Graph* coarsedGraph = coarseGraph_s(allGraphs.back());
         //coarsedGraph->print();
-        actual_num_partitions = coarsedGraph->V;
+        actual_num_partitions = coarsedGraph->V();
         allGraphs.push_back(coarsedGraph);
     }
 
     Graph* coarsestGraph = allGraphs[allGraphs.size()-1];
-    vector<int> partitions(coarsestGraph->V);
-    for(int i = 0; i<coarsestGraph->V; i++){
+    vector<int> partitions(coarsestGraph->V());
+    for(int i = 0; i<coarsestGraph->V(); i++){
         partitions[i] = i % requestedPartitions;
     }
 

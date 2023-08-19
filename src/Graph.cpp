@@ -74,7 +74,6 @@ Node *Graph::add_node(int id, int weight) {
     Node *n = new Node(id, weight);
     nodes.push_back(n);
     this->node_weight_global += weight;
-    this->V++;
     return n;
 }
 
@@ -99,13 +98,12 @@ Edge* Graph::add_edge(int source, int dest, int distance) {
     edges.emplace_back(e);
     node1->edges.push_back(e);
     node2->edges.push_back(e);
-    this->E++;
     return e;
 }
 
 void Graph::print() {
-    cout << "Graph with " << this->V << " nodes and " << this->E << " edges" << endl;
-    for (int i = 0; i < V; i++) {
+    cout << "Graph with " << V() << " nodes and " << E() << " edges" << endl;
+    for (int i = 0; i < V(); i++) {
         Node *n = nodes[i];
         cout << "Node " << n->id << " with weight " << n->weight << endl;
         for (auto &edge : n->edges) {
@@ -154,4 +152,12 @@ int Graph::max_node_degree() {
     }
 
     return _max_node_degree;
+}
+
+int Graph::V() {
+    return (int)nodes.size();
+}
+
+int Graph::E() {
+    return (int)edges.size();
 }

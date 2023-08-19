@@ -31,8 +31,8 @@ struct comparator {
 };
 
 struct Graph {
-    int V                  = 0;    // nodes_num
-    int E                  = 0;    // edges_num
+    int V();                  // nodes_num
+    int E();                  // edges_num
     int node_weight_global = 0;
     int _max_node_degree   = 0;
     vector<int> partitions_size;

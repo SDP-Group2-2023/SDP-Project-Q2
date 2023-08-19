@@ -38,7 +38,6 @@ Graph* loadFromFile(const string&path, int num_threads) {
 
     auto* g = new Graph();
     g->nodes.resize(num_nodes);
-    g->V = num_nodes;
 
     vector<thread> readers(num_threads);
     barrier bar(num_threads);

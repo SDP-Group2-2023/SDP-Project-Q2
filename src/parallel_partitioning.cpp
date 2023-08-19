@@ -15,7 +15,7 @@ void uncoarsen_graph_step(Graph*g, vector<int>&partitions,
 }
 
 vector<int> uncoarsen_graph_p(Graph*g, vector<int>&partitions, int num_thread){
-    int num_nodes = g->V;
+    int num_nodes = g->V();
     vector<int> newPartitions(num_nodes);
     vector<thread> threads;
 
@@ -30,7 +30,7 @@ vector<int> uncoarsen_graph_p(Graph*g, vector<int>&partitions, int num_thread){
 }
 
 void parallel_partitioning(Graph* g, int requestedPartitions, int num_threads){
-    int actual_num_partitions = g->V;
+    int actual_num_partitions = g->V();
 
     vector<Graph*> allGraphs;
     allGraphs.push_back(g);
@@ -43,13 +43,13 @@ void parallel_partitioning(Graph* g, int requestedPartitions, int num_threads){
         auto end = chrono::high_resolution_clock::now();
         cout << "Coarsening time: " << chrono::duration_cast<chrono::milliseconds>(end - start).count() << "ms" << endl;
         //coarsedGraph->print();
-        actual_num_partitions = coarsedGraph->V;
+        actual_num_partitions = coarsedGraph->V();
         allGraphs.push_back(coarsedGraph);
     }
 
     Graph* coarsestGraph = allGraphs[allGraphs.size()-1];
-    vector<int> partitions(coarsestGraph->V);
-    for(int i = 0; i<coarsestGraph->V; i++){
+    vector<int> partitions(coarsestGraph->V());
+    for(int i = 0; i<coarsestGraph->V(); i++){
         partitions[i] = i % requestedPartitions;
     }
 
