@@ -26,14 +26,15 @@ struct Edge {
 };
 
 struct Graph {
-    int V                  = 0;    // nodes_num
-    int E                  = 0;    // edges_num
+    int V();                    // nodes_num
+    int E();                    // edges_num
     int node_weight_global = 0;
     int _max_node_degree   = 0;
     vector<int> *partitions_size = nullptr;
     vector<Node *> nodes;
     vector<shared_ptr<Edge>> edges;
     Node *add_node(int id, int weight);
+    Node *add_node_with_index(int id, int weight);
     shared_ptr<Edge> add_edge(int source, int dest, int distance);
     void print();
     void add_or_sum_edge(Node *n1, Node *n2, int distance);

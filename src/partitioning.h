@@ -3,7 +3,7 @@
 
 #include "Graph.h"
 
-Graph* loadFromFile(const string& path);
+Graph* loadFromFile(const string& path, int num_threads);
 Graph* coarseGraph(Graph* graph);
 void partitioning(Graph*g, int requestedPartitions);
 void kernighanLin(Graph* graph, int num_partitions, vector<int>& partitions);

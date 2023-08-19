@@ -5,7 +5,7 @@
 
 using namespace std;
 vector<int> uncoarsenGraph(Graph* g, vector<int>& partitions){
-    vector<int> newPartitions(g->V);
+    vector<int> newPartitions(g->V());
 
     for(auto&n : g->nodes)
         newPartitions[n->id] = partitions[n->child->id];
@@ -14,7 +14,7 @@ vector<int> uncoarsenGraph(Graph* g, vector<int>& partitions){
 }
 
 void partitioning(Graph*g, int requestedPartitions){
-    int actual_num_partitions = g->V;
+    int actual_num_partitions = g->V();
 
     vector<Graph*> allGraphs;
     allGraphs.push_back(g);
@@ -24,14 +24,14 @@ void partitioning(Graph*g, int requestedPartitions){
         cout << "Iteration " << iterations << endl;
         Graph* coarsedGraph = coarseGraph(allGraphs.back());
         //coarsedGraph->print();
-        actual_num_partitions = coarsedGraph->V;
+        actual_num_partitions = coarsedGraph->V();
         cout << "Actual number of partitions: " << actual_num_partitions << endl;
         allGraphs.push_back(coarsedGraph);
     }
 
     Graph* coarsestGraph = allGraphs[allGraphs.size()-1];
-    vector<int> partitions(coarsestGraph->V);
-    for(int i = 0; i<coarsestGraph->V; i++){
+    vector<int> partitions(coarsestGraph->V());
+    for(int i = 0; i<coarsestGraph->V(); i++){
         partitions[i] = i % requestedPartitions;
     }
 

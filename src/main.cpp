@@ -9,7 +9,7 @@ int main(int argc, char **argv){
         return 1;
     }
 
-    auto g = loadFromFile(argv[1]);
+    auto g = loadFromFile(argv[1], 4);
     int requestedPartitions = 100;
     auto start = std::chrono::high_resolution_clock::now();
     partitioning(g, requestedPartitions);
