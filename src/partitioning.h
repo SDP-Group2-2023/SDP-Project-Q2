@@ -5,7 +5,7 @@
 
 Graph* loadFromFile(const string& path, int num_threads);
 Graph* coarseGraph_s(Graph* graph);
-Graph* coarseGraph_p(Graph* graph);
+Graph* coarseGraph_p(Graph* graph, int num_threads);
 vector<shared_ptr<Edge>> sortEdge(const vector<shared_ptr<Edge>>& edges);
 vector<Node*> sortNodes(const vector<Node*>& nodes);
 void partitioning(Graph*g, int requestedPartitions);
