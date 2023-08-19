@@ -17,10 +17,10 @@ void uncoarsen_graph_step(Graph*g, vector<int>&partitions,
 vector<int> uncoarsen_graph_p(Graph*g, vector<int>&partitions, int num_thread){
     int num_nodes = g->V();
     vector<int> newPartitions(num_nodes);
-    vector<thread> threads;
+    vector<thread> threads(num_thread);
 
     for(int i = 0; i < num_thread; i++) {
-        threads.push_back(thread(uncoarsen_graph_step, g, ref(partitions), ref(newPartitions), num_nodes, i, num_thread));
+        threads[i] = thread(uncoarsen_graph_step, g, ref(partitions), ref(newPartitions), num_nodes, i, num_thread);
     }
     for(auto &t : threads) {
         t.join();
