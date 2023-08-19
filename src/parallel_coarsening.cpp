@@ -1,7 +1,12 @@
 #include "Graph.h"
 #include <thread>
+#include <barrier>
 
-void colourGraphThread(Graph*g, vector<int>&randVal, int start, int num_threads){
+int colored = 0;
+int last_color = 0;
+int iterations = 0;
+mutex color_mtx;
+void colourGraphThread(Graph*g, vector<int>&randVal, int start, int num_threads, barrier<> &b, vector<int>&colours){
 
     int i = start;
     while(i<g->V()) {
@@ -9,49 +14,85 @@ void colourGraphThread(Graph*g, vector<int>&randVal, int start, int num_threads)
         i+=num_threads;
     }
 
-}
+    b.arrive_and_wait();
 
-int colourGraph(Graph*g, vector<int>&colours, int num_threads){
 
-    vector<int> randVal(g->V(), -1);
-    vector<thread> threads(num_threads);
-    for(int i = 0; i<num_threads; i++){
-        threads[i] = thread(colourGraphThread, g, ref(randVal), i, num_threads);
-    }
+    while(true){
+        i = start;
+        vector<int> buffer;
 
-    for(auto&t : threads)
-        t.join();
+        color_mtx.lock();
+        if (colored >= g->V()) {
+            color_mtx.unlock();
+            break;
+        }
+        color_mtx.unlock();
 
-    int colorIndex = 0;
-    int colored = 0;
-
-    while(colored < g->V()) {
-        vector<bool> matched(g->V(), false);
-        for(int i = 0; i<g->V(); i++) {
-            if(colours[i] != -1 || matched[i]) continue;
-
+        while(i<g->V()) {
+            if(colours[i] != -1){
+                i+=num_threads;
+                continue;
+            }
             bool isMin = true;
 
-            for(auto&n: g->nodes[i]->get_neighbors()){
-                if(colours[n->id] == -1 && randVal[i] > randVal[n->id]){
+            auto this_node = g->nodes[i];
+            for (auto &other_node: this_node->get_neighbors()) {
+                if (randVal[other_node->id] < randVal[this_node->id]) {
+                    isMin = false;
+                    break;
+                }
+                if(randVal[other_node->id] == randVal[this_node->id] && other_node->id < this_node->id){
                     isMin = false;
                     break;
                 }
             }
 
-            if(isMin){
-                colours[i] = colorIndex;
+            if (isMin) {
+                buffer.emplace_back(i);
+            }
+
+            i+=num_threads;
+        }
+
+        b.arrive_and_wait();
+
+        color_mtx.lock();
+        if(!buffer.empty()) {
+            for (auto minNode: buffer) {
+                randVal[minNode] = INT_MAX;
+                colours[minNode] = last_color;
                 colored++;
-                matched[i] = true;
-                for(auto&n: g->nodes[i]->get_neighbors()){
-                    matched[n->id] = true;
-                }
             }
         }
-        colorIndex++;
+        iterations++;
+        if(iterations == num_threads){
+            iterations = 0;
+            last_color++;
+        }
+        color_mtx.unlock();
+        b.arrive_and_wait();
     }
 
-    return colorIndex;
+
+}
+
+int colourGraph(Graph*g, vector<int>&colours, int num_threads){
+
+    colored = 0;
+    last_color = 0;
+    iterations = 0;
+
+    barrier b(num_threads);
+    vector<int> randVal(g->V(), -1);
+    vector<thread> threads(num_threads);
+    for(int i = 0; i<num_threads; i++){
+        threads[i] = thread(colourGraphThread, g, ref(randVal), i, num_threads, ref(b), ref(colours));
+    }
+
+    for(auto&t : threads)
+        t.join();
+
+    return last_color;
 
 }
 
@@ -99,7 +140,9 @@ Graph*coarseGraph_p(Graph *g, int num_threads){
     vector<int> colours(g->V(), -1);
     auto colors_num = colourGraph(g, colours, num_threads);
     //cout << colors_num << endl;
-    for(int i = 0; i<g->V(); i++)cout << "Node " << i << " in color " << colours[i] << endl;
+    //for(int i = 0; i<g->V(); i++)cout << "Node " << i << " in color " << colours[i] << endl;
+
+    cout << "coloured graph with " << colors_num << " colors" << endl;
 
     auto coarse_graph = new Graph();
 
@@ -126,10 +169,7 @@ Graph*coarseGraph_p(Graph *g, int num_threads){
         }
     }
 
-    /*vector<thread> threads(num_threads);
-
-    for(int i = 0; i< num_threads; i++)
-        threads[i] = thread();*/
+    cout << "Coarse graph has " << coarse_graph->V() << " nodes" << endl;
 
     for(int i = 0; i<matched_nodes.size(); i++){
         //cout << i << " " << (matched_nodes[i] == 0?"false":"true") << endl;
