@@ -23,12 +23,11 @@ Graph* loadFromFile_mmap(const string&path, int num_threads) {
         throw std::runtime_error("Impossible to open file");
     }
 
-    struct stat fileStat;
+    struct stat fileStat{};
     if (fstat(fd, &fileStat) == -1) {
         throw std::runtime_error("Impossible to get file size");
     }
 
-    // Crea il mapping della memoria
     int* intData = static_cast<int*>(mmap(nullptr, fileStat.st_size, PROT_READ, MAP_PRIVATE, fd, 0));
     if (intData == MAP_FAILED) {
         throw std::runtime_error("Impossible to map file");
