@@ -4,12 +4,11 @@
 #include "Graph.h"
 
 Graph* loadFromFile(const string& path, int num_threads);
-vector<Node*> sortNodes(const vector<Node*>& nodes);
-vector<Edge*> sortEdge(const vector<Edge*>& edges);
 Graph* coarseGraph_s(Graph* graph);
 Graph* coarseGraph_p(Graph* graph);
-void parallel_partitioning(Graph* graph, int requestedPartitions, int num_threads);
-void sequential_partitioning(Graph*g, int requestedPartitions);
+vector<shared_ptr<Edge>> sortEdge(const vector<shared_ptr<Edge>>& edges);
+vector<Node*> sortNodes(const vector<Node*>& nodes);
+void partitioning(Graph*g, int requestedPartitions);
 void kernighanLin(Graph* graph, int num_partitions, vector<int>& partitions);
 
 

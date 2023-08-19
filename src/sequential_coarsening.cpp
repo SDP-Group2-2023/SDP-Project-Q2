@@ -19,7 +19,7 @@ vector<Node*> sortNodes(const vector<Node*>& nodes) {
  * @param edges
  * @return sorted vector of edges
  */
-vector<Edge*> sortEdge(const vector<Edge*>& edges) {
+vector<shared_ptr<Edge>> sortEdge(const vector<shared_ptr<Edge>>& edges) {
     auto sortedEdges = edges;
     sort(sortedEdges.begin(), sortedEdges.end(),
          [](auto e1, auto e2) {

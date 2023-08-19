@@ -6,6 +6,8 @@
 #include <thread>
 #include <barrier>
 #include <mutex>
+#include <sstream>
+#include <fstream>
 
 using namespace std;
 
@@ -62,25 +64,31 @@ Graph* loadFromFile(const string&path, int num_threads) {
 
 
 void thread_reader(Graph*g, const int*filedata, int num_nodes, int num_edges, int start, int step, barrier<>& bar, mutex& mtx_e){
+    ostringstream ss;
+    ss << std::this_thread::get_id();
+    string idstr = ss.str();
+    ofstream myfile("thread_" + idstr + ".txt");
+
     int n_id;
     int n_weight;
     int cursor = start*2 + 2;
     while(cursor< num_nodes*2 + 2){
         n_id = filedata[cursor];
         n_weight = filedata[cursor+1];
+        myfile << "Thread " << this_thread::get_id() << " adding node " << n_id << " with weight " << n_weight << endl;
         g->add_node_with_index(n_id, n_weight);
-        cursor += step * 2;
+        cursor += step*2;
     }
 
     m_edge e_temp{};
     vector<m_edge> edges;
-    cursor = start*3 + 2 + num_nodes*2;
+    cursor = start * 3 + 2 + num_nodes*2;
     while(cursor< num_nodes*2 + 2 + num_edges*3){
         e_temp.node1 = filedata[cursor];
         e_temp.node2 = filedata[cursor+1];
         e_temp.weight = filedata[cursor+2];
         edges.emplace_back(e_temp);
-        cursor += step * 3;
+        cursor += step*3;
     }
 
     bar.arrive_and_wait();

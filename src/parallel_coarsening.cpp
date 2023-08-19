@@ -1,70 +1,94 @@
-#include "partitioning.h"
-#include <future>
+#include "Graph.h"
 
-mutex m_node, m_edge;
 
-void operation(Graph*coarse_graph, Node*n1, Node*n2, int index){
-    m_node.lock();
-    Node*newNode = coarse_graph->add_node(index, n1->weight + n2->weight);
-    n1->child =  n2->child = newNode;
-    m_node.unlock();
-}
+int colourGraph(Graph*g, vector<int>&colours){
+    vector<int> randVal(g->V(), -1);
 
-void operation2(Graph*coarse_graph, Edge*e){
-    m_edge.lock();
-    coarse_graph->add_or_sum_edge(e->node1->child, e->node2->child, e->weight);
-    m_edge.unlock();
-}
+    for(int i = 0; i<g->V(); i++){
+        randVal[i] = rand();
+    }
 
-/**
- * @brief Coarsen the graph based on SHEM algorithm
- * @param originalGraph
- * @return coarsened graph
- */
-Graph* coarseGraph_p(Graph* originalGraph){
-    auto coarse_graph = new Graph();
-    int index = 0;
-    vector<bool> matchedNodes(originalGraph->V(), false);
-    vector<future<void>> futures;
+    int colorIndex = 0;
+    int colored = 0;
 
-    auto orderedNodes = sortNodes(originalGraph->nodes);
-    for(auto&n: orderedNodes){
-        if(matchedNodes[n->id])
-            continue;
+    while(colored < g->V()) {
+        vector<bool> matched(g->V(), false);
+        for(int i = 0; i<g->V(); i++) {
+            if(colours[i] != -1 || matched[i]) continue;
 
-        auto sortedEdges = sortEdge(n->edges);
-        for(auto&e :sortedEdges){
-            if(!matchedNodes[e->node1->id] && !matchedNodes[e->node2->id]){
-                matchedNodes[e->node1->id] = matchedNodes[e->node2->id] =  true;
-                futures.emplace_back(async(launch::any, operation, coarse_graph, e->node1, e->node2, index));
-                index++;
-                break;
+            bool isMin = true;
+
+            for(auto&n: g->nodes[i]->get_neighbors()){
+                if(colours[n->id] == -1 && randVal[i] > randVal[n->id]){
+                    isMin = false;
+                    break;
+                }
+            }
+
+            if(isMin){
+                colours[i] = colorIndex;
+                colored++;
+                matched[i] = true;
+                for(auto&n: g->nodes[i]->get_neighbors()){
+                    matched[n->id] = true;
+                }
             }
         }
+        colorIndex++;
+    }
 
-        if(!matchedNodes[n->id]){
-            m_node.lock();
-            n->child = coarse_graph->add_node(index, n->weight);
-            m_node.unlock();
-            index++;
+    return colorIndex;
+}
+
+int get_max_edge(vector<shared_ptr<Edge>> edges, vector<bool>& matched_nodes){
+    int max_edge_index = -1;
+    int max_edge_weight = 0;
+
+    for(int i = 0; i<edges.size(); i++){
+        if(matched_nodes[edges[i]->node1->id] || matched_nodes[edges[i]->node2->id]) continue;
+        if(edges[i]->weight > max_edge_weight){
+            max_edge_weight = edges[i]->weight;
+            max_edge_index = i;
         }
     }
 
-    coarse_graph->nodes.resize(index);
+    return max_edge_index;
+}
 
-    for(auto& f : futures)
-        f.wait();
 
-    vector<future<void>> futures2;
-    for(auto& e : originalGraph->edges){
-        if(e->node1->child != e->node2->child) {
-            futures2.emplace_back(async(launch::any, operation2, coarse_graph, e));
-            //coarse_graph->add_or_sum_edge(e->node1->child, e->node2->child, e->weight);
+Graph*coarseGraph_p(Graph *g){
+
+    vector<int> colours(g->V(), -1);
+    auto colors_num = colourGraph(g, colours);
+    //cout << colors_num << endl;
+    for(int i = 0; i<g->V(); i++)cout << "Node " << i << " in color " << colours[i] << endl;
+
+    vector<shared_ptr<Edge>> matched_e;
+    vector<bool> matched_nodes(g->V(), false);
+
+    for(int i = 0; i<colors_num; i++){
+        for(auto&n: g->nodes){
+            if(matched_nodes[n->id]) continue;
+
+            if(colours[n->id] == i){
+                int index = get_max_edge(n->edges, matched_nodes);
+                if(index!=-1){
+                    matched_e.push_back(n->edges[index]);
+                    matched_nodes[n->edges[index]->node1->id] = true;
+                    matched_nodes[n->edges[index]->node2->id] = true;
+                }
+            }
         }
     }
 
-    for(auto& f : futures2)
-        f.wait();
+    for(int i = 0; i<matched_nodes.size(); i++){
+        cout << i << " " << (matched_nodes[i] == 0?"false":"true") << endl;
+    }
 
-    return coarse_graph;
+    for(auto&e: matched_e){
+       cout << e->node1->id << " " << e->node2->id << endl;
+    }
+
+    return g;
+
 }
