@@ -29,7 +29,7 @@ vector<int> uncoarsen_graph_p(Graph*g, vector<int>&partitions, int num_thread){
     return newPartitions;
 }
 
-void parallel_partitioning(Graph* g, int requestedPartitions, int num_threads){
+void partitioning_p(Graph* g, int requestedPartitions, int num_threads){
     int actual_num_partitions = g->V();
 
     vector<Graph*> allGraphs;
@@ -39,7 +39,7 @@ void parallel_partitioning(Graph* g, int requestedPartitions, int num_threads){
     while( actual_num_partitions > requestedPartitions * 15  && iterations++ < 50){
         cout << "Iteration " << iterations << endl;
         auto start = chrono::high_resolution_clock::now();
-        Graph* coarsedGraph = coarseGraph_s(allGraphs.back());
+        Graph* coarsedGraph = coarseGraph_p(allGraphs.back(), num_threads);
         auto end = chrono::high_resolution_clock::now();
         cout << "Coarsening time: " << chrono::duration_cast<chrono::milliseconds>(end - start).count() << "ms" << endl;
         //coarsedGraph->print();

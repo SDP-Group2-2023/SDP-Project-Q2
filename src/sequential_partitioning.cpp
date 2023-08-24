@@ -13,7 +13,7 @@ vector<int> uncoarsenGraph(Graph* g, vector<int>& partitions){
     return newPartitions;
 }
 
-void partitioning(Graph*g, int requestedPartitions){
+void partitioning_s(Graph*g, int requestedPartitions){
     int actual_num_partitions = g->V();
 
     vector<Graph*> allGraphs;
@@ -22,8 +22,7 @@ void partitioning(Graph*g, int requestedPartitions){
     int iterations = 0;
     while( actual_num_partitions > requestedPartitions * 15  && iterations++ < 50){
         cout << "Iteration " << iterations << endl;
-        //Graph* coarsedGraph = coarseGraph_s(allGraphs.back());
-        Graph* coarsedGraph = coarseGraph_p(allGraphs.back(), 8);
+        Graph* coarsedGraph = coarseGraph_s(allGraphs.back());
         //coarsedGraph->print();
         actual_num_partitions = coarsedGraph->V();
         cout << "Actual number of partitions: " << actual_num_partitions << endl;
