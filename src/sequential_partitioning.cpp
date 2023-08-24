@@ -22,8 +22,8 @@ void partitioning(Graph*g, int requestedPartitions){
     int iterations = 0;
     while( actual_num_partitions > requestedPartitions * 15  && iterations++ < 50){
         cout << "Iteration " << iterations << endl;
-        Graph* coarsedGraph = coarseGraph_s(allGraphs.back());
-        //Graph* coarsedGraph = coarseGraph_p(allGraphs.back(), 8);
+        //Graph* coarsedGraph = coarseGraph_s(allGraphs.back());
+        Graph* coarsedGraph = coarseGraph_p(allGraphs.back(), 8);
         //coarsedGraph->print();
         actual_num_partitions = coarsedGraph->V();
         cout << "Actual number of partitions: " << actual_num_partitions << endl;

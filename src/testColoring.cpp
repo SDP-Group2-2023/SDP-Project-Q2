@@ -57,7 +57,7 @@ int main(){
     g->add_edge(9, 10, 1);
 
 
-    auto newG = coarseGraph_p(g, 8);
+    auto newG = coarseGraph_p(g, 2);
 
 
 

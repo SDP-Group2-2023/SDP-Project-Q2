@@ -1,10 +1,7 @@
 #include "Graph.h"
 #include <thread>
 #include <barrier>
-
-int colored = 0;
-int last_color = 0;
-int iterations = 0;
+#include <vector>
 
 /**
  * Compares two nodes based on their random value.
@@ -29,7 +26,8 @@ bool compare_nodes(Node*n1, Node*n2, vector<int>&randVal){
  * @param color_mtx the mutex to use
  */
 void colourGraphThread(Graph*g, vector<int>&randVal, int start,int num_threads,
-                       barrier<> &b, mutex&color_mtx, vector<int>&colours){
+                       barrier<> &b, mutex&color_mtx,
+                       int&colored, int&last_color, int&iterations){
 
     unique_lock<mutex> thread_lock{color_mtx, defer_lock};
 
@@ -48,7 +46,7 @@ void colourGraphThread(Graph*g, vector<int>&randVal, int start,int num_threads,
         thread_lock.unlock();
 
         for(int i = start; i<g->V(); i+=num_threads){
-            if(colours[i] != -1)
+            if(g->colours[i] != -1)
                 continue;
 
             bool isMin = true;
@@ -71,7 +69,7 @@ void colourGraphThread(Graph*g, vector<int>&randVal, int start,int num_threads,
         if(!buffer.empty()) {
             for (auto minNode: buffer) {
                 randVal[minNode] = INT_MAX;
-                colours[minNode] = last_color;
+                g->colours[minNode] = last_color;
                 colored++;
             }
         }
@@ -94,11 +92,11 @@ void colourGraphThread(Graph*g, vector<int>&randVal, int start,int num_threads,
  * @param num_threads the number of threads to use
  * @return the number of colours used
  */
-int colourGraph(Graph*g, vector<int>&colours, int num_threads){
+int colourGraph(Graph*g, int num_threads){
 
-    colored = 0;
-    last_color = 0;
-    iterations = 0;
+    int colored = 0;
+    int last_color = 0;
+    int iterations = 0;
 
     mutex color_mtx;
     barrier b(num_threads);
@@ -106,7 +104,8 @@ int colourGraph(Graph*g, vector<int>&colours, int num_threads){
     vector<thread> threads(num_threads);
     for(int i = 0; i<num_threads; i++)
         threads[i] = thread(colourGraphThread, g, ref(randVal), i, num_threads,
-                            ref(b), ref(color_mtx) , ref(colours));
+                            ref(b), ref(color_mtx) ,
+                            ref(colored), ref(last_color), ref(iterations));
 
     for(auto&t : threads)
         t.join();
@@ -132,33 +131,102 @@ shared_ptr<Edge> get_max_edge(const vector<shared_ptr<Edge>>& edges, vector<bool
     return max_edge;
 }
 
-Graph*coarseGraph_p(Graph *g, int num_threads){
+void coarse_step(Graph*original_graph, Graph*coarse_graph, int start, int num_threads, mutex&mtx, barrier<>&b,
+                 int max_colour, vector<bool>&matched_nodes, vector<int>&matched_index, int&n_index){
+    int colour = 0;
 
-    vector<int> colours(g->V(), -1);
+    while (colour < max_colour){
+        for(int i = start; i<original_graph->V(); i+=num_threads){
 
-    auto colors_num = colourGraph(g, colours, num_threads);
-    auto coarse_graph = new Graph();
+            mtx.lock();
+            if(matched_nodes[i]) {
+                mtx.unlock();
+                continue;
+            }
+            mtx.unlock();
 
-    vector<bool> matched_nodes(g->V(), false);
-    int n_index = 0;
-    for(int i = 0; i<colors_num; i++){
-        for(auto&n: g->nodes){
-            if(matched_nodes[n->id]) continue;
-            if(colours[n->id] == i){
-                try{
-                    auto edge = get_max_edge(n->edges, matched_nodes);
-                    Node*n1 = edge->node1;
-                    Node*n2 = edge->node2;
-                    matched_nodes[n1->id] = matched_nodes[n2->id] = true;
-                    Node*newNode = coarse_graph->add_node(n_index++, n1->weight + n2->weight);
-                    n1->child = n2->child = newNode;
-                }catch (exception&e){
+            if(original_graph->colours[i] == colour){
+                Node*n = original_graph->nodes[i];
+                try {
+                    auto e = get_max_edge(n->edges, matched_nodes);
+                    matched_index[e->node1->id] = e->node2->id;
+                    matched_index[e->node2->id] = e->node1->id;
+                }
+                catch (runtime_error& e){
+                    mtx.lock();
+                    matched_nodes[i] = true;
                     n->child = coarse_graph->add_node(n_index++, n->weight);
+                    mtx.unlock();
                 }
             }
         }
+
+        b.arrive_and_wait();
+
+        for(int i = start; i<original_graph->V(); i+=num_threads){
+            mtx.lock();
+            if(matched_nodes[i]) {
+                mtx.unlock();
+                continue;
+            }
+            mtx.unlock();
+
+            if(original_graph->colours[i] == colour){
+
+                Node*n1 = original_graph->nodes[i];
+                Node*n2 = original_graph->nodes[matched_index[i]];
+
+                if(matched_index[n2->id] == n1->id){
+                    mtx.lock();
+                    matched_nodes[n1->id] = matched_nodes[n2->id] = true;
+                    n1->child = n2->child = coarse_graph->add_node(n_index++, n1->weight + n2->weight );
+                    mtx.unlock();
+                }
+            }
+        }
+        colour++;
     }
 
+    b.arrive_and_wait();
+
+    vector<Node*> buffer;
+
+    for(int i = start; i<original_graph->V(); i+=num_threads){
+        if(matched_nodes[i]) continue;
+        Node*n = original_graph->nodes[i];
+        buffer.emplace_back(n);
+    }
+
+    for(auto& n: buffer){
+        mtx.lock();
+        n->child = coarse_graph->add_node(n_index++, n->weight);
+        mtx.unlock();
+    }
+
+
+}
+
+Graph*coarseGraph_p(Graph *g, int num_threads){
+
+    g->colours = vector<int>(g->V(), -1);
+
+    auto colors_num = colourGraph(g, num_threads);
+    auto coarse_graph = new Graph();
+
+    mutex mtx;
+    barrier<> b(num_threads);
+
+    vector<bool> matched_nodes(g->V(), false);
+    vector<int> matched_index(g->V(), -1);
+    int n_index = 0;
+    vector<thread> threads(num_threads);
+
+    for(int i = 0; i<num_threads; i++)
+        threads[i] = thread(coarse_step, g, coarse_graph, i, num_threads, ref(mtx), ref(b), colors_num,
+                            ref(matched_nodes), ref(matched_index), ref(n_index));
+
+    for(auto&t: threads)
+        t.join();
 
     for(auto& e : g->edges){
         if(e->node1->child != e->node2->child)
