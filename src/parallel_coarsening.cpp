@@ -1,6 +1,7 @@
 #include "Graph.h"
 #include <thread>
 #include <barrier>
+#include <mutex>
 #include <vector>
 
 /**
