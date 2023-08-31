@@ -29,7 +29,7 @@ int main() {
                         char tmp;
                         cin >> tmp;
                         getline(cin, path);
-                        g = loadFromFile_s(path);
+                        g = loadFromFile(path);
                     } else {
                         bool option = false;
                         cout << "Graph already loaded, overwrite it? (true or false) " << endl;
@@ -37,7 +37,7 @@ int main() {
                         if (option) {
                             cout << "Enter graph path" << endl;
                             getline(cin, path);
-                            g = loadFromFile_s(path);
+                            g = loadFromFile(path);
                         }
                     }
                 }
@@ -53,7 +53,7 @@ int main() {
                 cout << "Running sequential partitioning - (Multilevel KL)" << endl;
                 cout << "How many partitions should be found in graph?" << endl;
                 cin >> requestedPartitions;
-                partitioning(g, requestedPartitions);
+                partitioning_s(g, requestedPartitions);
                 break;
             case 'P':
                 if (g == nullptr) {
