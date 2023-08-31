@@ -10,7 +10,7 @@ int main(int argc, char **argv){
         return 1;
     }
 
-    auto g = loadFromFile(argv[1], 4);
+    auto g = loadFromFile(argv[1]);
     int requestedPartitions = 100;
     timing total_time;
     // partitioning_s(g, requestedPartitions);

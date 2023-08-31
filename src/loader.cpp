@@ -15,7 +15,8 @@ struct m_edge{
 };
 void thread_reader(Graph*g, const int*filedata, int num_nodes, int num_edges, int start, int step, barrier<>& bar, mutex& mtx_e);
 
-Graph* loadFromFile(const string&path, int num_threads) {
+Graph* loadFromFile(string path) {
+    int num_threads = 4;
     auto start_time = chrono::high_resolution_clock::now();
     int fd = open(path.c_str(), O_RDONLY);
     if (fd == -1) {

@@ -29,7 +29,7 @@ int main() {
                         char tmp;
                         cin >> tmp;
                         getline(cin, path);
-                        g = loadFromFile(path);
+                        g = loadFromFile(path.c_str());
                     } else {
                         bool option = false;
                         cout << "Graph already loaded, overwrite it? (true or false) " << endl;
@@ -37,7 +37,7 @@ int main() {
                         if (option) {
                             cout << "Enter graph path" << endl;
                             getline(cin, path);
-                            g = loadFromFile(path);
+                            g = loadFromFile(path.c_str());
                         }
                     }
                 }
