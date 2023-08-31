@@ -1,6 +1,7 @@
 #include <iostream>
 #include <list>
 #include "partitioning.h"
+#include "timing/timing.h"
 
 using namespace std;
 int main(int argc, char **argv){
@@ -11,12 +12,12 @@ int main(int argc, char **argv){
 
     auto g = loadFromFile(argv[1], 4);
     int requestedPartitions = 100;
-    auto start = std::chrono::high_resolution_clock::now();
-    //partitioning_s(g, requestedPartitions);
+    timing total_time;
+    // partitioning_s(g, requestedPartitions);
     partitioning_p(g, requestedPartitions, 4);
 
-    auto end = std::chrono::high_resolution_clock::now();
-    auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end-start);
+    total_time.stop();
+    auto elapsed = total_time.getDuration();
     cout << "Time elapsed: " << elapsed.count() << " ms" << endl;
 
     delete g;
