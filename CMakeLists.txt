@@ -15,7 +15,8 @@ add_executable(main src/menu.cpp
                src/Graph.h src/Graph.cpp
                src/Change.h src/Change.cpp
                src/timing/timing.h src/timing/timing.cpp
-        src/partitioning.h src/sequential_coarsening.cpp src/kernighanLin.cpp src/sequential_partitioning.cpp)
+        src/partitioning.h src/sequential_coarsening.cpp src/kernighanLin.cpp src/sequential_partitioning.cpp
+        src/parallel_partitioning.cpp src/parallel_coarsening.cpp src/loader.cpp)
 
 
 add_executable(testColoring src/testColoring.cpp src/parallel_coarsening.cpp src/Graph.cpp src/Graph.h)

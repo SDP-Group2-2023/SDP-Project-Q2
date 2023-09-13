@@ -78,13 +78,13 @@ bool Compare_Node(Node *a, Node *b) {
         return false;
 }
 
-void partitioning_thread(Graph *graph, vector<int> &partitions, vector<mutex> &nodes_m, vector<int> &starting_nodes, int avg_p_weight, vector<int> &weight) {
+void partitioning_thread(Graph *graph, vector<int> *partitions, vector<mutex> *nodes_m, vector<int> *starting_nodes, int avg_p_weight, vector<int> *weight) {
     // vector of sets
     vector<set<Node *, bool (*)(Node *, Node *)>> queues_of_nodes;
-    for (int i = 0; i < starting_nodes.size(); i++) {
+    for (int i = 0; i < starting_nodes->size(); i++) {
         // collecting in a set all neighbours of my starting node that are still unassigned to a partition
         set<Node *, bool (*)(Node *, Node *)> queue(Compare_Node);
-        for (auto n : graph->nodes[starting_nodes[i]]->get_neighbors()) {
+        for (auto n : graph->nodes[(*starting_nodes)[i]]->get_neighbors()) {
             queue.insert(n);
         }
 
@@ -99,14 +99,14 @@ void partitioning_thread(Graph *graph, vector<int> &partitions, vector<mutex> &n
     while (!next_partition) {
         for (auto neighbour = queues_of_nodes[index].begin(); neighbour != queues_of_nodes[index].end();) {
             // lock starting node and its neighbour
-            scoped_lock(nodes_m[(*neighbour)->id], nodes_m[starting_nodes[index]]);
+            scoped_lock((*nodes_m)[(*neighbour)->id], (*nodes_m)[(*starting_nodes)[index]]);
             // we set 1.4 waiting to test if it's ok as a multiplication factor
             // if adding the neighbour to the partition does not exceed the avg and the neighbour hasn't been
             // assigned by another thread to another partition, assign it and remove it from the set
             // of unassigned node
-            if (weight[index] + (*neighbour)->weight <= avg_p_weight * 1.4 && partitions[(*neighbour)->id] == -1) {
-                partitions[(*neighbour)->id] = partitions[starting_nodes[index]];
-                weight[index] += (*neighbour)->weight;
+            if ((*weight)[index] + (*neighbour)->weight <= avg_p_weight * 1.4 && (*partitions)[(*neighbour)->id] == -1) {
+                (*partitions)[(*neighbour)->id] = (*partitions)[(*starting_nodes)[index]];
+                (*weight)[index] += (*neighbour)->weight;
 
                 Node *s_neighbour = *neighbour;
 
@@ -119,7 +119,7 @@ void partitioning_thread(Graph *graph, vector<int> &partitions, vector<mutex> &n
                 // reset iterator to the start of the set since we have added new neighbours to this set
                 neighbour = queues_of_nodes[index].begin();
 
-            } else if (partitions[(*neighbour)->id] != -1) {
+            } else if ((*partitions)[(*neighbour)->id] != -1) {
                 // if another thread assigned it already you can remove it from set of unassigned and release lock on it
                 queues_of_nodes[index].erase(neighbour);
             } else {
@@ -128,7 +128,7 @@ void partitioning_thread(Graph *graph, vector<int> &partitions, vector<mutex> &n
         }
         // move to next node in our starting pool
         index++;
-        if (index > starting_nodes.size())
+        if (index > starting_nodes->size())
             next_partition = true;
     }
 }
@@ -157,7 +157,7 @@ void initial_partitioning_p(Graph *graph, vector<int> &partitions, int num_parti
     vector<thread> partitioners;
 
     for (int i = 0; i < num_threads; i++)
-        partitioners.emplace_back(partitioning_thread, graph, partitions, nodes_m, starting_nodes[i], graph->node_weight_global / num_partitions, weights[i]);
+        partitioners.emplace_back(partitioning_thread, graph, &partitions, &nodes_m, &starting_nodes[i], graph->node_weight_global / num_partitions, &weights[i]);
 
     for (auto &t : partitioners)
         t.join();
