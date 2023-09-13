@@ -12,5 +12,6 @@ void partitioning_s(Graph*g, int requestedPartitions);
 void partitioning_p(Graph*g, int requestedPartitions, int num_threads);
 void kernighanLin(Graph* graph, int num_partitions, vector<int>& partitions);
 void initial_partitioning_p(Graph *graph, vector<int> &partitions, int num_partitions, int num_threads);
+int gain(vector<int> &partitions, Node *node_to_move, int to_partition);
 
 #endif //GRAPHPARTITIONING_PARTITIONING_H

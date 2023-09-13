@@ -140,7 +140,6 @@ void initial_partitioning_p(Graph *graph, vector<int> &partitions, int num_parti
     vector<vector<int>> weights(num_threads);
 
     auto top_node = ordered_nodes.begin();
-    // <3
     // more partitions than threads available: anyway this is just the initial partitioning
     for (int i = 0; i < num_partitions; i++) {
         partitions[(*top_node)->id] = i;
