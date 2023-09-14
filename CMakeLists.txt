@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.13)
 project(GraphPartitioning)
+set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+set(CMAKE_CXX_FLAGS_DEBUG "-g")
 
 set(CMAKE_CXX_STANDARD 20)
 

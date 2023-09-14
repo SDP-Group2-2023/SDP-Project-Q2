@@ -63,9 +63,9 @@ void partitioning_p(Graph *g, int requestedPartitions, int num_threads) {
         kernighanLin_p(allGraphs[i], requestedPartitions, partitions, coarsestGraph->num_colours, coarsestGraph->colours, num_threads);
     }
 
-    for (int i = 0; i < partitions.size(); i++) {
+    /*for (int i = 0; i < partitions.size(); i++) {
         cout << "Node " << i << " in partition " << partitions[i] << endl;
-    }
+    }*/
 
     for (int i = 1; i < allGraphs.size(); i++)
         delete allGraphs[i];
