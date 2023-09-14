@@ -118,7 +118,7 @@ void kernighanLin_p(Graph *graph, int num_partitions, vector<int> &partitions, i
 
     vector<thread> kernighanLiners;
     for (int i = 0; i < num_threads; i++) {
-        kernighanLiners.emplace_back(thread_kernighanLin, num_partitions, &partitions, num_colors, &colors, &nodes_per_thread[i]);
+        kernighanLiners.emplace_back(thread_kernighanLin, graph, num_partitions, &partitions, num_colors, &colors, &nodes_per_thread[i]);
     }
 
     for (int i = 0; i < num_threads; i++) {
