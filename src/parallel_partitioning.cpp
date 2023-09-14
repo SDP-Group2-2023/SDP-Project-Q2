@@ -54,13 +54,13 @@ void partitioning_p(Graph *g, int requestedPartitions, int num_threads) {
         partitions[i] = i % requestedPartitions;
     }
 
-    kernighanLin(coarsestGraph, requestedPartitions, partitions);
+    kernighanLin_p(coarsestGraph, requestedPartitions, partitions, coarsestGraph->num_colours, coarsestGraph->colours, num_threads);
 
     for (auto i = (int) allGraphs.size() - 2; i >= 0; i--) {
         partitions = uncoarsen_graph_p(allGraphs[i], partitions, num_threads);
         cout << "Uncoarsening step " << allGraphs.size() - i - 1 << endl;
         allGraphs[i]->partitions_size = allGraphs[i + 1]->partitions_size;
-        kernighanLin(allGraphs[i], requestedPartitions, partitions);
+        kernighanLin_p(allGraphs[i], requestedPartitions, partitions, coarsestGraph->num_colours, coarsestGraph->colours, num_threads);
     }
 
     for (int i = 0; i < partitions.size(); i++) {

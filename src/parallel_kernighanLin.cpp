@@ -93,7 +93,7 @@ void thread_kernighanLin(Graph *graph, int num_partitions, vector<int> *partitio
     return;
 }
 
-void parallel_kernighanLin(Graph *graph, int num_partitions, vector<int> &partitions, int num_colors, vector<int> &colors, int num_threads) {
+void kernighanLin_p(Graph *graph, int num_partitions, vector<int> &partitions, int num_colors, vector<int> &colors, int num_threads) {
     /*
         divisione dei nodi ai singoli threads
         creazione dei threads

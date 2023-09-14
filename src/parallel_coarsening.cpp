@@ -211,7 +211,7 @@ Graph*coarseGraph_p(Graph *g, int num_threads){
 
     g->colours = vector<int>(g->V(), -1);
 
-    auto colors_num = colourGraph(g, num_threads);
+    g->num_colours = colourGraph(g, num_threads);
     auto coarse_graph = new Graph();
 
     mutex mtx;
@@ -223,7 +223,7 @@ Graph*coarseGraph_p(Graph *g, int num_threads){
     vector<thread> threads(num_threads);
 
     for(int i = 0; i<num_threads; i++)
-        threads[i] = thread(coarse_step, g, coarse_graph, i, num_threads, ref(mtx), ref(b), colors_num,
+        threads[i] = thread(coarse_step, g, coarse_graph, i, num_threads, ref(mtx), ref(b), g->num_colours,
                             ref(matched_nodes), ref(matched_index), ref(n_index));
 
     for(auto&t: threads)
