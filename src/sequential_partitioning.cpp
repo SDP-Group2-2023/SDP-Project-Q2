@@ -39,19 +39,20 @@ void initial_partitioning_s(Graph *g, vector<int> &partitions, int partition_num
     while (partitions_tot > partition_num) {
         partitions_tot--;
         cluster_cut_size selected = *cut_sizes.begin();    // select the topmost element
+        cut_sizes.erase(selected);
         for (int i = 0; i < partitions.size(); i++) {
             if (partitions[i] == selected.clusterB)
                 partitions[i] = selected.clusterA;
-            else if (i == selected.clusterB)
-                std::cout << partitions[i] << "---" << i << "---" << selected.clusterB << endl;
         }
         vector<int> keys;
 
         // Retrieve all keys
         // this function I copied from stack overflow to extract all the keys
         transform(cluster_hashMap[selected.clusterB].begin(), cluster_hashMap[selected.clusterB].end(), back_inserter(keys), RetrieveKey());
-        cluster_hashMap.erase(selected.clusterB);                                                     // I remove cluster B
-        for (auto key : keys) {                                                                       // for each cluster that was connect to B
+        cluster_hashMap.erase(selected.clusterB);    // I remove cluster B
+        for (auto key : keys) {                      // for each cluster that was connect to B
+            if (key == selected.clusterA)
+                continue;
             cluster_cut_size old(selected.clusterB, key, cluster_hashMap[selected.clusterB][key]);    // I remove the connection
             cut_sizes.erase(old);
             if (cluster_hashMap[key].contains(selected.clusterA)) {    // if it is also connected to A I update the cutsize between them in the hash map
@@ -77,7 +78,7 @@ void initial_partitioning_s(Graph *g, vector<int> &partitions, int partition_num
             partitions[i] = converter[partitions[i]];
         else {
             converter[partitions[i]] = partition;
-            partitions[i] = partition++;
+            partitions[i]            = partition++;
         }
     }
     if (partition != partition_num)                     // should ALWAYS BE FALSE
