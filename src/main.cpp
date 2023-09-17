@@ -1,6 +1,9 @@
 #include <iostream>
 #include <list>
 #include "partitioning.h"
+#include "timing/timing.h"
+
+#define PARALLEL_BUILD
 
 using namespace std;
 int main(int argc, char **argv){
@@ -9,14 +12,18 @@ int main(int argc, char **argv){
         return 1;
     }
 
-    auto g = loadFromFile(argv[1], 4);
+    auto g = loadFromFile(argv[1]);
     int requestedPartitions = 100;
-    auto start = std::chrono::high_resolution_clock::now();
-    //partitioning_s(g, requestedPartitions);
+    timing total_time;
+    
+    #ifndef PARALLEL_BUILD
+    partitioning_s(g, requestedPartitions);
+    #else
     partitioning_p(g, requestedPartitions, 4);
+    #endif
 
-    auto end = std::chrono::high_resolution_clock::now();
-    auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(end-start);
+    total_time.stop();
+    auto elapsed = total_time.getDuration();
     cout << "Time elapsed: " << elapsed.count() << " ms" << endl;
 
     delete g;

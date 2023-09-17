@@ -41,6 +41,9 @@ cmake-build-debug
 # graphs directory
 graphs
 
+#all log files
+*log*
+
 # cmake files
 CMakeFiles
 CMakeCache.txt
