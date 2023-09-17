@@ -37,19 +37,27 @@ void initial_partitioning_s(Graph *g, vector<int> &partitions, int partition_num
         cluster_hashMap[cluster.clusterB][cluster.clusterA] = cluster.cutSize;
     }
     while (partitions_tot > partition_num) {
+        bool flag = false;
         partitions_tot--;
         cluster_cut_size selected = *cut_sizes.begin();    // select the topmost element
         cut_sizes.erase(selected);
         for (int i = 0; i < partitions.size(); i++) {
             if (partitions[i] == selected.clusterB)
-                partitions[i] = selected.clusterA;
+                {partitions[i] = selected.clusterA;
+                flag           = true;
+            }
         }
+
+        if(!flag) {
+            cout << "Ahhhhhh" << endl;
+        }
+
         vector<int> keys;
 
         // Retrieve all keys
         // this function I copied from stack overflow to extract all the keys
         transform(cluster_hashMap[selected.clusterB].begin(), cluster_hashMap[selected.clusterB].end(), back_inserter(keys), RetrieveKey());
-        cluster_hashMap.erase(selected.clusterB);    // I remove cluster B
+        
         for (auto key : keys) {                      // for each cluster that was connect to B
             if (key == selected.clusterA)
                 continue;
@@ -69,6 +77,9 @@ void initial_partitioning_s(Graph *g, vector<int> &partitions, int partition_num
             cluster_cut_size new_C(selected.clusterA, key, cluster_hashMap[key][selected.clusterA]);
             cut_sizes.insert(new_C);
         }
+
+        cluster_hashMap[selected.clusterA].erase(selected.clusterB);    // remove cluster B from A
+        cluster_hashMap.erase(selected.clusterB);    // I remove cluster B
     }
 
     map<int, int> converter;
