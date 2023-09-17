@@ -27,6 +27,7 @@ adiacenti non si influenzano il gain a vicenda
 
 void thread_kernighanLin(Graph *graph, int num_partitions, vector<int> *partitions, int num_colors, vector<int> *colors, vector<int> *nodes) {
     bool stuff_done = true;
+    int counter     = 0;
     while (stuff_done) {
         stuff_done = false;
         for (int color = 0; color < num_colors; color++) {
@@ -86,6 +87,8 @@ void thread_kernighanLin(Graph *graph, int num_partitions, vector<int> *partitio
 
             color_barrier->arrive_and_wait();
         }
+        if(!stuff_done && counter++ < 20)
+            stuff_done = true;
     }
     // da rivedere se fare così oppure no
     weight_barrier->arrive_and_drop();
@@ -127,6 +130,8 @@ void kernighanLin_p(Graph *graph, int num_partitions, vector<int> &partitions, i
 
     delete color_barrier;
     delete weight_barrier;
+
+    cout << calculateCutSize(graph, partitions) << endl;
 
     return;
 }
