@@ -193,4 +193,6 @@ void kernighanLin(Graph *graph, int num_partitions, vector<int> &partitions) {
         // endl;
 
     } while (improved);
+
+    cout << calculateCutSize(graph, partitions) << endl;
 }

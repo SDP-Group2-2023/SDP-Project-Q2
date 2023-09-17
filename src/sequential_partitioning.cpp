@@ -125,9 +125,9 @@ void partitioning_s(Graph *g, int requestedPartitions) {
         kernighanLin(allGraphs[i], requestedPartitions, partitions);
     }
 
-    for (int i = 0; i < partitions.size(); i++) {
+    /*for (int i = 0; i < partitions.size(); i++) {
         cout << "Node " << i << " in partition " << partitions[i] << endl;
-    }
+    }*/
 
     for (int i = 1; i < allGraphs.size(); i++) {
         delete allGraphs[i];
