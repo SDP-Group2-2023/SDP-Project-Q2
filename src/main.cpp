@@ -3,7 +3,7 @@
 #include "partitioning.h"
 #include "timing/timing.h"
 
-//#define PARALLEL_BUILD
+#define PARALLEL_BUILD
 
 using namespace std;
 int main(int argc, char **argv){

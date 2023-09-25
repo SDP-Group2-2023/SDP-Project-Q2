@@ -129,6 +129,28 @@ void partitioning_s(Graph *g, int requestedPartitions) {
         cout << "Node " << i << " in partition " << partitions[i] << endl;
     }*/
 
+    vector<int> partitions_sizes(requestedPartitions, 0);
+
+    for (int i = 0; i < g->V(); i++) {
+        partitions_sizes[partitions[i]] += g->nodes[i]->weight;
+    }
+
+    int max = 0, min = g->node_weight_global, avg = 0;
+    for (auto w : partitions_sizes) {
+        if(w == 0)
+            cout << "ERROR!!" << endl;
+
+        if (w > max)
+            max = w;
+        if (w < min)
+            min = w;
+        avg += w;
+    }
+
+    avg /= requestedPartitions;
+
+    cout << "Max partitions: " << max << " Min partition: " << min << " avg partitions " << avg << " expected average: " << g->node_weight_global / requestedPartitions << endl;
+
     for (int i = 1; i < allGraphs.size(); i++) {
         delete allGraphs[i];
     }
