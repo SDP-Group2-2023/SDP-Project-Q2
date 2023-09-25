@@ -15,5 +15,6 @@ void kernighanLin_p(Graph *graph, int num_partitions, vector<int> &partitions, i
 void initial_partitioning_p(Graph *graph, vector<int> &partitions, int num_partitions, int num_threads);
 int gain(vector<int> &partitions, Node *node_to_move, int to_partition);
 unsigned long long calculateCutSize(Graph *graph, vector<int> &partitions);
+void save_to_file(string path, Graph *graph, const vector<int> &partitions, int requestedPartitions);
 
 #endif //GRAPHPARTITIONING_PARTITIONING_H
