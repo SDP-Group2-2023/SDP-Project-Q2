@@ -3,7 +3,7 @@
 
 #include "Graph.h"
 
-Graph* loadFromFile(string path);
+Graph* loadFromFile(const string& path);
 Graph* coarseGraph_s(Graph* graph);
 Graph* coarseGraph_p(Graph* graph, int num_threads);
 vector<shared_ptr<Edge>> sortEdge(const vector<shared_ptr<Edge>>& edges);

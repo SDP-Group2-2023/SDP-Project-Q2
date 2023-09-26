@@ -3,7 +3,6 @@
 #include "partitioning.h"
 #include "timing/timing.h"
 
-#define PARALLEL_BUILD
 
 using namespace std;
 int main(int argc, char **argv){
@@ -13,6 +12,7 @@ int main(int argc, char **argv){
     }
 
     auto g = loadFromFile(argv[1]);
+
     int requestedPartitions = 100;
     timing total_time;
     

@@ -31,15 +31,15 @@ int main(int argc, char *argv[]){
     skip_lines(input, 4);
 
     string useless_chars;
-    int num_nodes;
-    int num_edges;
+    unsigned int num_nodes;
+    unsigned long num_edges;
     char end_line;
     input >> useless_chars >> useless_chars
     >> num_nodes >> num_edges >> end_line;
 
     num_edges /= 2;
-    output.write((char*)&num_nodes, sizeof(int));
-    output.write((char*)&num_edges, sizeof(int));
+    output.write((char*)&num_nodes, sizeof(unsigned int));
+    output.write((char*)&num_edges, sizeof(unsigned long));
     cout << num_nodes << " " << num_edges << endl;
     skip_lines(input, 2);
 
@@ -48,9 +48,9 @@ int main(int argc, char *argv[]){
     int distance;
     cout << "Writing nodes..." << endl;
     for(int i = 0; i<num_nodes; i++){
-        output.write((char*)&i, sizeof(int));
+        output.write((char*)&i, sizeof(unsigned int));
         int random = distribution(gen);
-        output.write((char*)&random, sizeof(int));
+        output.write((char*)&random, sizeof(unsigned int));
     }
 
     cout << "Writing edges..." << endl;
@@ -59,9 +59,9 @@ int main(int argc, char *argv[]){
         >> source >> dest >> distance >> end_line;
         source--;
         dest--;
-        output.write((char *) &source, sizeof(int));
-        output.write((char *) &dest, sizeof(int));
-        output.write((char *) &distance, sizeof(int));
+        output.write((char *) &source, sizeof(unsigned int));
+        output.write((char *) &dest, sizeof(unsigned int));
+        output.write((char *) &distance, sizeof(unsigned int));
         skip_lines(input, 1);
     }
 

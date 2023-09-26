@@ -3,7 +3,7 @@
 
 using namespace std;
 
-Node::Node(int id, int weight) {
+Node::Node(unsigned int id,unsigned int weight) {
     this->id     = id;
     this->weight = weight;
     child        = nullptr;
@@ -19,28 +19,28 @@ vector<Node *> Node::get_neighbors() {
     return neighbors;
 }
 
-Edge::Edge(int weight, Node *node1, Node *node2) {
+Edge::Edge(unsigned int weight, Node *node1, Node *node2) {
     this->weight = weight;
     this->node1  = node1;
     this->node2  = node2;
     this->flag   = false;
 }
 
-Node *Graph::add_node(int id, int weight) {
+Node *Graph::add_node( unsigned int id, unsigned int weight) {
     Node *n = new Node(id, weight);
     nodes.push_back(n);
     this->node_weight_global += weight;
     return n;
 }
 
-Node *Graph::add_node_with_index(int id, int weight) {
+Node *Graph::add_node_with_index( unsigned int id, unsigned int weight) {
     Node *n = new Node(id, weight);
     nodes[id] = n;
     this->node_weight_global += weight;
     return n;
 }
 
-shared_ptr<Edge> Graph::add_edge(int source, int dest, int distance) {
+shared_ptr<Edge> Graph::add_edge(unsigned int source, unsigned int dest, unsigned int distance) {
     Node *node1        = nodes[source];
     Node *node2        = nodes[dest];
     shared_ptr<Edge> e = make_shared<Edge>(distance, node1, node2);
@@ -56,7 +56,7 @@ void Graph::print() {
         Node *n = nodes[i];
         cout << "Node " << n->id << " with weight " << n->weight << endl;
         for (auto &edge : n->edges) {
-            int source, dest;
+            unsigned int source, dest;
             source = edge->node1->id;
             dest   = edge->node2->id;
             if (source != n->id)
@@ -97,10 +97,10 @@ int Graph::max_node_degree() {
     return _max_node_degree;
 }
 
-int Graph::V(){
+unsigned int Graph::V() const{
     return (int)nodes.size();
 }
 
-int Graph::E(){
+unsigned long Graph::E(){
     return (int)edges.size();
 }

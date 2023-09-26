@@ -23,3 +23,5 @@ add_executable(main src/menu.cpp
         src/clusterCutSize.h src/clusterCutSize.cpp src/output.cpp)
 
 add_executable(testColoring src/testColoring.cpp src/parallel_coarsening.cpp src/Graph.cpp src/Graph.h)
+
+add_executable(readBin src/tools/read_bin.cpp)
