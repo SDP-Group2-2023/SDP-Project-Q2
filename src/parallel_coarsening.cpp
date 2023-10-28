@@ -12,7 +12,7 @@
  * @param randVal
  * @return true if n1 is bigger than n2, false otherwise
  */
-bool compare_nodes(Node*n1, Node*n2, std::vector<int>&randVal){
+bool compare_nodes(std::shared_ptr<Node>& n1, std::shared_ptr<Node>& n2, std::vector<int>&randVal){
     return (randVal[n2->id] < randVal[n1->id] || (randVal[n2->id] == randVal[n1->id] && n2->id < n1->id));
 }
 
@@ -149,7 +149,7 @@ void coarse_step(std::shared_ptr<Graph>&original_graph, std::shared_ptr<Graph>&c
             mtx.unlock();
 
             if(original_graph->colours[i] == colour){
-                Node*n = original_graph->nodes[i];
+                std::shared_ptr<Node> n = original_graph->nodes[i];
                 try {
                     auto e = get_max_edge(n->edges, matched_nodes);
                     matched_index[e->node1->id] = e->node2->id;
@@ -176,8 +176,8 @@ void coarse_step(std::shared_ptr<Graph>&original_graph, std::shared_ptr<Graph>&c
 
             if(original_graph->colours[i] == colour){
 
-                Node*n1 = original_graph->nodes[i];
-                Node*n2 = original_graph->nodes[matched_index[i]];
+                std::shared_ptr<Node> n1 = original_graph->nodes[i];
+                std::shared_ptr<Node> n2 = original_graph->nodes[matched_index[i]];
 
                 if(matched_index[n2->id] == n1->id){
                     mtx.lock();
@@ -192,11 +192,11 @@ void coarse_step(std::shared_ptr<Graph>&original_graph, std::shared_ptr<Graph>&c
 
     b.arrive_and_wait();
 
-    std::vector<Node*> buffer;
+    std::vector<std::shared_ptr<Node>> buffer;
 
     for(int i = start; i<original_graph->V(); i+=num_threads){
         if(matched_nodes[i]) continue;
-        Node*n = original_graph->nodes[i];
+        std::shared_ptr<Node> n = original_graph->nodes[i];
         buffer.emplace_back(n);
     }
 

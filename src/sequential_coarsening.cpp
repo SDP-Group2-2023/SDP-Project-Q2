@@ -5,10 +5,10 @@
  * @param nodes
  * @return sorted vector of nodes
  */
-std::vector<Node*> sortNodes(const std::vector<Node*>& nodes) {
-    std::vector<Node *> sortedNodes = nodes;
+std::vector<std::shared_ptr<Node>> sortNodes(const std::vector<std::shared_ptr<Node>>& nodes) {
+    std::vector<std::shared_ptr<Node>> sortedNodes = nodes;
     sort(sortedNodes.begin(), sortedNodes.end(),
-         [](Node *n1, Node *n2) {
+         [](const std::shared_ptr<Node>& n1, const std::shared_ptr<Node>& n2) {
         return n1->weight < n2->weight;
     });
     return sortedNodes;
@@ -46,9 +46,9 @@ std::shared_ptr<Graph> coarseGraph_s(std::shared_ptr<Graph>& originalGraph){
         auto sortedEdges = sortEdge(n->edges);
         for(auto&e :sortedEdges){
             if(!matchedNodes[e->node1->id] && !matchedNodes[e->node2->id]){
-                Node*n1 = e->node1;
-                Node*n2 = e->node2;
-                Node*newNode = coarse_graph->add_node(index, n1->weight + n2->weight);
+                std::shared_ptr<Node> n1 = e->node1;
+                std::shared_ptr<Node> n2 = e->node2;
+                std::shared_ptr<Node> newNode = coarse_graph->add_node(index, n1->weight + n2->weight);
                 n1->child =  n2->child = newNode;
                 matchedNodes[n1->id] = true;
                 matchedNodes[n2->id] = true;
@@ -58,7 +58,7 @@ std::shared_ptr<Graph> coarseGraph_s(std::shared_ptr<Graph>& originalGraph){
         }
 
         if(!matchedNodes[n->id]){
-            Node*newNode = coarse_graph->add_node(index, n->weight);
+            std::shared_ptr<Node> newNode = coarse_graph->add_node(index, n->weight);
             n->child = newNode;
             index++;
         }

@@ -30,8 +30,8 @@ void thread_kernighanLin(std::shared_ptr<Graph>& graph, int num_partitions, std:
         stuff_done = false;
         for (int color = 0; color < num_colors; color++) {
             // Calculate partitions weight
-            std::vector<int> partitions_size(num_partitions, 0);
-            for (auto n : graph->nodes)
+            std::vector<unsigned int> partitions_size(num_partitions, 0);
+            for (auto& n : graph->nodes)
                 partitions_size[partitions->at(n->id)] += n->weight;
             weight_barrier->arrive_and_wait();
 
@@ -45,12 +45,12 @@ void thread_kernighanLin(std::shared_ptr<Graph>& graph, int num_partitions, std:
             std::set<Change> possible_changes;
 
             for (auto n : actual_nodes) {
-                Node *node = graph->nodes[n];
-                for (auto neighbour : node->get_neighbors()) {
+                std::shared_ptr<Node> node = graph->nodes[n];
+                for (auto& neighbour : node->get_neighbors()) {
                     if (partitions->at(neighbour->id) != partitions->at(node->id)) {
-                        int C_gain = gain(*partitions, node, partitions->at(neighbour->id));
+                        int C_gain = gain(*partitions, ref(node), partitions->at(neighbour->id));
                         if (C_gain >= 0)
-                            possible_changes.emplace(partitions->at(neighbour->id), node, C_gain);
+                            possible_changes.emplace(partitions->at(neighbour->id), ref(node), C_gain);
                     }
                 }
             }

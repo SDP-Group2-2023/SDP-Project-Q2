@@ -72,7 +72,7 @@ void partitioning_p(std::shared_ptr<Graph>& g, int requestedPartitions, int num_
     //    delete allGraphs[i];
 }
 
-bool Compare_Node(Node *a, Node *b) {
+bool Compare_Node(std::shared_ptr<Node> a, std::shared_ptr<Node> b) {
     if (a->weight > b->weight || (a->weight == b->weight && a->id > b->id))
         return true;
     else
@@ -83,11 +83,11 @@ void partitioning_thread(std::shared_ptr<Graph> &graph, std::vector<int> *partit
                          std::vector<std::mutex> *nodes_m, std::vector<int> *starting_nodes,
                          int avg_p_weight, std::vector<int> *weight) {
     // vector of sets
-    std::vector<std::set<Node *, bool (*)(Node *, Node *)>> queues_of_nodes;
+    std::vector<std::set<std::shared_ptr<Node>, bool (*)(std::shared_ptr<Node>, std::shared_ptr<Node>)>> queues_of_nodes;
     for (int i = 0; i < starting_nodes->size(); i++) {
         // collecting in a set all neighbours of my starting node that are still unassigned to a partition
-        std::set<Node *, bool (*)(Node *, Node *)> queue(Compare_Node);
-        for (auto n : graph->nodes[(*starting_nodes)[i]]->get_neighbors())
+        std::set<std::shared_ptr<Node>, bool (*)(std::shared_ptr<Node>, std::shared_ptr<Node>)> queue(Compare_Node);
+        for (auto& n : graph->nodes[(*starting_nodes)[i]]->get_neighbors())
             queue.insert(n);
 
         queues_of_nodes.push_back(queue);
@@ -110,7 +110,7 @@ void partitioning_thread(std::shared_ptr<Graph> &graph, std::vector<int> *partit
                 (*partitions)[(*neighbour)->id] = (*partitions)[(*starting_nodes)[index]];
                 (*weight)[index] += (*neighbour)->weight;
 
-                Node *s_neighbour = *neighbour;
+                std::shared_ptr<Node> s_neighbour = *neighbour;
 
                 // add neighbour's neighbours to the queue
                 for (auto n : s_neighbour->get_neighbors())
@@ -138,7 +138,7 @@ void partitioning_thread(std::shared_ptr<Graph> &graph, std::vector<int> *partit
 void initial_partitioning_p(std::shared_ptr<Graph>&graph, std::vector<int> &partitions,
                             int num_partitions, int num_threads) {
     std::vector<std::vector<int>> starting_nodes(num_threads);
-    std::set<Node *, bool (*)(Node *, Node *)> ordered_nodes(graph->nodes.begin(), graph->nodes.end(), Compare_Node);
+    std::set<std::shared_ptr<Node>, bool (*)(std::shared_ptr<Node>, std::shared_ptr<Node>)> ordered_nodes(graph->nodes.begin(), graph->nodes.end(), Compare_Node);
     // one weight vector for each thread to operate on
     std::vector<std::vector<int>> weights(num_threads);
 
@@ -169,7 +169,7 @@ void initial_partitioning_p(std::shared_ptr<Graph>&graph, std::vector<int> &part
     for (int i = 0; i < partitions.size(); i++) {
         if (partitions[i] == -1) {
             int w_lightest_partition  = -1;
-            std::vector<Node *> neighbours = graph->nodes[i]->get_neighbors();
+            std::vector<std::shared_ptr<Node>> neighbours = graph->nodes[i]->get_neighbors();
             for (auto s : neighbours) {
                 if (partitions[s->id] == -1)
                     continue;

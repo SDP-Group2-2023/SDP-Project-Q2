@@ -11,6 +11,7 @@ struct m_edge{
     unsigned int node2;
     unsigned int weight;
 };
+
 void thread_reader(std::shared_ptr<Graph>& g, const unsigned int*filedata, unsigned int num_nodes,
                    unsigned long num_edges, int start, int step, std::barrier<>& bar, std::mutex& mtx_e){
 
@@ -37,11 +38,12 @@ void thread_reader(std::shared_ptr<Graph>& g, const unsigned int*filedata, unsig
 
     bar.arrive_and_wait();
 
-    mtx_e.lock();
-    for (auto &e : edges) {
+    std::scoped_lock<std::mutex> lock(mtx_e);
+
+    //mtx_e.lock();
+    for (auto &e : edges)
         g->add_edge(e.node1, e.node2, e.weight);
-    }
-    mtx_e.unlock();
+    //mtx_e.unlock();
 }
 
 std::shared_ptr<Graph> loadFromFile(const std::string& path) {
@@ -66,7 +68,7 @@ std::shared_ptr<Graph> loadFromFile(const std::string& path) {
     auto num_nodes = intData[0];
     auto num_edges = static_cast<unsigned long>(intData[2]) << 32 | intData[1];
 
-    std::shared_ptr<Graph> g(new Graph());
+    std::shared_ptr<Graph> g = std::make_shared<Graph>();
     g->nodes.resize(num_nodes);
 
     std::vector<std::thread> readers(num_threads);
