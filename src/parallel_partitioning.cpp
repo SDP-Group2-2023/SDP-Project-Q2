@@ -41,6 +41,9 @@ void partitioning_p(std::shared_ptr<Graph>& g, int requestedPartitions, int num_
         std::cout << "Iteration " << iterations << std::endl;
         auto start          = std::chrono::high_resolution_clock::now();
         auto coarsedGraph = coarseGraph_p(allGraphs.back(), num_threads);
+
+        std::cout << "Coarsed graph: " << coarsedGraph->V() << std::endl;
+
         auto end            = std::chrono::high_resolution_clock::now();
         std::cout << "Coarsening time: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms" << std::endl;
         // coarsedGraph->print();
@@ -101,7 +104,7 @@ void partitioning_thread(std::shared_ptr<Graph> &graph, std::vector<int> *partit
     while (!next_partition) {
         for (auto neighbour = queues_of_nodes[index].begin(); neighbour != queues_of_nodes[index].end();) {
             // lock starting node and its neighbour
-            std::scoped_lock((*nodes_m)[(*neighbour)->id], (*nodes_m)[(*starting_nodes)[index]]);
+            auto sl = std::scoped_lock((*nodes_m)[(*neighbour)->id], (*nodes_m)[(*starting_nodes)[index]]);
             // we set 1.4 waiting to test if it's ok as a multiplication factor
             // if adding the neighbour to the partition does not exceed the avg and the neighbour hasn't been
             // assigned by another thread to another partition, assign it and remove it from the set

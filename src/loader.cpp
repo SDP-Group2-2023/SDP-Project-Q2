@@ -5,6 +5,7 @@
 #include <sys/stat.h>
 #include <thread>
 #include <barrier>
+#include <mutex>
 
 struct m_edge{
     unsigned int node1;

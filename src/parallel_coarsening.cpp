@@ -233,7 +233,7 @@ std::shared_ptr<Graph> coarseGraph_p(std::shared_ptr<Graph>&g, int num_threads){
         t.join();
 
     for(auto& e : g->edges){
-        if(e->node1->child != e->node2->child)
+        if(e->node1->child->id != e->node2->child->id)
             coarse_graph->add_or_sum_edge(e->node1->child, e->node2->child, e->weight);
     }
 
