@@ -2,14 +2,12 @@
 #include <list>
 #include "partitioning.h"
 
-using namespace std;
-
 int main() {
 
     int requestedPartitions;
     char command = 's';
     string path;
-    Graph *g = nullptr;
+    shared_ptr<Graph> g = nullptr;
 
     do {
         cout << "Please select action:" << endl;
@@ -82,5 +80,5 @@ int main() {
         }
     } while (command != 'E');
 
-    delete g;
+    //delete g;
 }

@@ -1,16 +1,14 @@
 #include "Graph.h"
 #include <iostream>
 
-using namespace std;
-
 Node::Node(unsigned int id,unsigned int weight) {
     this->id     = id;
     this->weight = weight;
     child        = nullptr;
 }
 
-vector<Node *> Node::get_neighbors() {
-    vector<Node *> neighbors;
+std::vector<Node *> Node::get_neighbors() {
+    std::vector<Node *> neighbors;
 
     for (auto &e : edges) {
         neighbors.push_back((this == e->node1) ? e->node2 : e->node1);
@@ -40,10 +38,10 @@ Node *Graph::add_node_with_index( unsigned int id, unsigned int weight) {
     return n;
 }
 
-shared_ptr<Edge> Graph::add_edge(unsigned int source, unsigned int dest, unsigned int distance) {
+std::shared_ptr<Edge> Graph::add_edge(unsigned int source, unsigned int dest, unsigned int distance) {
     Node *node1        = nodes[source];
     Node *node2        = nodes[dest];
-    shared_ptr<Edge> e = make_shared<Edge>(distance, node1, node2);
+    std::shared_ptr<Edge> e(new Edge(distance, node1, node2));
     edges.push_back(e);
     node1->edges.push_back(e);
     node2->edges.push_back(e);
@@ -51,17 +49,17 @@ shared_ptr<Edge> Graph::add_edge(unsigned int source, unsigned int dest, unsigne
 }
 
 void Graph::print() {
-    cout << "Graph with " << V() << " nodes and " << E() << " edges" << endl;
+    std::cout << "Graph with " << V() << " nodes and " << E() << " edges" << std::endl;
     for (int i = 0; i < V(); i++) {
         Node *n = nodes[i];
-        cout << "Node " << n->id << " with weight " << n->weight << endl;
+        std::cout << "Node " << n->id << " with weight " << n->weight << std::endl;
         for (auto &edge : n->edges) {
             unsigned int source, dest;
             source = edge->node1->id;
             dest   = edge->node2->id;
             if (source != n->id)
-                swap(source, dest);
-            cout << "\tEdge " << source << " -> " << dest << " with weight " << edge->weight << endl;
+                std::swap(source, dest);
+            std::cout << "\tEdge " << source << " -> " << dest << " with weight " << edge->weight << std::endl;
         }
     }
 }
@@ -76,7 +74,7 @@ Graph::~Graph() {
     }
 }
 
-void Graph::add_or_sum_edge(Node *n1, Node *n2, int distance) {
+void Graph::add_or_sum_edge(Node *n1, Node *n2, unsigned int distance) {
     for (auto &edge : n1->edges) {
         if (edge->node1 == n2 || edge->node2 == n2) {
             edge->weight += distance;

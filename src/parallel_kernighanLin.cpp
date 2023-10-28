@@ -3,16 +3,13 @@
 #include "partitioning.h"
 #include <algorithm>
 #include <barrier>
-#include <mutex>
 #include <random>
 #include <set>
-#include <thread>
 #include <vector>
+#include <thread>
 
-using namespace std;
-
-barrier<> *color_barrier;
-barrier<> *weight_barrier;
+std::barrier<> *color_barrier;
+std::barrier<> *weight_barrier;
 
 /*serve grafo, num_partizioni, partizioni, num_threads
 colori, num_colors
@@ -25,26 +22,27 @@ colori, num_colors
 adiacenti non si influenzano il gain a vicenda
 3-attendi terminazione dei thread e ripeti con un altro colore*/
 
-void thread_kernighanLin(Graph *graph, int num_partitions, vector<int> *partitions, int num_colors, vector<int> *colors, vector<int> *nodes) {
+void thread_kernighanLin(std::shared_ptr<Graph>& graph, int num_partitions, std::vector<int> *partitions,
+                         int num_colors, std::vector<int> *colors, std::vector<int> *nodes) {
     bool stuff_done = true;
     int counter     = 0;
     while (stuff_done) {
         stuff_done = false;
         for (int color = 0; color < num_colors; color++) {
             // Calculate partitions weight
-            vector<int> partitions_size(num_partitions, 0);
+            std::vector<int> partitions_size(num_partitions, 0);
             for (auto n : graph->nodes)
                 partitions_size[partitions->at(n->id)] += n->weight;
             weight_barrier->arrive_and_wait();
 
-            vector<int> actual_nodes;
+            std::vector<int> actual_nodes;
             for (auto n : *nodes) {
                 if ((*colors)[n] == color)
                     actual_nodes.push_back(n);
             }
 
             // Calculate the gains for every node
-            set<Change> possible_changes;
+            std::set<Change> possible_changes;
 
             for (auto n : actual_nodes) {
                 Node *node = graph->nodes[n];
@@ -57,7 +55,7 @@ void thread_kernighanLin(Graph *graph, int num_partitions, vector<int> *partitio
                 }
             }
 
-            set<int> moved;
+            std::set<int> moved;
 
             while (true) {
                 // from the set select the best (if it leads to balanced partitions) gain movement and perform it (update "partitions" vector)
@@ -93,21 +91,20 @@ void thread_kernighanLin(Graph *graph, int num_partitions, vector<int> *partitio
     // da rivedere se fare così oppure no
     weight_barrier->arrive_and_drop();
     color_barrier->arrive_and_drop();
-    return;
 }
 
-void kernighanLin_p(Graph *graph, int num_partitions, vector<int> &partitions, int num_colors, vector<int> &colors, int num_threads) {
+void kernighanLin_p(std::shared_ptr<Graph>& graph, int num_partitions, std::vector<int> &partitions, int num_colors, std::vector<int> &colors, int num_threads) {
     /*
         divisione dei nodi ai singoli threads
         creazione dei threads
         aspetta il termine dei thread
     */
 
-    vector<vector<int>> nodes_per_thread(num_threads);
-    color_barrier  = new barrier(num_threads);
-    weight_barrier = new barrier(num_threads);
+    std::vector<std::vector<int>> nodes_per_thread(num_threads);
+    color_barrier  = new std::barrier(num_threads);
+    weight_barrier = new std::barrier(num_threads);
 
-    vector<int> nodes(graph->nodes.size());
+    std::vector<int> nodes(graph->nodes.size());
     for (int i = 0; i < nodes.size(); i++)
         nodes[i] = i;
 
@@ -119,9 +116,9 @@ void kernighanLin_p(Graph *graph, int num_partitions, vector<int> &partitions, i
     }
     nodes.clear();
 
-    vector<thread> kernighanLiners;
+    std::vector<std::thread> kernighanLiners;
     for (int i = 0; i < num_threads; i++) {
-        kernighanLiners.emplace_back(thread_kernighanLin, graph, num_partitions, &partitions, num_colors, &colors, &nodes_per_thread[i]);
+        kernighanLiners.emplace_back(thread_kernighanLin, ref(graph), num_partitions, &partitions, num_colors, &colors, &nodes_per_thread[i]);
     }
 
     for (int i = 0; i < num_threads; i++) {
@@ -131,7 +128,5 @@ void kernighanLin_p(Graph *graph, int num_partitions, vector<int> &partitions, i
     delete color_barrier;
     delete weight_barrier;
 
-    cout << calculateCutSize(graph, partitions) << endl;
-
-    return;
+    std::cout << calculateCutSize(graph, partitions) << std::endl;
 }

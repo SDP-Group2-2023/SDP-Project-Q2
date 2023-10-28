@@ -5,8 +5,8 @@
  * @param nodes
  * @return sorted vector of nodes
  */
-vector<Node*> sortNodes(const vector<Node*>& nodes) {
-    vector<Node *> sortedNodes = nodes;
+std::vector<Node*> sortNodes(const std::vector<Node*>& nodes) {
+    std::vector<Node *> sortedNodes = nodes;
     sort(sortedNodes.begin(), sortedNodes.end(),
          [](Node *n1, Node *n2) {
         return n1->weight < n2->weight;
@@ -19,7 +19,7 @@ vector<Node*> sortNodes(const vector<Node*>& nodes) {
  * @param edges
  * @return sorted vector of edges
  */
-vector<shared_ptr<Edge>> sortEdge(const vector<shared_ptr<Edge>>& edges) {
+std::vector<std::shared_ptr<Edge>> sortEdge(const std::vector<std::shared_ptr<Edge>>& edges) {
     auto sortedEdges = edges;
     sort(sortedEdges.begin(), sortedEdges.end(),
          [](auto e1, auto e2) {
@@ -33,10 +33,10 @@ vector<shared_ptr<Edge>> sortEdge(const vector<shared_ptr<Edge>>& edges) {
  * @param originalGraph
  * @return coarsened graph
  */
-Graph* coarseGraph_s(Graph* originalGraph){
-    auto coarse_graph = new Graph();
+std::shared_ptr<Graph> coarseGraph_s(std::shared_ptr<Graph>& originalGraph){
+    std::shared_ptr<Graph> coarse_graph(new Graph());
     int index = 0;
-    vector<bool> matchedNodes(originalGraph->V(), false);
+    std::vector<bool> matchedNodes(originalGraph->V(), false);
 
     auto orderedNodes = sortNodes(originalGraph->nodes);
     for(auto&n: orderedNodes){

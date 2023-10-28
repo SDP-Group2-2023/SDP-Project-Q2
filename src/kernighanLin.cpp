@@ -5,9 +5,7 @@
 #include <map>
 #include <set>
 
-using namespace std;
-
-int countPartitionWeight(Graph *graph, int partition, vector<int> &partitions) {
+int countPartitionWeight(std::shared_ptr<Graph>& graph, int partition, std::vector<int> &partitions) {
     int weight = 0;
     for (auto &n : graph->nodes) {
         if (partitions[n->id] == partition) {
@@ -17,7 +15,7 @@ int countPartitionWeight(Graph *graph, int partition, vector<int> &partitions) {
     return weight;
 }
 
-unsigned long long calculateCutSize(Graph *graph, vector<int> &partitions) {
+unsigned long long calculateCutSize(std::shared_ptr<Graph>& graph, std::vector<int> &partitions) {
     unsigned long long cutsize = 0;
     for (auto &n : graph->nodes) {
         for (auto &edge : n->edges) {
@@ -31,7 +29,7 @@ unsigned long long calculateCutSize(Graph *graph, vector<int> &partitions) {
     return cutsize;
 }
 
-int gain(vector<int> &partitions, Node *node_to_move, int to_partition) {
+int gain(std::vector<int> &partitions, Node *node_to_move, int to_partition) {
     if (partitions[node_to_move->id] == to_partition)
         return 0;
 
@@ -49,11 +47,11 @@ int gain(vector<int> &partitions, Node *node_to_move, int to_partition) {
 
 // Fiduccia and Mattheyses version KL-inspired was used to implement the kernighanLin function
 
-void kernighanLin(Graph *graph, int num_partitions, vector<int> &partitions) {
+void kernighanLin(std::shared_ptr<Graph>& graph, int num_partitions, std::vector<int> &partitions) {
     bool improved;
     unsigned long long cut_size      = calculateCutSize(graph, partitions);
     unsigned long long best_cut_size = cut_size;
-    vector<int> best_partitions(partitions);
+    std::vector<int> best_partitions(partitions);
 
     /* Partition weight calculation has been anticipated outside the do-while in order to improve timing performance:
      * indeed "possible_changes" computation is proportional to V*P (number of nodes*number of partitions) and recomputing
@@ -62,19 +60,19 @@ void kernighanLin(Graph *graph, int num_partitions, vector<int> &partitions) {
      * We now observe the algorithm bottleneck is moved from "iteration 8" to "iteration 4", which is our new bottleneck, which
      * we are trying to resolve.
      */
-    graph->partitions_size = vector<int>(num_partitions);    // this could possible be made a graph attribute, so to speed up, since it doesn't change from iteration to iteration
+    graph->partitions_size = std::vector<int>(num_partitions);    // this could possible be made a graph attribute, so to speed up, since it doesn't change from iteration to iteration
     for (int i = 0; i < num_partitions; i++)
         graph->partitions_size[i] = countPartitionWeight(graph, i, partitions);
 
-    vector<int> best_partitions_weights(graph->partitions_size);
+    std::vector<int> best_partitions_weights(graph->partitions_size);
 
     do {
         improved = false;
 
         // constraint (see article explanation : each node must be moved only once inside the innermost loop so we mark it with a flag)
-        vector<bool> moved(graph->V(), false);
-        set<Change> possible_changes;
-        map<Node *, map<int, int>> node_gain_mapping;
+        std::vector<bool> moved(graph->V(), false);
+        std::set<Change> possible_changes;
+        std::map<Node *, std::map<int, int>> node_gain_mapping;
 
         timing choices_loop;
 
@@ -194,5 +192,5 @@ void kernighanLin(Graph *graph, int num_partitions, vector<int> &partitions) {
 
     } while (improved);
 
-    cout << calculateCutSize(graph, partitions) << endl;
+    std::cout << calculateCutSize(graph, partitions) << std::endl;
 }

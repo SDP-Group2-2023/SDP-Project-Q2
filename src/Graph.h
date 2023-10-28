@@ -6,15 +6,13 @@
 #include <memory>
 #include <vector>
 
-using namespace std;
-
 struct Node {
     Node(unsigned int id, unsigned int weight);
     unsigned int id;
     unsigned int weight;
     Node *child;
-    vector<shared_ptr<struct Edge>> edges;
-    vector<Node *> get_neighbors();
+    std::vector<std::shared_ptr<struct Edge>> edges;
+    std::vector<Node *> get_neighbors();
 };
 
 struct Edge {
@@ -31,15 +29,15 @@ struct Graph {
     unsigned int node_weight_global = 0;
     unsigned int _max_node_degree   = 0;
     unsigned int num_colours        = 0;
-    vector<int> colours;
-    vector<int> partitions_size;
-    vector<Node *> nodes;
-    vector<shared_ptr<Edge>> edges;
+    std::vector<int> colours;
+    std::vector<int> partitions_size;
+    std::vector<Node *> nodes;
+    std::vector<std::shared_ptr<Edge>> edges;
     Node *add_node(unsigned int id, unsigned int weight);
     Node *add_node_with_index(unsigned int id, unsigned int weight);
-    shared_ptr<Edge> add_edge(unsigned int source, unsigned int dest, unsigned int distance);
+    std::shared_ptr<Edge> add_edge(unsigned int source, unsigned int dest, unsigned int distance);
     void print();
-    void add_or_sum_edge(Node *n1, Node *n2, int distance);
+    void add_or_sum_edge(Node *n1, Node *n2, unsigned int distance);
     int max_node_degree();
     ~Graph();
 };
