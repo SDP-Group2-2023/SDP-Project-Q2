@@ -4,6 +4,7 @@
 #include <set>
 #include <thread>
 #include <vector>
+#include <mutex>
 
 void uncoarsen_graph_step(std::shared_ptr<Graph>& g, std::vector<int> &partitions,
                           std::vector<int> &newPartitions, int num_nodes, int start, int step) {
