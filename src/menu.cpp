@@ -63,6 +63,9 @@ int main() {
                 cout << "Running parallel partitioning - ()" << endl;
                 cout << "How many partitions should be found in graph?" << endl;
                 cin >> requestedPartitions;
+                cout << "How many threads should be employed?" << endl;
+                cin >> numThreads;
+                partitioning_p(g, requestedPartitions, numThreads);
                 break;
             case 'C':
                 if (g == nullptr) {
