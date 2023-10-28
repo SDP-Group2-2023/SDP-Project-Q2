@@ -2,6 +2,7 @@
 #include <thread>
 #include <barrier>
 #include <vector>
+#include <mutex>
 
 /**
  * Compares two nodes based on their random value.
