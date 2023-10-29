@@ -41,7 +41,6 @@ struct Graph {
     NodePtr add_node(unsigned int id, unsigned int weight);
     NodePtr add_node_with_index(unsigned int id, unsigned int weight);
     EdgePtr add_edge(unsigned int source, unsigned int dest, unsigned int distance);
-    //void print();
     void add_or_sum_edge(const NodePtr& n1,const NodePtr& n2, unsigned int distance);
     unsigned int max_node_degree();
 };

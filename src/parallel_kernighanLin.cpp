@@ -20,7 +20,7 @@ colori, num_colors
 adiacenti non si influenzano il gain a vicenda
 3-attendi terminazione dei thread e ripeti con un altro colore*/
 
-void thread_kernighanLin(GraphPtr & graph, int num_partitions, std::vector<int> *partitions,
+void thread_kernighanLin(const GraphPtr & graph, int num_partitions, std::vector<int> *partitions,
                          int num_colors, std::vector<int> *colors, std::vector<int> *nodes, std::barrier<>& weight_barrier, std::barrier<>& color_barrier) {
     bool stuff_done = true;
     int counter     = 0;
@@ -91,7 +91,7 @@ void thread_kernighanLin(GraphPtr & graph, int num_partitions, std::vector<int> 
     color_barrier.arrive_and_drop();
 }
 
-void kernighanLin_p(GraphPtr & graph, int num_partitions, std::vector<int> &partitions, int num_colors, std::vector<int> &colors, int num_threads) {
+void kernighanLin_p(const GraphPtr & graph, int num_partitions, std::vector<int> &partitions, int num_colors, std::vector<int> &colors, int num_threads) {
     /*
         divisione dei nodi ai singoli threads
         creazione dei threads

@@ -30,7 +30,7 @@ std::vector<int> uncoarsen_graph_p(GraphPtr& g, std::vector<int> &partitions, in
     return newPartitions;
 }
 
-void partitioning_p(GraphPtr & g, int requestedPartitions, int num_threads) {
+void partitioning_p(const GraphPtr & g, int requestedPartitions, int num_threads) {
     unsigned int actual_num_partitions = g->V();
 
     std::vector<GraphPtr> allGraphs;

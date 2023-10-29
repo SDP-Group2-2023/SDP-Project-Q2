@@ -5,7 +5,7 @@
 #include <map>
 #include <set>
 
-int countPartitionWeight(GraphPtr& graph, int partition, std::vector<int> &partitions) {
+int countPartitionWeight(const GraphPtr& graph, int partition, std::vector<int> &partitions) {
     int weight = 0;
     for (auto &n : graph->nodes) {
         if (partitions[n->id] == partition) {
@@ -15,7 +15,7 @@ int countPartitionWeight(GraphPtr& graph, int partition, std::vector<int> &parti
     return weight;
 }
 
-unsigned long long calculateCutSize(GraphPtr& graph, std::vector<int> &partitions) {
+unsigned long long calculateCutSize(const GraphPtr& graph, std::vector<int> &partitions) {
     unsigned long long cutsize = 0;
     for (auto &n : graph->nodes) {
         for (auto &edge : n->edges) {
@@ -47,7 +47,7 @@ int gain(std::vector<int> &partitions,  NodePtr& node_to_move, int to_partition)
 
 // Fiduccia and Mattheyses version KL-inspired was used to implement the kernighanLin function
 
-void kernighanLin(GraphPtr & graph, int num_partitions, std::vector<int> &partitions) {
+void kernighanLin(const GraphPtr & graph, int num_partitions, std::vector<int> &partitions) {
     bool improved;
     unsigned long long cut_size      = calculateCutSize(graph, partitions);
     unsigned long long best_cut_size = cut_size;

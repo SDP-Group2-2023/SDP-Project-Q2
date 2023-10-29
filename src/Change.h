@@ -3,7 +3,7 @@
 #define CHANGE_H
 
 struct Change{
-    Change(int new_partition, NodePtr& node, int gain);
+    Change(int new_partition,const NodePtr& node, int gain);
     Change();
     int new_partition;
     NodePtr node;
