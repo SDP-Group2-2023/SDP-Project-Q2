@@ -13,7 +13,10 @@ void save_to_file(const std::string& path, const GraphPtr & graph,
     for (int i = 0; i < graph->V(); i++)
         partitions_sizes[partitions[i]] += graph->nodes[i]->weight;
 
-    int max = 0, min = graph->node_weight_global, avg = 0;
+    int max = 0;
+    int min = graph->node_weight_global;
+    int avg = 0;
+
     for (auto w : partitions_sizes) {
         if (w > max)
             max = w;

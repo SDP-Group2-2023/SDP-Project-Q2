@@ -12,7 +12,7 @@
  * @param randVal
  * @return true if n1 is bigger than n2, false otherwise
  */
-bool compare_nodes(NodePtr & n1, NodePtr & n2, std::vector<unsigned int>&randVal){
+bool compare_nodes(const NodePtr & n1, const NodePtr & n2, std::vector<unsigned int>&randVal){
     return (randVal[n2->id] < randVal[n1->id] || (randVal[n2->id] == randVal[n1->id] && n2->id < n1->id));
 }
 
@@ -26,11 +26,11 @@ bool compare_nodes(NodePtr & n1, NodePtr & n2, std::vector<unsigned int>&randVal
  * @param b the barrier to use
  * @param color_mtx the mutex to use
  */
-void colourGraphThread(GraphPtr &g, std::vector<unsigned int>&randVal, int start,int num_threads,
+void colourGraphThread(const GraphPtr &g, std::vector<unsigned int>&randVal, int start,int num_threads,
                        std::barrier<> &b, std::mutex&color_mtx,
                        int&colored, int&last_color, int&iterations){
 
-    std::unique_lock<std::mutex> thread_lock{color_mtx, std::defer_lock};
+    std::unique_lock thread_lock{color_mtx, std::defer_lock};
 
     for(int i = start; i<g->V(); i+=num_threads)
         randVal[i] = (unsigned int)random();
@@ -50,10 +50,9 @@ void colourGraphThread(GraphPtr &g, std::vector<unsigned int>&randVal, int start
                 continue;
 
             bool isMin = true;
-            auto this_node = g->nodes[i];
 
-            for (auto &other_node: this_node->get_neighbors()) {
-                if (compare_nodes(this_node, other_node, randVal)) {
+            for (const auto &other_node: g->nodes[i]->get_neighbors()) {
+                if (compare_nodes(g->nodes[i], other_node, randVal)) {
                     isMin = false;
                     break;
                 }
@@ -132,7 +131,7 @@ EdgePtr get_max_edge(const EdgePtrArr& edges, std::vector<bool>& matched_nodes){
     return max_edge;
 }
 
-void coarse_step(GraphPtr& original_graph, GraphPtr& coarse_graph, int start, int num_threads,
+void coarse_step(const GraphPtr& original_graph, const GraphPtr& coarse_graph, int start, int num_threads,
                  std::mutex&mtx, std::barrier<>&b,  int max_colour, std::vector<bool>&matched_nodes,
                  std::vector<unsigned int>&matched_index, int&n_index){
     int colour = 0;
@@ -154,7 +153,7 @@ void coarse_step(GraphPtr& original_graph, GraphPtr& coarse_graph, int start, in
                     matched_index[e->node1.lock()->id] = e->node2.lock()->id;
                     matched_index[e->node2.lock()->id] = e->node1.lock()->id;
                 }
-                catch (std::runtime_error& e){
+                catch (...){
                     mtx.lock();
                     matched_nodes[i] = true;
                     n->child = coarse_graph->add_node(n_index++, n->weight);
@@ -216,7 +215,7 @@ GraphPtr coarseGraph_p(GraphPtr&g, int num_threads){
     auto coarse_graph = std::make_shared<Graph>();
 
     std::mutex mtx;
-    std::barrier<> b(num_threads);
+    std::barrier b(num_threads);
 
     std::vector<bool> matched_nodes(g->V(), false);
     std::vector<unsigned int> matched_index(g->V(), 0);

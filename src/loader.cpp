@@ -53,7 +53,7 @@ void thread_reader(const thread_data& data, int start, std::barrier<>& bar, std:
     bar.arrive_and_wait();
     std::scoped_lock<std::mutex> lock(mtx_e);
 
-    for (auto &e : edges)
+    for (const auto &e : edges)
         g->add_edge(e.node1, e.node2, e.weight);
 }
 

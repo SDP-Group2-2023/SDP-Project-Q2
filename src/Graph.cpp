@@ -10,7 +10,7 @@ NodePtrArr Node::get_neighbors() const{
     return neighbors;
 }
 
-Edge::Edge(unsigned int weight, NodePtr & node1, NodePtr & node2)
+Edge::Edge(unsigned int weight, const NodePtr & node1, const NodePtr & node2)
 : weight(weight), node1(node1), node2(node2){}
 
 NodePtr Graph::add_node(unsigned int id, unsigned int weight){
@@ -37,7 +37,7 @@ EdgePtr Graph::add_edge(unsigned int source, unsigned int dest, unsigned int dis
 }
 
 void Graph::add_or_sum_edge(const NodePtr & n1, const NodePtr& n2, unsigned int distance) {
-    for (auto &edge : n1->edges) {
+    for (const auto &edge : n1->edges) {
         if (edge->node1.lock() == n2 || edge->node2.lock() == n2) {
             edge->weight += distance;
             return;
@@ -49,7 +49,7 @@ void Graph::add_or_sum_edge(const NodePtr & n1, const NodePtr& n2, unsigned int 
 unsigned int Graph::max_node_degree() {
     if (_max_node_degree != 0)
         return _max_node_degree;
-    for (auto& n : nodes) {
+    for (const auto& n : nodes) {
         if (_max_node_degree < n->edges.size())
             _max_node_degree = n->edges.size();
     }

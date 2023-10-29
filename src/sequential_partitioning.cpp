@@ -12,10 +12,10 @@ struct RetrieveKey {
     }
 };
 
-std::vector<int> uncoarsenGraph(GraphPtr& g, std::vector<int> &partitions) {
+std::vector<int> uncoarsenGraph(const GraphPtr& g, std::vector<int> &partitions) {
     std::vector<int> newPartitions(g->V());
 
-    for (auto &n : g->nodes)
+    for (const auto &n : g->nodes)
         newPartitions[n->id] = partitions[n->child->id];
 
     return newPartitions;
@@ -29,7 +29,7 @@ void initial_partitioning_s(const GraphPtr& g, std::vector<int> &partitions, int
     for (int i = 0; i < g->V(); i++) {    // first assign each node to its own partition
         partitions[i] = i;
     }
-    for (auto& e : g->edges) {    // then populate the set and the hashmap
+    for (const auto& e : g->edges) {    // then populate the set and the hashmap
         cluster_cut_size cluster(e->node1.lock()->id, e->node2.lock()->id, e->weight);
         cut_sizes.insert(cluster);
         cluster_hashMap[cluster.clusterA][cluster.clusterB] = cluster.cutSize;
@@ -95,7 +95,7 @@ void initial_partitioning_s(const GraphPtr& g, std::vector<int> &partitions, int
         std::cout << "Error in the partitioning" << std::endl;    // To be removed once testing is done
 }
 
-void partitioning_s( GraphPtr& g, int requestedPartitions) {
+void partitioning_s(const GraphPtr& g, int requestedPartitions) {
     unsigned int actual_num_partitions = g->V();
 
     std::vector<GraphPtr> allGraphs;

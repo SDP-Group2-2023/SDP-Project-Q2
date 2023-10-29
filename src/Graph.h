@@ -22,7 +22,7 @@ struct Node {
 };
 
 struct Edge {
-    Edge(unsigned int weight, NodePtr& node1, NodePtr& node2);
+    Edge(unsigned int weight,const NodePtr& node1, const NodePtr& node2);
     unsigned int weight;
     std::weak_ptr<Node> node1;
     std::weak_ptr<Node> node2;

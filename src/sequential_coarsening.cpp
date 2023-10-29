@@ -5,10 +5,16 @@
  * @param nodes
  * @return sorted vector of nodes
  */
-NodePtrArr sortNodes( NodePtrArr & nodes) {
+NodePtrArr sortNodes(const NodePtrArr & nodes) {
     auto sortedNodes = nodes;
+    /*
     sort(sortedNodes.begin(), sortedNodes.end(),
          [](const auto& n1, const auto& n2) {
+        return n1->weight < n2->weight;
+    });
+     */
+
+    std::ranges::sort(sortedNodes, [](const auto& n1, const auto& n2) {
         return n1->weight < n2->weight;
     });
     return sortedNodes;
@@ -19,12 +25,18 @@ NodePtrArr sortNodes( NodePtrArr & nodes) {
  * @param edges
  * @return sorted vector of edges
  */
-EdgePtrArr sortEdge( EdgePtrArr & edges) {
+EdgePtrArr sortEdge(const EdgePtrArr & edges) {
     auto sortedEdges = edges;
+
+    /*
     sort(sortedEdges.begin(), sortedEdges.end(),
          [](const auto& e1, const auto& e2) {
              return e1->weight > e2->weight;
          });
+    */
+    std::ranges::sort(sortedEdges, [](const auto& e1, const auto& e2) {
+        return e1->weight > e2->weight;
+    });
     return sortedEdges;
 }
 
@@ -33,18 +45,18 @@ EdgePtrArr sortEdge( EdgePtrArr & edges) {
  * @param originalGraph
  * @return coarsened graph
  */
-GraphPtr coarseGraph_s(GraphPtr & originalGraph){
+GraphPtr coarseGraph_s(const GraphPtr & originalGraph){
     auto coarse_graph = std::make_shared<Graph>();
     int index = 0;
     std::vector<bool> matchedNodes(originalGraph->V(), false);
 
-    auto orderedNodes = sortNodes(originalGraph->nodes);
-    for(const auto&n: orderedNodes){
+    //auto orderedNodes = sortNodes(originalGraph->nodes);
+    for(const auto&n: sortNodes(originalGraph->nodes)){
         if(matchedNodes[n->id])
             continue;
 
-        auto sortedEdges = sortEdge(n->edges);
-        for(const auto&e :sortedEdges){
+        //auto sortedEdges = sortEdge(n->edges);
+        for(const auto&e : sortEdge(n->edges)){
             if(!matchedNodes[e->node1.lock()->id] && !matchedNodes[e->node2.lock()->id]){
                 auto n1 = e->node1.lock();
                 auto n2 = e->node2.lock();
