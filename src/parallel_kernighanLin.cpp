@@ -8,8 +8,6 @@
 #include <vector>
 #include <thread>
 
-std::barrier<> *color_barrier;
-std::barrier<> *weight_barrier;
 
 /*serve grafo, num_partizioni, partizioni, num_threads
 colori, num_colors
@@ -23,7 +21,7 @@ adiacenti non si influenzano il gain a vicenda
 3-attendi terminazione dei thread e ripeti con un altro colore*/
 
 void thread_kernighanLin(GraphPtr & graph, int num_partitions, std::vector<int> *partitions,
-                         int num_colors, std::vector<int> *colors, std::vector<int> *nodes) {
+                         int num_colors, std::vector<int> *colors, std::vector<int> *nodes, std::barrier<>& weight_barrier, std::barrier<>& color_barrier) {
     bool stuff_done = true;
     int counter     = 0;
     while (stuff_done) {
@@ -33,7 +31,7 @@ void thread_kernighanLin(GraphPtr & graph, int num_partitions, std::vector<int> 
             std::vector<unsigned int> partitions_size(num_partitions, 0);
             for (auto& n : graph->nodes)
                 partitions_size[partitions->at(n->id)] += n->weight;
-            weight_barrier->arrive_and_wait();
+            weight_barrier.arrive_and_wait();
 
             std::vector<int> actual_nodes;
             for (auto n : *nodes) {
@@ -83,14 +81,14 @@ void thread_kernighanLin(GraphPtr & graph, int num_partitions, std::vector<int> 
                 possible_changes.erase(best_change);
             }
 
-            color_barrier->arrive_and_wait();
+            color_barrier.arrive_and_wait();
         }
         if(!stuff_done && counter++ < 20)
             stuff_done = true;
     }
     // da rivedere se fare così oppure no
-    weight_barrier->arrive_and_drop();
-    color_barrier->arrive_and_drop();
+    weight_barrier.arrive_and_drop();
+    color_barrier.arrive_and_drop();
 }
 
 void kernighanLin_p(GraphPtr & graph, int num_partitions, std::vector<int> &partitions, int num_colors, std::vector<int> &colors, int num_threads) {
@@ -101,8 +99,8 @@ void kernighanLin_p(GraphPtr & graph, int num_partitions, std::vector<int> &part
     */
 
     std::vector<std::vector<int>> nodes_per_thread(num_threads);
-    color_barrier  = new std::barrier(num_threads);
-    weight_barrier = new std::barrier(num_threads);
+    std::barrier color_barrier(num_threads);
+    std::barrier weight_barrier(num_threads);
 
     std::vector<int> nodes(graph->nodes.size());
     for (int i = 0; i < nodes.size(); i++)
@@ -118,15 +116,13 @@ void kernighanLin_p(GraphPtr & graph, int num_partitions, std::vector<int> &part
 
     std::vector<std::thread> kernighanLiners;
     for (int i = 0; i < num_threads; i++) {
-        kernighanLiners.emplace_back(thread_kernighanLin, ref(graph), num_partitions, &partitions, num_colors, &colors, &nodes_per_thread[i]);
+        kernighanLiners.emplace_back(thread_kernighanLin, ref(graph), num_partitions, &partitions, num_colors,
+                                     &colors, &nodes_per_thread[i], std::ref(weight_barrier), std::ref(color_barrier));
     }
 
-    for (int i = 0; i < num_threads; i++) {
+    for (int i = 0; i < num_threads; i++)
         kernighanLiners[i].join();
-    }
 
-    delete color_barrier;
-    delete weight_barrier;
 
     std::cout << calculateCutSize(graph, partitions) << std::endl;
 }

@@ -97,7 +97,7 @@ void kernighanLin(GraphPtr & graph, int num_partitions, std::vector<int> &partit
 
         int num_iteration = 0;
         int iteration, max_iteration = 0, avg_iteration = 0;
-        timing choosing_loop(TIMING_DEFER);
+        timing choosing_loop(timing_flag::TIMING_DEFER);
 
         while (sum_of_gains >= stop_threshold && negative_gains < graph->max_node_degree()) {
             // from the set select the best (if it leads to balanced partitions) gain movement and perform it (update "partitions" vector)
