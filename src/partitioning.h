@@ -6,8 +6,8 @@
 GraphPtr loadFromFile(const std::string& path);
 GraphPtr coarseGraph_s( GraphPtr& graph);
 GraphPtr coarseGraph_p( GraphPtr& graph, int num_threads);
-std::vector<EdgePtr> sortEdge( std::vector<EdgePtr>& edges);
-std::vector<NodePtr> sortNodes( std::vector<NodePtr>& nodes);
+EdgePtrArr sortEdge( EdgePtrArr& edges);
+NodePtrArr sortNodes( NodePtrArr& nodes);
 void partitioning_s(GraphPtr& g, int requestedPartitions);
 void partitioning_p(GraphPtr& g, int requestedPartitions, int num_threads);
 void kernighanLin(GraphPtr& g, int num_partitions, std::vector<int>& partitions);

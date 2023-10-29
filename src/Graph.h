@@ -6,26 +6,26 @@
 #include <memory>
 #include <vector>
 
-typedef std::shared_ptr<struct Node> NodePtr;
-typedef std::shared_ptr<struct Edge> EdgePtr;
-typedef std::shared_ptr<struct Graph> GraphPtr;
+using NodePtr = std::shared_ptr<struct Node> ;
+using EdgePtr = std::shared_ptr<struct Edge> ;
+using GraphPtr =  std::shared_ptr<struct Graph>;
+using EdgePtrArr = std::vector<EdgePtr>;
+using NodePtrArr = std::vector<NodePtr>;
 
 struct Node {
     Node(unsigned int id, unsigned int weight);
     unsigned int id;
     unsigned int weight;
     NodePtr child;
-    std::vector<EdgePtr> edges;
-    std::vector<NodePtr> get_neighbors() const;
-    //~Node(){std::cout << "Node destructor called" << std::endl;}
+    EdgePtrArr edges;
+    NodePtrArr get_neighbors() const;
 };
 
 struct Edge {
     Edge(unsigned int weight, NodePtr& node1, NodePtr& node2);
     unsigned int weight;
-    NodePtr node1;
-    NodePtr node2;
-    bool flag;
+    std::weak_ptr<Node> node1;
+    std::weak_ptr<Node> node2;
 };
 
 struct Graph {
@@ -36,15 +36,14 @@ struct Graph {
     unsigned int num_colours        = 0;
     std::vector<int> colours;
     std::vector<int> partitions_size;
-    std::vector<NodePtr> nodes;
-    std::vector<EdgePtr> edges;
+    NodePtrArr nodes;
+    EdgePtrArr edges;
     NodePtr add_node(unsigned int id, unsigned int weight);
     NodePtr add_node_with_index(unsigned int id, unsigned int weight);
     EdgePtr add_edge(unsigned int source, unsigned int dest, unsigned int distance);
     //void print();
     void add_or_sum_edge(const NodePtr& n1,const NodePtr& n2, unsigned int distance);
     unsigned int max_node_degree();
-    ~Graph(){std::cout << "Graph destructor called" << std::endl;}
 };
 
 #endif    // GRAPHPARTITIONING_GRAPH_H

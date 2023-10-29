@@ -172,7 +172,7 @@ void initial_partitioning_p(GraphPtr &graph, std::vector<int> &partitions,
     for (int i = 0; i < partitions.size(); i++) {
         if (partitions[i] == -1) {
             int w_lightest_partition  = -1;
-            std::vector<NodePtr> neighbours = graph->nodes[i]->get_neighbors();
+            auto neighbours = graph->nodes[i]->get_neighbors();
             for (auto& s : neighbours) {
                 if (partitions[s->id] == -1)
                     continue;

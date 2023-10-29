@@ -30,7 +30,7 @@ void initial_partitioning_s(const GraphPtr& g, std::vector<int> &partitions, int
         partitions[i] = i;
     }
     for (auto& e : g->edges) {    // then populate the set and the hashmap
-        cluster_cut_size cluster(e->node1->id, e->node2->id, e->weight);
+        cluster_cut_size cluster(e->node1.lock()->id, e->node2.lock()->id, e->weight);
         cut_sizes.insert(cluster);
         cluster_hashMap[cluster.clusterA][cluster.clusterB] = cluster.cutSize;
         cluster_hashMap[cluster.clusterB][cluster.clusterA] = cluster.cutSize;

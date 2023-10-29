@@ -20,8 +20,8 @@ unsigned long long calculateCutSize(GraphPtr& graph, std::vector<int> &partition
     for (auto &n : graph->nodes) {
         for (auto &edge : n->edges) {
             unsigned int source, dest;
-            source = edge->node1->id;
-            dest   = edge->node2->id;
+            source = edge->node1.lock()->id;
+            dest   = edge->node2.lock()->id;
             if (partitions[source] != partitions[dest])
                 cutsize += edge->weight >> 1;    // divided by 2
         }
@@ -35,10 +35,10 @@ int gain(std::vector<int> &partitions,  NodePtr& node_to_move, int to_partition)
 
     int result = 0;
     for (auto &e : node_to_move->edges) {
-        auto other = (e->node1 == node_to_move) ? e->node2 : e->node1;
-        if (partitions[other->id] == to_partition)
+        auto other = (e->node1.lock() == node_to_move) ? e->node2 : e->node1;
+        if (partitions[other.lock()->id] == to_partition)
             result += e->weight;
-        else if (partitions[other->id] == partitions[node_to_move->id])
+        else if (partitions[other.lock()->id] == partitions[node_to_move->id])
             result -= e->weight;
     }
 

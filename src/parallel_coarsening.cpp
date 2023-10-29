@@ -32,9 +32,8 @@ void colourGraphThread(GraphPtr &g, std::vector<unsigned int>&randVal, int start
 
     std::unique_lock<std::mutex> thread_lock{color_mtx, std::defer_lock};
 
-    for(int i = start; i<g->V(); i+=num_threads){
+    for(int i = start; i<g->V(); i+=num_threads)
         randVal[i] = (unsigned int)random();
-    }
 
     b.arrive_and_wait();
 
@@ -68,7 +67,7 @@ void colourGraphThread(GraphPtr &g, std::vector<unsigned int>&randVal, int start
 
         thread_lock.lock();
         if(!buffer.empty()) {
-            for (auto minNode: buffer) {
+            for (const auto& minNode: buffer) {
                 randVal[minNode] = INT_MAX;
                 g->colours[minNode] = last_color;
                 colored++;
@@ -106,7 +105,7 @@ int colourGraph(GraphPtr&g, int num_threads){
 
     for(int i = 0; i<num_threads; i++)
         threads[i] = std::thread(colourGraphThread, std::ref(g), ref(randVal), i, num_threads,
-                                 std::ref(b), ref(color_mtx) ,
+                                 std::ref(b), std::ref(color_mtx) ,
                                  std::ref(colored), std::ref(last_color), std::ref(iterations));
 
     for(auto&t : threads)
@@ -115,12 +114,12 @@ int colourGraph(GraphPtr&g, int num_threads){
     return last_color;
 }
 
-EdgePtr get_max_edge(const std::vector<EdgePtr>& edges, std::vector<bool>& matched_nodes){
+EdgePtr get_max_edge(const EdgePtrArr& edges, std::vector<bool>& matched_nodes){
     unsigned int max_edge_weight = 0;
 
     EdgePtr max_edge = nullptr;
-    for(auto&e: edges){
-        if(matched_nodes[e->node1->id] || matched_nodes[e->node2->id]) continue;
+    for(const auto&e: edges){
+        if(matched_nodes[e->node1.lock()->id] || matched_nodes[e->node2.lock()->id]) continue;
         if(e->weight > max_edge_weight){
             max_edge_weight = e->weight;
             max_edge = e;
@@ -149,11 +148,11 @@ void coarse_step(GraphPtr& original_graph, GraphPtr& coarse_graph, int start, in
             mtx.unlock();
 
             if(original_graph->colours[i] == colour){
-                auto n = original_graph->nodes[i];
+                const auto n = original_graph->nodes[i];
                 try {
-                    auto e = get_max_edge(n->edges, matched_nodes);
-                    matched_index[e->node1->id] = e->node2->id;
-                    matched_index[e->node2->id] = e->node1->id;
+                    const auto e = get_max_edge(n->edges, matched_nodes);
+                    matched_index[e->node1.lock()->id] = e->node2.lock()->id;
+                    matched_index[e->node2.lock()->id] = e->node1.lock()->id;
                 }
                 catch (std::runtime_error& e){
                     mtx.lock();
@@ -176,8 +175,8 @@ void coarse_step(GraphPtr& original_graph, GraphPtr& coarse_graph, int start, in
 
             if(original_graph->colours[i] == colour){
 
-                auto n1 = original_graph->nodes[i];
-                auto n2 = original_graph->nodes[matched_index[i]];
+                const auto n1 = original_graph->nodes[i];
+                const auto n2 = original_graph->nodes[matched_index[i]];
 
                 if(matched_index[n2->id] == n1->id){
                     mtx.lock();
@@ -192,15 +191,15 @@ void coarse_step(GraphPtr& original_graph, GraphPtr& coarse_graph, int start, in
 
     b.arrive_and_wait();
 
-    std::vector<NodePtr> buffer;
+    NodePtrArr buffer;
 
     for(int i = start; i<original_graph->V(); i+=num_threads){
         if(matched_nodes[i]) continue;
-        auto n = original_graph->nodes[i];
+        const auto n = original_graph->nodes[i];
         buffer.emplace_back(n);
     }
 
-    for(auto& n: buffer){
+    for(const auto& n: buffer){
         mtx.lock();
         n->child = coarse_graph->add_node(n_index++, n->weight);
         mtx.unlock();
@@ -232,9 +231,9 @@ GraphPtr coarseGraph_p(GraphPtr&g, int num_threads){
     for(auto&t: threads)
         t.join();
 
-    for(auto& e : g->edges){
-        if(e->node1->child->id != e->node2->child->id)
-            coarse_graph->add_or_sum_edge(e->node1->child, e->node2->child, e->weight);
+    for(const auto& e : g->edges){
+        if(e->node1.lock()->child->id != e->node2.lock()->child->id)
+            coarse_graph->add_or_sum_edge(e->node1.lock()->child, e->node2.lock()->child, e->weight);
     }
 
     return coarse_graph;
