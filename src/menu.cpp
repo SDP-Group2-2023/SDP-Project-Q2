@@ -7,7 +7,7 @@ int main() {
     int requestedPartitions;
     char command = 's';
     std::string path;
-    std::shared_ptr<Graph> g = nullptr;
+    GraphPtr g = nullptr;
 
     int numThreads;
 

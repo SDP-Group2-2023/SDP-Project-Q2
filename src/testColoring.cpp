@@ -4,7 +4,7 @@
 int main(){
 
 
-    std::shared_ptr<Graph> g( new Graph());
+    GraphPtr g( new Graph());
     g->add_node(0, 5);
     g->add_node(1, 5);
     g->add_node(2, 5);

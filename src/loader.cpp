@@ -13,8 +13,21 @@ struct m_edge{
     unsigned int weight;
 };
 
-void thread_reader(std::shared_ptr<Graph>& g, const unsigned int*filedata, unsigned int num_nodes,
-                   unsigned long num_edges, int start, int step, std::barrier<>& bar, std::mutex& mtx_e){
+struct thread_data{
+    GraphPtr g;
+    unsigned int* filedata;
+    unsigned int num_nodes;
+    unsigned long num_edges;
+    unsigned long num_threads;
+};
+
+void thread_reader(const thread_data& data, int start, std::barrier<>& bar, std::mutex& mtx_e){
+
+    auto num_nodes = data.num_nodes;
+    auto num_edges = data.num_edges;
+    auto g = data.g;
+    auto filedata = data.filedata;
+    auto step = data.num_threads;
 
     unsigned int n_id;
     unsigned int n_weight;
@@ -38,18 +51,17 @@ void thread_reader(std::shared_ptr<Graph>& g, const unsigned int*filedata, unsig
     }
 
     bar.arrive_and_wait();
-
     std::scoped_lock<std::mutex> lock(mtx_e);
 
-    //mtx_e.lock();
     for (auto &e : edges)
         g->add_edge(e.node1, e.node2, e.weight);
-    //mtx_e.unlock();
 }
 
-std::shared_ptr<Graph> loadFromFile(const std::string& path) {
+GraphPtr loadFromFile(const std::string& path) {
 
-    int num_threads = 4;
+    std::cout << "Loading graph from file: " << path << std::endl;
+
+    int num_threads = 8;
     auto start_time = std::chrono::high_resolution_clock::now();
     int fd = open(path.c_str(), O_RDONLY);
     if (fd == -1) {
@@ -69,16 +81,17 @@ std::shared_ptr<Graph> loadFromFile(const std::string& path) {
     auto num_nodes = intData[0];
     auto num_edges = static_cast<unsigned long>(intData[2]) << 32 | intData[1];
 
-    std::shared_ptr<Graph> g = std::make_shared<Graph>();
+    auto g = std::make_shared<Graph>();
     g->nodes.resize(num_nodes);
 
-    std::vector<std::thread> readers(num_threads);
+    std::vector<std::thread> readers;
     std::barrier bar(num_threads);
     std::mutex mtx_e;
 
+    thread_data td = {g, intData, num_nodes, num_edges, (unsigned int)num_threads};
 
-    for(int i = 0; i<num_threads; i++){
-        readers[i] = std::thread(thread_reader, ref(g), intData, num_nodes, num_edges, i, num_threads, ref(bar), ref(mtx_e));
+    for(int start = 0; start<num_threads; start++){
+        readers.emplace_back(thread_reader, std::ref(td), start, std::ref(bar), std::ref(mtx_e));
     }
 
     for(auto &t: readers)

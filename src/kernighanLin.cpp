@@ -5,7 +5,7 @@
 #include <map>
 #include <set>
 
-int countPartitionWeight(std::shared_ptr<Graph>& graph, int partition, std::vector<int> &partitions) {
+int countPartitionWeight(GraphPtr& graph, int partition, std::vector<int> &partitions) {
     int weight = 0;
     for (auto &n : graph->nodes) {
         if (partitions[n->id] == partition) {
@@ -15,11 +15,11 @@ int countPartitionWeight(std::shared_ptr<Graph>& graph, int partition, std::vect
     return weight;
 }
 
-unsigned long long calculateCutSize(std::shared_ptr<Graph>& graph, std::vector<int> &partitions) {
+unsigned long long calculateCutSize(GraphPtr& graph, std::vector<int> &partitions) {
     unsigned long long cutsize = 0;
     for (auto &n : graph->nodes) {
         for (auto &edge : n->edges) {
-            int source, dest;
+            unsigned int source, dest;
             source = edge->node1->id;
             dest   = edge->node2->id;
             if (partitions[source] != partitions[dest])
@@ -29,13 +29,13 @@ unsigned long long calculateCutSize(std::shared_ptr<Graph>& graph, std::vector<i
     return cutsize;
 }
 
-int gain(std::vector<int> &partitions,  std::shared_ptr<Node>& node_to_move, int to_partition) {
+int gain(std::vector<int> &partitions,  NodePtr& node_to_move, int to_partition) {
     if (partitions[node_to_move->id] == to_partition)
         return 0;
 
     int result = 0;
     for (auto &e : node_to_move->edges) {
-        std::shared_ptr<Node> other = (e->node1 == node_to_move) ? e->node2 : e->node1;
+        auto other = (e->node1 == node_to_move) ? e->node2 : e->node1;
         if (partitions[other->id] == to_partition)
             result += e->weight;
         else if (partitions[other->id] == partitions[node_to_move->id])
@@ -47,7 +47,7 @@ int gain(std::vector<int> &partitions,  std::shared_ptr<Node>& node_to_move, int
 
 // Fiduccia and Mattheyses version KL-inspired was used to implement the kernighanLin function
 
-void kernighanLin(std::shared_ptr<Graph>& graph, int num_partitions, std::vector<int> &partitions) {
+void kernighanLin(GraphPtr & graph, int num_partitions, std::vector<int> &partitions) {
     bool improved;
     unsigned long long cut_size      = calculateCutSize(graph, partitions);
     unsigned long long best_cut_size = cut_size;
@@ -72,15 +72,15 @@ void kernighanLin(std::shared_ptr<Graph>& graph, int num_partitions, std::vector
         // constraint (see article explanation : each node must be moved only once inside the innermost loop so we mark it with a flag)
         std::vector<bool> moved(graph->V(), false);
         std::set<Change> possible_changes;
-        std::map<std::shared_ptr<Node>, std::map<int, int>> node_gain_mapping;
+        std::map<NodePtr, std::map<int, int>> node_gain_mapping;
 
         timing choices_loop;
 
         // loop to calculate all initial gains
         for (int i = 0; i < graph->V(); i++) {
-            std::shared_ptr<Node> current_node = graph->nodes[i];
+            auto current_node = graph->nodes[i];
 
-            for (auto n : current_node->get_neighbors()) {    // assign node to all possible partitions other than his
+            for (auto& n : current_node->get_neighbors()) {    // assign node to all possible partitions other than his
                 if (partitions[n->id] != partitions[current_node->id]) {
                     possible_changes.emplace(partitions[n->id], current_node, gain(partitions, current_node, partitions[n->id]));
                     node_gain_mapping[current_node][partitions[n->id]] = gain(partitions, ref(current_node), partitions[n->id]);

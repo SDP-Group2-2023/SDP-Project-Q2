@@ -5,10 +5,10 @@
  * @param nodes
  * @return sorted vector of nodes
  */
-std::vector<std::shared_ptr<Node>> sortNodes(const std::vector<std::shared_ptr<Node>>& nodes) {
-    std::vector<std::shared_ptr<Node>> sortedNodes = nodes;
+std::vector<NodePtr> sortNodes( std::vector<NodePtr>& nodes) {
+    auto sortedNodes = nodes;
     sort(sortedNodes.begin(), sortedNodes.end(),
-         [](const std::shared_ptr<Node>& n1, const std::shared_ptr<Node>& n2) {
+         [](const NodePtr& n1, const NodePtr& n2) {
         return n1->weight < n2->weight;
     });
     return sortedNodes;
@@ -19,7 +19,7 @@ std::vector<std::shared_ptr<Node>> sortNodes(const std::vector<std::shared_ptr<N
  * @param edges
  * @return sorted vector of edges
  */
-std::vector<std::shared_ptr<Edge>> sortEdge(const std::vector<std::shared_ptr<Edge>>& edges) {
+std::vector<EdgePtr> sortEdge( std::vector<EdgePtr>& edges) {
     auto sortedEdges = edges;
     sort(sortedEdges.begin(), sortedEdges.end(),
          [](auto e1, auto e2) {
@@ -33,8 +33,8 @@ std::vector<std::shared_ptr<Edge>> sortEdge(const std::vector<std::shared_ptr<Ed
  * @param originalGraph
  * @return coarsened graph
  */
-std::shared_ptr<Graph> coarseGraph_s(std::shared_ptr<Graph>& originalGraph){
-    std::shared_ptr<Graph> coarse_graph(new Graph());
+GraphPtr coarseGraph_s(GraphPtr & originalGraph){
+    auto coarse_graph = std::make_shared<Graph>();
     int index = 0;
     std::vector<bool> matchedNodes(originalGraph->V(), false);
 
@@ -46,9 +46,9 @@ std::shared_ptr<Graph> coarseGraph_s(std::shared_ptr<Graph>& originalGraph){
         auto sortedEdges = sortEdge(n->edges);
         for(auto&e :sortedEdges){
             if(!matchedNodes[e->node1->id] && !matchedNodes[e->node2->id]){
-                std::shared_ptr<Node> n1 = e->node1;
-                std::shared_ptr<Node> n2 = e->node2;
-                std::shared_ptr<Node> newNode = coarse_graph->add_node(index, n1->weight + n2->weight);
+                auto n1 = e->node1;
+                auto n2 = e->node2;
+                auto newNode = coarse_graph->add_node(index, n1->weight + n2->weight);
                 n1->child =  n2->child = newNode;
                 matchedNodes[n1->id] = true;
                 matchedNodes[n2->id] = true;
@@ -58,7 +58,7 @@ std::shared_ptr<Graph> coarseGraph_s(std::shared_ptr<Graph>& originalGraph){
         }
 
         if(!matchedNodes[n->id]){
-            std::shared_ptr<Node> newNode = coarse_graph->add_node(index, n->weight);
+           auto newNode = coarse_graph->add_node(index, n->weight);
             n->child = newNode;
             index++;
         }

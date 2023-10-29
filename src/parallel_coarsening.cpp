@@ -12,7 +12,7 @@
  * @param randVal
  * @return true if n1 is bigger than n2, false otherwise
  */
-bool compare_nodes(std::shared_ptr<Node>& n1, std::shared_ptr<Node>& n2, std::vector<int>&randVal){
+bool compare_nodes(NodePtr & n1, NodePtr & n2, std::vector<unsigned int>&randVal){
     return (randVal[n2->id] < randVal[n1->id] || (randVal[n2->id] == randVal[n1->id] && n2->id < n1->id));
 }
 
@@ -26,14 +26,14 @@ bool compare_nodes(std::shared_ptr<Node>& n1, std::shared_ptr<Node>& n2, std::ve
  * @param b the barrier to use
  * @param color_mtx the mutex to use
  */
-void colourGraphThread(std::shared_ptr<Graph> &g, std::vector<int>&randVal, int start,int num_threads,
+void colourGraphThread(GraphPtr &g, std::vector<unsigned int>&randVal, int start,int num_threads,
                        std::barrier<> &b, std::mutex&color_mtx,
                        int&colored, int&last_color, int&iterations){
 
     std::unique_lock<std::mutex> thread_lock{color_mtx, std::defer_lock};
 
     for(int i = start; i<g->V(); i+=num_threads){
-        randVal[i] = rand();
+        randVal[i] = (unsigned int)random();
     }
 
     b.arrive_and_wait();
@@ -93,7 +93,7 @@ void colourGraphThread(std::shared_ptr<Graph> &g, std::vector<int>&randVal, int 
  * @param num_threads the number of threads to use
  * @return the number of colours used
  */
-int colourGraph(std::shared_ptr<Graph>&g, int num_threads){
+int colourGraph(GraphPtr&g, int num_threads){
 
     int colored = 0;
     int last_color = 0;
@@ -101,7 +101,7 @@ int colourGraph(std::shared_ptr<Graph>&g, int num_threads){
 
     std::mutex color_mtx;
     std::barrier b(num_threads);
-    std::vector<int> randVal(g->V(), -1);
+    std::vector<unsigned int> randVal(g->V(), 0);
     std::vector<std::thread> threads(num_threads);
 
     for(int i = 0; i<num_threads; i++)
@@ -115,10 +115,10 @@ int colourGraph(std::shared_ptr<Graph>&g, int num_threads){
     return last_color;
 }
 
-std::shared_ptr<Edge> get_max_edge(const std::vector<std::shared_ptr<Edge>>& edges, std::vector<bool>& matched_nodes){
-    int max_edge_weight = INT_MIN;
+EdgePtr get_max_edge(const std::vector<EdgePtr>& edges, std::vector<bool>& matched_nodes){
+    unsigned int max_edge_weight = 0;
 
-    std::shared_ptr<Edge> max_edge = nullptr;
+    EdgePtr max_edge = nullptr;
     for(auto&e: edges){
         if(matched_nodes[e->node1->id] || matched_nodes[e->node2->id]) continue;
         if(e->weight > max_edge_weight){
@@ -133,9 +133,9 @@ std::shared_ptr<Edge> get_max_edge(const std::vector<std::shared_ptr<Edge>>& edg
     return max_edge;
 }
 
-void coarse_step(std::shared_ptr<Graph>&original_graph, std::shared_ptr<Graph>&coarse_graph, int start, int num_threads,
+void coarse_step(GraphPtr& original_graph, GraphPtr& coarse_graph, int start, int num_threads,
                  std::mutex&mtx, std::barrier<>&b,  int max_colour, std::vector<bool>&matched_nodes,
-                 std::vector<int>&matched_index, int&n_index){
+                 std::vector<unsigned int>&matched_index, int&n_index){
     int colour = 0;
 
     while (colour < max_colour){
@@ -149,7 +149,7 @@ void coarse_step(std::shared_ptr<Graph>&original_graph, std::shared_ptr<Graph>&c
             mtx.unlock();
 
             if(original_graph->colours[i] == colour){
-                std::shared_ptr<Node> n = original_graph->nodes[i];
+                auto n = original_graph->nodes[i];
                 try {
                     auto e = get_max_edge(n->edges, matched_nodes);
                     matched_index[e->node1->id] = e->node2->id;
@@ -176,8 +176,8 @@ void coarse_step(std::shared_ptr<Graph>&original_graph, std::shared_ptr<Graph>&c
 
             if(original_graph->colours[i] == colour){
 
-                std::shared_ptr<Node> n1 = original_graph->nodes[i];
-                std::shared_ptr<Node> n2 = original_graph->nodes[matched_index[i]];
+                auto n1 = original_graph->nodes[i];
+                auto n2 = original_graph->nodes[matched_index[i]];
 
                 if(matched_index[n2->id] == n1->id){
                     mtx.lock();
@@ -192,11 +192,11 @@ void coarse_step(std::shared_ptr<Graph>&original_graph, std::shared_ptr<Graph>&c
 
     b.arrive_and_wait();
 
-    std::vector<std::shared_ptr<Node>> buffer;
+    std::vector<NodePtr> buffer;
 
     for(int i = start; i<original_graph->V(); i+=num_threads){
         if(matched_nodes[i]) continue;
-        std::shared_ptr<Node> n = original_graph->nodes[i];
+        auto n = original_graph->nodes[i];
         buffer.emplace_back(n);
     }
 
@@ -209,23 +209,23 @@ void coarse_step(std::shared_ptr<Graph>&original_graph, std::shared_ptr<Graph>&c
 
 }
 
-std::shared_ptr<Graph> coarseGraph_p(std::shared_ptr<Graph>&g, int num_threads){
+GraphPtr coarseGraph_p(GraphPtr&g, int num_threads){
 
     g->colours = std::vector<int>(g->V(), -1);
 
     g->num_colours = colourGraph(g, num_threads);
-    std::shared_ptr<Graph> coarse_graph(new Graph());
+    auto coarse_graph = std::make_shared<Graph>();
 
     std::mutex mtx;
     std::barrier<> b(num_threads);
 
     std::vector<bool> matched_nodes(g->V(), false);
-    std::vector<int> matched_index(g->V(), -1);
+    std::vector<unsigned int> matched_index(g->V(), 0);
     int n_index = 0;
-    std::vector<std::thread> threads(num_threads);
+    std::vector<std::thread> threads;
 
     for(int i = 0; i<num_threads; i++)
-        threads[i] = std::thread(coarse_step, std::ref(g), std::ref(coarse_graph), i,
+        threads.emplace_back(coarse_step, std::ref(g), std::ref(coarse_graph), i,
                                  num_threads, std::ref(mtx), std::ref(b), g->num_colours,
                                  std::ref(matched_nodes), std::ref(matched_index), std::ref(n_index));
 

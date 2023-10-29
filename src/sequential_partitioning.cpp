@@ -12,7 +12,7 @@ struct RetrieveKey {
     }
 };
 
-std::vector<int> uncoarsenGraph(std::shared_ptr<Graph>& g, std::vector<int> &partitions) {
+std::vector<int> uncoarsenGraph(GraphPtr& g, std::vector<int> &partitions) {
     std::vector<int> newPartitions(g->V());
 
     for (auto &n : g->nodes)
@@ -21,7 +21,7 @@ std::vector<int> uncoarsenGraph(std::shared_ptr<Graph>& g, std::vector<int> &par
     return newPartitions;
 }
 
-void initial_partitioning_s(std::shared_ptr<Graph>& g, std::vector<int> &partitions, int partition_num) {
+void initial_partitioning_s(const GraphPtr& g, std::vector<int> &partitions, int partition_num) {
     auto partitions_tot = g->V();
     std::map<int, std::map<int, int>> cluster_hashMap;
     std::set<cluster_cut_size> cut_sizes;
@@ -95,23 +95,23 @@ void initial_partitioning_s(std::shared_ptr<Graph>& g, std::vector<int> &partiti
         std::cout << "Error in the partitioning" << std::endl;    // To be removed once testing is done
 }
 
-void partitioning_s(std::shared_ptr<Graph>& g, int requestedPartitions) {
+void partitioning_s( GraphPtr& g, int requestedPartitions) {
     unsigned int actual_num_partitions = g->V();
 
-    std::vector<std::shared_ptr<Graph>> allGraphs;
+    std::vector<GraphPtr> allGraphs;
     allGraphs.push_back(g);
 
     int iterations = 0;
     while (actual_num_partitions > requestedPartitions * 15 && iterations++ < 50) {
         std::cout << "Iteration " << iterations << std::endl;
-        std::shared_ptr<Graph> coarsedGraph = coarseGraph_s(allGraphs.back());
+        auto coarsedGraph = coarseGraph_s(allGraphs.back());
         // coarsedGraph->print();
         actual_num_partitions = coarsedGraph->V();
         std::cout << "Actual number of partitions: " << actual_num_partitions << std::endl;
         allGraphs.push_back(coarsedGraph);
     }
 
-    std::shared_ptr<Graph> coarsestGraph = allGraphs[allGraphs.size() - 1];
+    auto coarsestGraph = allGraphs[allGraphs.size() - 1];
     std::vector<int> partitions(coarsestGraph->V());
     initial_partitioning_s(coarsestGraph, partitions, requestedPartitions);
 

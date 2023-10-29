@@ -6,20 +6,25 @@
 #include <memory>
 #include <vector>
 
+typedef std::shared_ptr<struct Node> NodePtr;
+typedef std::shared_ptr<struct Edge> EdgePtr;
+typedef std::shared_ptr<struct Graph> GraphPtr;
+
 struct Node {
     Node(unsigned int id, unsigned int weight);
     unsigned int id;
     unsigned int weight;
-    std::shared_ptr<Node> child;
-    std::vector<std::shared_ptr<struct Edge>> edges;
-    std::vector<std::shared_ptr<Node>> get_neighbors() const;
+    NodePtr child;
+    std::vector<EdgePtr> edges;
+    std::vector<NodePtr> get_neighbors() const;
+    //~Node(){std::cout << "Node destructor called" << std::endl;}
 };
 
 struct Edge {
-    Edge(unsigned int weight, std::shared_ptr<Node>& node1, std::shared_ptr<Node>& node2);
+    Edge(unsigned int weight, NodePtr& node1, NodePtr& node2);
     unsigned int weight;
-    std::shared_ptr<Node> node1;
-    std::shared_ptr<Node> node2;
+    NodePtr node1;
+    NodePtr node2;
     bool flag;
 };
 
@@ -31,15 +36,15 @@ struct Graph {
     unsigned int num_colours        = 0;
     std::vector<int> colours;
     std::vector<int> partitions_size;
-    std::vector<std::shared_ptr<Node>> nodes;
-    std::vector<std::shared_ptr<Edge>> edges;
-    std::shared_ptr<Node> add_node(unsigned int id, unsigned int weight);
-    std::shared_ptr<Node> add_node_with_index(unsigned int id, unsigned int weight);
-    std::shared_ptr<Edge> add_edge(unsigned int source, unsigned int dest, unsigned int distance);
+    std::vector<NodePtr> nodes;
+    std::vector<EdgePtr> edges;
+    NodePtr add_node(unsigned int id, unsigned int weight);
+    NodePtr add_node_with_index(unsigned int id, unsigned int weight);
+    EdgePtr add_edge(unsigned int source, unsigned int dest, unsigned int distance);
     //void print();
-    void add_or_sum_edge(std::shared_ptr<Node>& n1, std::shared_ptr<Node>& n2, unsigned int distance);
+    void add_or_sum_edge(const NodePtr& n1,const NodePtr& n2, unsigned int distance);
     unsigned int max_node_degree();
-    //~Graph();
+    ~Graph(){std::cout << "Graph destructor called" << std::endl;}
 };
 
 #endif    // GRAPHPARTITIONING_GRAPH_H

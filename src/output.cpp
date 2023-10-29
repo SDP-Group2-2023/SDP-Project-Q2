@@ -4,7 +4,8 @@
 #include <vector>
 
 
-void save_to_file(std::string path, std::shared_ptr<Graph>& graph, const std::vector<int> &partitions, int requestedPartitions) {
+void save_to_file(const std::string& path, const GraphPtr & graph,
+                  const std::vector<int> &partitions,int requestedPartitions) {
     std::ofstream output_file(path);
 
     std::vector<int> partitions_sizes(requestedPartitions, 0);
