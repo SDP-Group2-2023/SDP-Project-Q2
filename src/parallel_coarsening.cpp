@@ -26,14 +26,15 @@ bool compare_nodes(const NodePtr & n1, const NodePtr & n2, std::vector<unsigned 
  * @param b the barrier to use
  * @param color_mtx the mutex to use
  */
-void colourGraphThread(const GraphPtr &g, std::vector<unsigned int>&randVal, int start,int num_threads,
+void colourGraphThread(GraphPtr &g, std::vector<unsigned int>&randVal, int start,int num_threads,
                        std::barrier<> &b, std::mutex&color_mtx,
-                       unsigned int colored, unsigned int last_color, unsigned int iterations){
+                       int&colored, int&last_color, int&iterations){
 
-    std::unique_lock thread_lock{color_mtx, std::defer_lock};
+    std::unique_lock<std::mutex> thread_lock{color_mtx, std::defer_lock};
 
-    for(int i = start; i<g->V(); i+=num_threads)
+    for(int i = start; i<g->V(); i+=num_threads){
         randVal[i] = (unsigned int)random();
+    }
 
     b.arrive_and_wait();
 
@@ -41,7 +42,8 @@ void colourGraphThread(const GraphPtr &g, std::vector<unsigned int>&randVal, int
         std::vector<int> buffer;
 
         thread_lock.lock();
-        if (colored >= g->V()) break;
+        if (colored >= g->V())
+            break;
         thread_lock.unlock();
 
         for(int i = start; i<g->V(); i+=num_threads){
@@ -49,9 +51,10 @@ void colourGraphThread(const GraphPtr &g, std::vector<unsigned int>&randVal, int
                 continue;
 
             bool isMin = true;
+            auto this_node = g->nodes[i];
 
-            for (const auto &other_node: g->nodes[i]->get_neighbors()) {
-                if (compare_nodes(g->nodes[i], other_node, randVal)) {
+            for (auto &other_node: this_node->get_neighbors()) {
+                if (compare_nodes(this_node, other_node, randVal)) {
                     isMin = false;
                     break;
                 }
@@ -65,7 +68,7 @@ void colourGraphThread(const GraphPtr &g, std::vector<unsigned int>&randVal, int
 
         thread_lock.lock();
         if(!buffer.empty()) {
-            for (const auto& minNode: buffer) {
+            for (auto minNode: buffer) {
                 randVal[minNode] = INT_MAX;
                 g->colours[minNode] = last_color;
                 colored++;
@@ -92,9 +95,9 @@ void colourGraphThread(const GraphPtr &g, std::vector<unsigned int>&randVal, int
  */
 unsigned int colourGraph(GraphPtr&g, int num_threads){
 
-    unsigned int colored = 0;
-    unsigned int last_color = 0;
-    unsigned int iterations = 0;
+     int colored = 0;
+     int last_color = 0;
+     int iterations = 0;
 
     std::mutex color_mtx;
     std::barrier b(num_threads);
@@ -104,7 +107,7 @@ unsigned int colourGraph(GraphPtr&g, int num_threads){
     for(int i = 0; i<num_threads; i++)
         threads[i] = std::thread(colourGraphThread, std::ref(g), ref(randVal), i, num_threads,
                                  std::ref(b), std::ref(color_mtx) ,
-                                 colored, last_color, iterations);
+                                 std::ref(colored), std::ref(last_color), std::ref(iterations));
 
     for(auto&t : threads)
         t.join();
