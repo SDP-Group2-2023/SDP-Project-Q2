@@ -16,7 +16,7 @@ struct Node {
     Node(unsigned int id, unsigned int weight);
     unsigned int id;
     unsigned int weight;
-    NodePtr child;
+    NodePtr child = nullptr;
     EdgePtrArr edges;
     NodePtrArr get_neighbors() const;
 };

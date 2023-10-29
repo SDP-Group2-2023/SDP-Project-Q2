@@ -28,7 +28,7 @@ bool compare_nodes(const NodePtr & n1, const NodePtr & n2, std::vector<unsigned 
  */
 void colourGraphThread(const GraphPtr &g, std::vector<unsigned int>&randVal, int start,int num_threads,
                        std::barrier<> &b, std::mutex&color_mtx,
-                       int&colored, int&last_color, int&iterations){
+                       unsigned int colored, unsigned int last_color, unsigned int iterations){
 
     std::unique_lock thread_lock{color_mtx, std::defer_lock};
 
@@ -41,8 +41,7 @@ void colourGraphThread(const GraphPtr &g, std::vector<unsigned int>&randVal, int
         std::vector<int> buffer;
 
         thread_lock.lock();
-        if (colored >= g->V())
-            break;
+        if (colored >= g->V()) break;
         thread_lock.unlock();
 
         for(int i = start; i<g->V(); i+=num_threads){
@@ -91,11 +90,11 @@ void colourGraphThread(const GraphPtr &g, std::vector<unsigned int>&randVal, int
  * @param num_threads the number of threads to use
  * @return the number of colours used
  */
-int colourGraph(GraphPtr&g, int num_threads){
+unsigned int colourGraph(GraphPtr&g, int num_threads){
 
-    int colored = 0;
-    int last_color = 0;
-    int iterations = 0;
+    unsigned int colored = 0;
+    unsigned int last_color = 0;
+    unsigned int iterations = 0;
 
     std::mutex color_mtx;
     std::barrier b(num_threads);
@@ -105,7 +104,7 @@ int colourGraph(GraphPtr&g, int num_threads){
     for(int i = 0; i<num_threads; i++)
         threads[i] = std::thread(colourGraphThread, std::ref(g), ref(randVal), i, num_threads,
                                  std::ref(b), std::ref(color_mtx) ,
-                                 std::ref(colored), std::ref(last_color), std::ref(iterations));
+                                 colored, last_color, iterations);
 
     for(auto&t : threads)
         t.join();
@@ -139,12 +138,9 @@ void coarse_step(const GraphPtr& original_graph, const GraphPtr& coarse_graph, i
     while (colour < max_colour){
         for(int i = start; i<original_graph->V(); i+=num_threads){
 
-            mtx.lock();
-            if(matched_nodes[i]) {
-                mtx.unlock();
-                continue;
-            }
-            mtx.unlock();
+            std::unique_lock lock(mtx);
+            if(matched_nodes[i]) continue;
+            lock.unlock();
 
             if(original_graph->colours[i] == colour){
                 const auto n = original_graph->nodes[i];
@@ -154,10 +150,10 @@ void coarse_step(const GraphPtr& original_graph, const GraphPtr& coarse_graph, i
                     matched_index[e->node2.lock()->id] = e->node1.lock()->id;
                 }
                 catch (...){
-                    mtx.lock();
+                    std::unique_lock lock2(mtx);
                     matched_nodes[i] = true;
                     n->child = coarse_graph->add_node(n_index++, n->weight);
-                    mtx.unlock();
+                    lock2.unlock();
                 }
             }
         }
@@ -165,12 +161,9 @@ void coarse_step(const GraphPtr& original_graph, const GraphPtr& coarse_graph, i
         b.arrive_and_wait();
 
         for(int i = start; i<original_graph->V(); i+=num_threads){
-            mtx.lock();
-            if(matched_nodes[i]) {
-                mtx.unlock();
-                continue;
-            }
-            mtx.unlock();
+            std::unique_lock lock3(mtx);
+            if(matched_nodes[i]) continue;
+            lock3.unlock();
 
             if(original_graph->colours[i] == colour){
 
@@ -178,10 +171,10 @@ void coarse_step(const GraphPtr& original_graph, const GraphPtr& coarse_graph, i
                 const auto n2 = original_graph->nodes[matched_index[i]];
 
                 if(matched_index[n2->id] == n1->id){
-                    mtx.lock();
+                    std::unique_lock lock4(mtx);
                     matched_nodes[n1->id] = matched_nodes[n2->id] = true;
                     n1->child = n2->child = coarse_graph->add_node(n_index++, n1->weight + n2->weight );
-                    mtx.unlock();
+                    lock4.unlock();
                 }
             }
         }
@@ -191,7 +184,6 @@ void coarse_step(const GraphPtr& original_graph, const GraphPtr& coarse_graph, i
     b.arrive_and_wait();
 
     NodePtrArr buffer;
-
     for(int i = start; i<original_graph->V(); i+=num_threads){
         if(matched_nodes[i]) continue;
         const auto n = original_graph->nodes[i];
@@ -199,9 +191,9 @@ void coarse_step(const GraphPtr& original_graph, const GraphPtr& coarse_graph, i
     }
 
     for(const auto& n: buffer){
-        mtx.lock();
+        std::unique_lock lock5(mtx);
         n->child = coarse_graph->add_node(n_index++, n->weight);
-        mtx.unlock();
+        lock5.unlock();
     }
 
 

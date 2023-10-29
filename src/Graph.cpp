@@ -1,7 +1,8 @@
 #include "Graph.h"
 #include <iostream>
 
-Node::Node(unsigned int id,unsigned int weight) : id(id), weight(weight), child(nullptr) {}
+Node::Node(unsigned int id,unsigned int weight)
+: id(id), weight(weight) {}
 
 NodePtrArr Node::get_neighbors() const{
     NodePtrArr neighbors;

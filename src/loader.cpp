@@ -29,25 +29,30 @@ void thread_reader(const thread_data& data, int start, std::barrier<>& bar, std:
     auto filedata = data.filedata;
     auto step = data.num_threads;
 
+    const unsigned int starting_offeset = 3; //the size of num_nodes + num_edges in the first line of the fie
+
+    unsigned int node_step = step*2;
+    unsigned int edge_step = step*3;
+
     unsigned int n_id;
     unsigned int n_weight;
-    unsigned int cursor = start*2 + 3;
-    while(cursor< num_nodes*2 + 3){
+    unsigned int cursor = start*2 + starting_offeset;
+    while(cursor< num_nodes*2 + starting_offeset){
         n_id = filedata[cursor];
         n_weight = filedata[cursor+1];
         g->add_node_with_index(n_id, n_weight);
-        cursor += step*2;
+        cursor += node_step;
     }
 
     m_edge e_temp{};
     std::vector<m_edge> edges;
-    cursor = start * 3 + 3 + num_nodes*2;
-    while(cursor< num_nodes*2 + 3 + num_edges*3){
+    cursor = start * 3 + starting_offeset + num_nodes*2;
+    while(cursor< num_nodes*2 + starting_offeset + num_edges*3){
         e_temp.node1 = filedata[cursor];
         e_temp.node2 = filedata[cursor+1];
         e_temp.weight = filedata[cursor+2];
         edges.emplace_back(e_temp);
-        cursor += step*3;
+        cursor += edge_step;
     }
 
     bar.arrive_and_wait();
