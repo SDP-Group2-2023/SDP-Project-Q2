@@ -70,17 +70,17 @@ GraphPtr loadFromFile(const std::string& path) {
     auto start_time = std::chrono::high_resolution_clock::now();
     int fd = open(path.c_str(), O_RDONLY);
     if (fd == -1) {
-        throw std::runtime_error("Impossible to open file");
+        throw std::invalid_argument("Impossible to open file");
     }
 
     struct stat fileStat{};
     if (fstat(fd, &fileStat) == -1) {
-        throw std::runtime_error("Impossible to get file size");
+        throw std::invalid_argument("Impossible to get file size");
     }
 
     auto intData = static_cast<unsigned int*>(mmap(nullptr, fileStat.st_size, PROT_READ, MAP_PRIVATE, fd, 0));
     if (intData == MAP_FAILED) {
-        throw std::runtime_error("Impossible to map file");
+        throw std::invalid_argument("Impossible to map file");
     }
 
     auto num_nodes = intData[0];

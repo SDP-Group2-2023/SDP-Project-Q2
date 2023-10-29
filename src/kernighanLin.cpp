@@ -7,7 +7,7 @@
 
 int countPartitionWeight(const GraphPtr& graph, int partition, std::vector<int> &partitions) {
     int weight = 0;
-    for (auto &n : graph->nodes) {
+    for (const auto &n : graph->nodes) {
         if (partitions[n->id] == partition) {
             weight += n->weight;
         }
@@ -17,9 +17,10 @@ int countPartitionWeight(const GraphPtr& graph, int partition, std::vector<int> 
 
 unsigned long long calculateCutSize(const GraphPtr& graph, std::vector<int> &partitions) {
     unsigned long long cutsize = 0;
-    for (auto &n : graph->nodes) {
-        for (auto &edge : n->edges) {
-            unsigned int source, dest;
+    for (const auto &n : graph->nodes) {
+        for (const auto &edge : n->edges) {
+            unsigned int source;
+            unsigned int dest;
             source = edge->node1.lock()->id;
             dest   = edge->node2.lock()->id;
             if (partitions[source] != partitions[dest])
@@ -29,12 +30,12 @@ unsigned long long calculateCutSize(const GraphPtr& graph, std::vector<int> &par
     return cutsize;
 }
 
-int gain(std::vector<int> &partitions,  NodePtr& node_to_move, int to_partition) {
+int gain(std::vector<int> &partitions, const NodePtr& node_to_move, int to_partition) {
     if (partitions[node_to_move->id] == to_partition)
         return 0;
 
     int result = 0;
-    for (auto &e : node_to_move->edges) {
+    for (const auto &e : node_to_move->edges) {
         auto other = (e->node1.lock() == node_to_move) ? e->node2 : e->node1;
         if (partitions[other.lock()->id] == to_partition)
             result += e->weight;
@@ -80,7 +81,7 @@ void kernighanLin(const GraphPtr & graph, int num_partitions, std::vector<int> &
         for (int i = 0; i < graph->V(); i++) {
             auto current_node = graph->nodes[i];
 
-            for (auto& n : current_node->get_neighbors()) {    // assign node to all possible partitions other than his
+            for (const auto& n : current_node->get_neighbors()) {    // assign node to all possible partitions other than his
                 if (partitions[n->id] != partitions[current_node->id]) {
                     possible_changes.emplace(partitions[n->id], current_node, gain(partitions, current_node, partitions[n->id]));
                     node_gain_mapping[current_node][partitions[n->id]] = gain(partitions, ref(current_node), partitions[n->id]);
