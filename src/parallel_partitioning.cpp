@@ -6,7 +6,7 @@
 #include <vector>
 #include <mutex>
 
-void uncoarsen_graph_step(GraphPtr& g, std::vector<int> &partitions,
+void uncoarsen_graph_step(const GraphPtr& g, std::vector<int> &partitions,
                           std::vector<int> &newPartitions, int num_nodes, int start, int step) {
     int i = start;
     while (i < num_nodes) {
@@ -15,7 +15,7 @@ void uncoarsen_graph_step(GraphPtr& g, std::vector<int> &partitions,
     }
 }
 
-std::vector<int> uncoarsen_graph_p(GraphPtr& g, std::vector<int> &partitions, int num_thread) {
+std::vector<int> uncoarsen_graph_p(const GraphPtr& g, std::vector<int> &partitions, int num_thread) {
     unsigned int num_nodes = g->V();
     std::vector<int> newPartitions(num_nodes);
     std::vector<std::thread> threads(num_thread);
@@ -87,10 +87,10 @@ void partitioning_thread(GraphPtr &graph, std::vector<int> *partitions,
                          int avg_p_weight, std::vector<int> *weight) {
     // vector of sets
     std::vector<std::set<NodePtr, bool (*)(NodePtr , NodePtr)>> queues_of_nodes;
-    for (int i = 0; i < starting_nodes->size(); i++) {
+    for (int starting_node : *starting_nodes) {
         // collecting in a set all neighbours of my starting node that are still unassigned to a partition
         std::set<NodePtr, bool (*)(NodePtr, NodePtr)> queue(Compare_Node);
-        for (auto& n : graph->nodes[(*starting_nodes)[i]]->get_neighbors())
+        for (const auto& n : graph->nodes[starting_node]->get_neighbors())
             queue.insert(n);
 
         queues_of_nodes.push_back(queue);
@@ -102,7 +102,7 @@ void partitioning_thread(GraphPtr &graph, std::vector<int> *partitions,
     int index           = 0;
     // weight of the partition we are forming by adding each neighbour to it
     while (!next_partition) {
-        for (auto neighbour = queues_of_nodes[index].begin(); neighbour != queues_of_nodes[index].end();) {
+        for ( auto neighbour = queues_of_nodes[index].begin(); neighbour != queues_of_nodes[index].end();) {
             // lock starting node and its neighbour
             auto sl = std::scoped_lock((*nodes_m)[(*neighbour)->id], (*nodes_m)[(*starting_nodes)[index]]);
             // we set 1.4 waiting to test if it's ok as a multiplication factor
@@ -173,7 +173,7 @@ void initial_partitioning_p(GraphPtr &graph, std::vector<int> &partitions,
         if (partitions[i] == -1) {
             int w_lightest_partition  = -1;
             auto neighbours = graph->nodes[i]->get_neighbors();
-            for (auto& s : neighbours) {
+            for (const auto& s : neighbours) {
                 if (partitions[s->id] == -1)
                     continue;
                 if (w_lightest_partition == -1) {
