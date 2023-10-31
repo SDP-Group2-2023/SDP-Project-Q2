@@ -38,7 +38,7 @@ int main(int argc, char *argv[]){
     num_edges /= 2;
     output.write((char*)&num_nodes, sizeof(unsigned int));
     output.write((char*)&num_edges, sizeof(unsigned long));
-    std::cout << num_nodes << " " << num_edges << std::endl;
+    //std::cout << num_nodes << " " << num_edges << std::endl;
     skip_lines(input, 2);
 
     int source;

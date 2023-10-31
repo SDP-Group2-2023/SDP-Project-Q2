@@ -193,5 +193,5 @@ void kernighanLin(const GraphPtr & graph, int num_partitions, std::vector<int> &
 
     } while (improved);
 
-    std::cout << calculateCutSize(graph, partitions) << std::endl;
+    //std::cout << calculateCutSize(graph, partitions) << std::endl;
 }

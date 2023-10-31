@@ -11,47 +11,38 @@ struct m_edge{
     unsigned int node1;
     unsigned int node2;
     unsigned int weight;
+    m_edge(unsigned int n1, unsigned int n2, unsigned int w) : node1(n1), node2(n2), weight(w) {};
 };
 
 struct thread_data{
     GraphPtr g;
-    unsigned int* filedata;
+    unsigned int* file_data;
     unsigned int num_nodes;
     unsigned long num_edges;
-    unsigned long num_threads;
+    unsigned long step;
 };
+
+const unsigned int starting_offset = 3; //the size of num_nodes + num_edges in the first line of the file
 
 void thread_reader(const thread_data& data, int start, std::barrier<>& bar, std::mutex& mtx_e){
 
-    auto num_nodes = data.num_nodes;
-    auto num_edges = data.num_edges;
-    auto g = data.g;
-    auto filedata = data.filedata;
-    auto step = data.num_threads;
+    //si moltiplica lo step per 2 perché un'informazione su un nodo è composta da due celle
+    unsigned int node_step = data.step*2;
 
-    const unsigned int starting_offeset = 3; //the size of num_nodes + num_edges in the first line of the fie
-
-    unsigned int node_step = step*2;
-    unsigned int edge_step = step*3;
-
-    unsigned int n_id;
-    unsigned int n_weight;
-    unsigned int cursor = start*2 + starting_offeset;
-    while(cursor< num_nodes*2 + starting_offeset){
-        n_id = filedata[cursor];
-        n_weight = filedata[cursor+1];
-        g->add_node_with_index(n_id, n_weight);
+    unsigned int cursor = start*2 + starting_offset;
+    while(cursor< data.num_nodes*2 + starting_offset){
+        data.g->add_node_with_index(data.file_data[cursor], data.file_data[cursor+1]);
         cursor += node_step;
     }
 
-    m_edge e_temp{};
+
+    //si moltiplica lo step per 3 perché un'informazione su un arco è composta da tre celle
+    unsigned int edge_step = data.step*3;
+
     std::vector<m_edge> edges;
-    cursor = start * 3 + starting_offeset + num_nodes*2;
-    while(cursor< num_nodes*2 + starting_offeset + num_edges*3){
-        e_temp.node1 = filedata[cursor];
-        e_temp.node2 = filedata[cursor+1];
-        e_temp.weight = filedata[cursor+2];
-        edges.emplace_back(e_temp);
+    cursor = start * 3 + starting_offset + data.num_nodes*2;
+    while(cursor< data.num_nodes*2 + starting_offset + data.num_edges*3){
+        edges.emplace_back(data.file_data[cursor], data.file_data[cursor+1], data.file_data[cursor+2]);
         cursor += edge_step;
     }
 
@@ -59,32 +50,32 @@ void thread_reader(const thread_data& data, int start, std::barrier<>& bar, std:
     std::scoped_lock<std::mutex> lock(mtx_e);
 
     for (const auto &e : edges)
-        g->add_edge(e.node1, e.node2, e.weight);
+        data.g->add_edge(e.node1, e.node2, e.weight);
+
 }
 
-GraphPtr loadFromFile(const std::string& path) {
+GraphPtr loadFromFile(const std::string& path, unsigned int num_threads = std::thread::hardware_concurrency()) {
 
-    std::cout << "Loading graph from file: " << path << std::endl;
+    //std::cout << "Loading graph from file: " << path << std::endl;
 
-    int num_threads = 8;
-    auto start_time = std::chrono::high_resolution_clock::now();
+    //unsigned int num_threads = std::thread::hardware_concurrency();
+
+    //auto start_time = std::chrono::high_resolution_clock::now();
     int fd = open(path.c_str(), O_RDONLY);
-    if (fd == -1) {
-        throw std::invalid_argument("Impossible to open file");
-    }
+    if (fd == -1) throw std::invalid_argument("Impossible to open file");
 
     struct stat fileStat{};
-    if (fstat(fd, &fileStat) == -1) {
-        throw std::invalid_argument("Impossible to get file size");
-    }
+    if (fstat(fd, &fileStat) == -1) throw std::invalid_argument("Impossible to get file size");
+
 
     auto intData = static_cast<unsigned int*>(mmap(nullptr, fileStat.st_size, PROT_READ, MAP_PRIVATE, fd, 0));
-    if (intData == MAP_FAILED) {
-        throw std::invalid_argument("Impossible to map file");
-    }
+    if (intData == MAP_FAILED) throw std::invalid_argument("Impossible to map file");
 
+    //la prima cella contiene il numero di nodi
     auto num_nodes = intData[0];
-    auto num_edges = static_cast<unsigned long>(intData[2]) << 32 | intData[1];
+
+    //le due celle successive vengono castate in unsigned long che rappresenta il numero di archi
+    auto num_edges = static_cast<unsigned long>(intData[2]) << sizeof(unsigned int)*8 | intData[1];
 
     auto g = std::make_shared<Graph>();
     g->nodes.resize(num_nodes);
@@ -93,11 +84,10 @@ GraphPtr loadFromFile(const std::string& path) {
     std::barrier bar(num_threads);
     std::mutex mtx_e;
 
-    thread_data td = {g, intData, num_nodes, num_edges, (unsigned int)num_threads};
+    thread_data td = {g, intData, num_nodes, num_edges, num_threads};
 
-    for(int start = 0; start<num_threads; start++){
+    for(int start = 0; start<num_threads; start++)
         readers.emplace_back(thread_reader, std::ref(td), start, std::ref(bar), std::ref(mtx_e));
-    }
 
     for(auto &t: readers)
         t.join();
@@ -105,9 +95,9 @@ GraphPtr loadFromFile(const std::string& path) {
     munmap(intData, fileStat.st_size);
     close(fd);
 
-    auto end_time = std::chrono::high_resolution_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count();
-    std::cout << "Graph loaded in " << duration << " ms" << std::endl;
+    //auto end_time = std::chrono::high_resolution_clock::now();
+    //auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count();
+    //std::cout << "Graph loaded in " << duration << " ms" << std::endl;
 
     return g;
 }

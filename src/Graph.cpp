@@ -14,6 +14,12 @@ NodePtrArr Node::get_neighbors() const{
 Edge::Edge(unsigned int weight, const NodePtr & node1, const NodePtr & node2)
 : weight(weight), node1(node1), node2(node2){}
 
+/**
+ * @brief Add a node to the graph
+ * @param id the id of the node
+ * @param weight the weight of the node
+ * @return the created node
+ */
 NodePtr Graph::add_node(unsigned int id, unsigned int weight){
     auto n = std::make_shared<Node>(id, weight);
     nodes.push_back(n);
@@ -21,6 +27,12 @@ NodePtr Graph::add_node(unsigned int id, unsigned int weight){
     return n;
 }
 
+/**
+ * @brief Add a node to the graph with a specific index
+ * @param id
+ * @param weight
+ * @return
+ */
 NodePtr Graph::add_node_with_index( unsigned int id, unsigned int weight) {
     nodes[id] = std::make_shared<Node>(id, weight);
     this->node_weight_global += weight;

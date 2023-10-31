@@ -103,11 +103,11 @@ void partitioning_s(const GraphPtr& g, int requestedPartitions) {
 
     int iterations = 0;
     while (actual_num_partitions > requestedPartitions * 15 && iterations++ < 50) {
-        std::cout << "Iteration " << iterations << std::endl;
+        //std::cout << "Iteration " << iterations << std::endl;
         auto coarsedGraph = coarseGraph_s(allGraphs.back());
         // coarsedGraph->print();
         actual_num_partitions = coarsedGraph->V();
-        std::cout << "Actual number of partitions: " << actual_num_partitions << std::endl;
+        //std::cout << "Actual number of partitions: " << actual_num_partitions << std::endl;
         allGraphs.push_back(coarsedGraph);
     }
 
@@ -119,7 +119,7 @@ void partitioning_s(const GraphPtr& g, int requestedPartitions) {
 
     for (auto i = (int) allGraphs.size() - 2; i >= 0; i--) {
         partitions = uncoarsenGraph(allGraphs[i], partitions);
-        std::cout << "Uncoarsening step " << i << std::endl;
+        //std::cout << "Uncoarsening step " << i << std::endl;
         allGraphs[i]->partitions_size = allGraphs[i + 1]->partitions_size;
         kernighanLin(allGraphs[i], requestedPartitions, partitions);
     }

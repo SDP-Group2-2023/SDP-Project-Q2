@@ -38,14 +38,14 @@ void partitioning_p(const GraphPtr & g, int requestedPartitions, int num_threads
 
     int iterations = 0;
     while (actual_num_partitions > requestedPartitions * 15 && iterations++ < 50) {
-        std::cout << "Iteration " << iterations << std::endl;
+        //std::cout << "Iteration " << iterations << std::endl;
         auto start          = std::chrono::high_resolution_clock::now();
         auto coarsedGraph = coarseGraph_p(allGraphs.back(), num_threads);
 
-        std::cout << "Coarsed graph: " << coarsedGraph->V() << std::endl;
+        //std::cout << "Coarsed graph: " << coarsedGraph->V() << std::endl;
 
         auto end            = std::chrono::high_resolution_clock::now();
-        std::cout << "Coarsening time: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms" << std::endl;
+        //std::cout << "Coarsening time: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms" << std::endl;
         // coarsedGraph->print();
         actual_num_partitions = coarsedGraph->V();
         allGraphs.push_back(coarsedGraph);
@@ -60,7 +60,7 @@ void partitioning_p(const GraphPtr & g, int requestedPartitions, int num_threads
 
     for (auto i = (int) allGraphs.size() - 2; i >= 0; i--) {
         partitions = uncoarsen_graph_p(allGraphs[i], partitions, num_threads);
-        std::cout << "Uncoarsening step " << allGraphs.size() - i - 1 << std::endl;
+        //std::cout << "Uncoarsening step " << allGraphs.size() - i - 1 << std::endl;
         allGraphs[i]->partitions_size = allGraphs[i + 1]->partitions_size;
         kernighanLin_p(allGraphs[i], requestedPartitions, partitions, coarsestGraph->num_colours, coarsestGraph->colours, num_threads);
     }

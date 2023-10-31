@@ -23,8 +23,8 @@ int main(int argc, char**argv){
     unsigned long num_edges;
     input.read((char*)&num_nodes, sizeof(unsigned int));
     input.read((char*)&num_edges, sizeof(unsigned long));
-    std::cout << "num_nodes " << num_nodes << std::endl;
-    std::cout << "num_edges " << num_edges << std::endl;
+    //std::cout << "num_nodes " << num_nodes << std::endl;
+    //std::cout << "num_edges " << num_edges << std::endl;
     output << num_nodes << " " << num_edges << std::endl;
 
     return 0;
@@ -36,8 +36,8 @@ int main(int argc, char**argv){
         input.read((char*)&node, sizeof(unsigned int));
         input.read((char*)&node_weight, sizeof(unsigned int));
 
-        std::cout << node << " " << node_weight << std::endl;
-        //output << node << " " << node_weight << endl;
+        //std::cout << node << " " << node_weight << std::endl;
+        output << node << " " << node_weight << std::endl;
 
         if(node > num_nodes-1) {
             std::cout << "Error: node " << node << " is greater than num_nodes " << num_nodes << std::endl;
@@ -64,7 +64,7 @@ int main(int argc, char**argv){
             return 1;
         }
 
-        std::cout << source << " " << dest << " " << distance << std::endl;
-        //output << source << " " << dest << " " << distance << endl;
+        //std::cout << source << " " << dest << " " << distance << std::endl;
+        output << source << " " << dest << " " << distance << std::endl;
     }
 }

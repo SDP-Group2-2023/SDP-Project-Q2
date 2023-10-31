@@ -2,8 +2,9 @@
 #define GRAPHPARTITIONING_PARTITIONING_H
 
 #include "Graph.h"
+#include <thread>
 
-GraphPtr loadFromFile(const std::string& path);
+GraphPtr loadFromFile(const std::string& path, unsigned int num_threads = std::thread::hardware_concurrency());
 GraphPtr coarseGraph_s(const GraphPtr& graph);
 GraphPtr coarseGraph_p( GraphPtr& graph, int num_threads);
 EdgePtrArr sortEdge(const EdgePtrArr& edges);
