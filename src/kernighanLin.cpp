@@ -7,6 +7,13 @@
 
 using namespace std;
 
+/**
+ * @brief It calculates the partition weight for the given partition
+ * @param graph The graph struct.
+ * @param partition The partition for which to calculate the weight
+ * @param partitions The vector that specifies the partition number for each node
+ * @return The weight of the partition
+*/
 int countPartitionWeight(Graph *graph, int partition, vector<int> &partitions) {
     int weight = 0;
     for (auto &n : graph->nodes) {
@@ -17,6 +24,12 @@ int countPartitionWeight(Graph *graph, int partition, vector<int> &partitions) {
     return weight;
 }
 
+/**
+ * @brief It calculates the total cut size of the graph for the given partitions
+ * @param graph The graph for which to perform the computation
+ * @param partitions The vector that specifies the partition number for each node
+ * @return The total cut size of the graph
+*/
 unsigned long long calculateCutSize(Graph *graph, vector<int> &partitions) {
     unsigned long long cutsize = 0;
     for (auto &n : graph->nodes) {
@@ -31,6 +44,13 @@ unsigned long long calculateCutSize(Graph *graph, vector<int> &partitions) {
     return cutsize;
 }
 
+/**
+ * @brief Calculates the gain in that is obtained if the given node is moved fto the given partition
+ * @param partitions The vector that specifies the partition number for each node
+ * @param node_to_move The pointer to the node that needs to be moved
+ * @param to_partition The destination partition.
+ * @return The gain in cut size if the given node is moved to the given partition
+*/
 int gain(vector<int> &partitions, Node *node_to_move, int to_partition) {
     if (partitions[node_to_move->id] == to_partition)
         return 0;
@@ -48,7 +68,12 @@ int gain(vector<int> &partitions, Node *node_to_move, int to_partition) {
 }
 
 // Fiduccia and Mattheyses version KL-inspired was used to implement the kernighanLin function
-
+/**
+ * @brief It implements the Fiduccia and Mattheyses version of the Kernighan Lin algorithm to do local refinement of the partitioning
+ * @param graph the graph that has been partitioned
+ * @param num_partitions the total number of partitions that are present
+ * @param partitions the vector that contains the partition number for each node, and that at the end will contain the refined partitioning
+*/
 void kernighanLin(Graph *graph, int num_partitions, vector<int> &partitions) {
     bool improved;
     unsigned long long cut_size      = calculateCutSize(graph, partitions);
