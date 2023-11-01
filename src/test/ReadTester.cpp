@@ -1,4 +1,6 @@
 #include <iostream>
+#include <fstream>
+#include <ctime>
 #include "../partitioning.h"
 #include "../timing/timing.h"
 
@@ -8,29 +10,40 @@ int main(int argc, char**argv){
         return 1;
     }
 
-    const int K = 50;
+    std::time_t result = std::time(nullptr);
+
+
+
+    //std::string timestamp  =std::asctime(std::localtime(&result));
+    //timestamp.pop_back();
+    //for(auto& c : timestamp) if(c==' ') c='_';
+
+    //std::cout << timestamp << std::endl;
+
+    auto filename = std::string("read_test_")
+            .append(argv[1])
+            //.append(timestamp)
+            .append(".csv");
+
+    std::ofstream outfile(filename);
+    outfile << "threads;time;" << std::endl;
+
+    const int K = 5;
 
     for(int j = 1; j<= 8; j++) {
-        long long timings = 0;
-        long long min = LONG_LONG_MAX;
-        long long max = LONG_LONG_MIN;
+
+        std::cout << "THREADS: " << j << std::endl;
 
         for (int i = 0; i < K; i++) {
-
             (i*100)/K % 5 == 0 ? std::cout << (i*100)/K << "%" << std::endl : std::cout ;
-
             auto start_time = std::chrono::high_resolution_clock::now();
             loadFromFile(argv[1], j);
             auto end_time = std::chrono::high_resolution_clock::now();
             auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count();
-            timings += duration;
-            if (duration > max) max = duration;
-            if (duration < min) min = duration;
-        }
+            outfile << j << ";" << duration << ";" << std::endl;
 
-        std::cout << "THREADS: " << j << std::endl;
-        std::cout << "MIN: " << min << std::endl;
-        std::cout << "MAX: " << max << std::endl;
-        std::cout << "AVG: " << timings / K << std::endl;
+        }
     }
+
+    outfile.close();
 }
