@@ -35,13 +35,13 @@ void thread_kernighanLin(Graph *graph, int num_partitions, vector<int> *partitio
             vector<int> partitions_size(num_partitions, 0);
             for (auto n : graph->nodes)
                 partitions_size[partitions->at(n->id)] += n->weight;
-            weight_barrier->arrive_and_wait();
 
             vector<int> actual_nodes;
             for (auto n : *nodes) {
                 if ((*colors)[n] == color)
                     actual_nodes.push_back(n);
             }
+            weight_barrier->arrive_and_wait();
 
             // Calculate the gains for every node
             set<Change> possible_changes;
