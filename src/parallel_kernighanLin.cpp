@@ -25,6 +25,10 @@ colori, num_colors
 adiacenti non si influenzano il gain a vicenda
 3-attendi terminazione dei thread e ripeti con un altro colore*/
 
+/**
+ * @brief This functions should be launched in its own thread and is supposed to work with other threads to perform the kernighan Lin Algorithm
+ * @param graph the graph for which the 
+*/
 void thread_kernighanLin(Graph *graph, int num_partitions, vector<int> *partitions, int num_colors, vector<int> *colors, vector<int> *nodes) {
     bool stuff_done = true;
     int counter     = 0;
