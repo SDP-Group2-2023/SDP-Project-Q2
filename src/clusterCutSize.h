@@ -5,7 +5,7 @@ struct cluster_cut_size{
     cluster_cut_size();
     unsigned int clusterA;
     unsigned int clusterB;
-    int cutSize;
+    unsigned int cutSize;
     bool operator<(const cluster_cut_size &other) const;
 };
 #endif

@@ -6,8 +6,8 @@
 #include <vector>
 #include <mutex>
 
-void uncoarsen_graph_step(const GraphPtr& g, std::vector<int> &partitions,
-                          std::vector<int> &newPartitions, int num_nodes, int start, int step) {
+void uncoarsen_graph_step(const GraphPtr& g, std::vector<unsigned int> &partitions,
+                          std::vector<unsigned int> &newPartitions, int num_nodes, int start, int step) {
     int i = start;
     while (i < num_nodes) {
         newPartitions[g->nodes[i]->id] = partitions[g->nodes[i]->child->id];
@@ -15,13 +15,13 @@ void uncoarsen_graph_step(const GraphPtr& g, std::vector<int> &partitions,
     }
 }
 
-std::vector<int> uncoarsen_graph_p(const GraphPtr& g, std::vector<int> &partitions, int num_thread) {
+std::vector<unsigned int> uncoarsen_graph_p(const GraphPtr& g, std::vector<unsigned int> &partitions, int num_thread) {
     unsigned int num_nodes = g->V();
-    std::vector<int> newPartitions(num_nodes);
-    std::vector<std::thread> threads(num_thread);
+    std::vector<unsigned int> newPartitions(num_nodes);
+    std::vector<std::thread> threads;
 
     for (int i = 0; i < num_thread; i++) {
-        threads[i] = std::thread(uncoarsen_graph_step, ref(g), ref(partitions), ref(newPartitions), num_nodes, i, num_thread);
+        threads.emplace_back(uncoarsen_graph_step, ref(g), ref(partitions), ref(newPartitions), num_nodes, i, num_thread);
     }
     for (auto &t : threads) {
         t.join();
@@ -52,7 +52,7 @@ void partitioning_p(const GraphPtr & g, int requestedPartitions, int num_threads
     }
 
     auto coarsestGraph = allGraphs[allGraphs.size() - 1];
-    std::vector<int> partitions(coarsestGraph->V(), -1);
+    std::vector<unsigned int> partitions(coarsestGraph->V());//, -1);
     for (int i = 0; i < coarsestGraph->V(); i++)
         partitions[i] = i % requestedPartitions;
 
@@ -69,7 +69,7 @@ void partitioning_p(const GraphPtr & g, int requestedPartitions, int num_threads
         cout << "Node " << i << " in partition " << partitions[i] << endl;
     }*/
 
-    save_to_file("OutputPartitions.txt", g, partitions, requestedPartitions);
+    //save_to_file("OutputPartitions.txt", g, partitions, requestedPartitions);
 
     //for (int i = 1; i < allGraphs.size(); i++)
     //    delete allGraphs[i];

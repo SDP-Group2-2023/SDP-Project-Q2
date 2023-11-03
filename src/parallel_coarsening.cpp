@@ -36,9 +36,8 @@ void colourGraphThread(GraphPtr &g, std::vector<unsigned int>&randVal, int start
         randVal[i] = (unsigned int)random();
     }
 
-    b.arrive_and_wait();
-
     while(true){
+        b.arrive_and_wait();
         std::vector<int> buffer;
 
         thread_lock.lock();
@@ -80,10 +79,7 @@ void colourGraphThread(GraphPtr &g, std::vector<unsigned int>&randVal, int start
             last_color++;
         }
         thread_lock.unlock();
-        b.arrive_and_wait();
     }
-
-
 }
 
 /**
@@ -202,10 +198,17 @@ void coarse_step(const GraphPtr& original_graph, const GraphPtr& coarse_graph, i
 
 }
 
+/**
+ * Si calcola un coarsed graph in maniera parallela
+ * @param g il grafo di partenza
+ * @param num_threads il numero di thread da usare
+ * @return il grafo calcolato
+ */
 GraphPtr coarseGraph_p(GraphPtr&g, int num_threads){
 
     g->colours = std::vector<int>(g->V(), -1);
 
+    //prima si colora il grafo attraverso una versione modificata dell'algoritmo di Luby
     g->num_colours = colourGraph(g, num_threads);
     auto coarse_graph = std::make_shared<Graph>();
 
@@ -217,6 +220,7 @@ GraphPtr coarseGraph_p(GraphPtr&g, int num_threads){
     int n_index = 0;
     std::vector<std::thread> threads;
 
+    //vengono instanziati un tot di thread per effettuare il partizionamento basato sul colore
     for(int i = 0; i<num_threads; i++)
         threads.emplace_back(coarse_step, std::ref(g), std::ref(coarse_graph), i,
                                  num_threads, std::ref(mtx), std::ref(b), g->num_colours,
@@ -225,6 +229,7 @@ GraphPtr coarseGraph_p(GraphPtr&g, int num_threads){
     for(auto&t: threads)
         t.join();
 
+    //vengono calcolate le distanze tra i nodi nel nuovo grafo
     for(const auto& e : g->edges){
         if(e->node1.lock()->child->id != e->node2.lock()->child->id)
             coarse_graph->add_or_sum_edge(e->node1.lock()->child, e->node2.lock()->child, e->weight);

@@ -20,7 +20,7 @@ colori, num_colors
 adiacenti non si influenzano il gain a vicenda
 3-attendi terminazione dei thread e ripeti con un altro colore*/
 
-void thread_kernighanLin(const GraphPtr & graph, int num_partitions, std::vector<int> *partitions,
+void thread_kernighanLin(const GraphPtr & graph, int num_partitions, std::vector<unsigned int>& partitions,
                          int num_colors, std::vector<int> *colors, std::vector<int> *nodes, std::barrier<>& weight_barrier, std::barrier<>& color_barrier) {
     bool stuff_done = true;
     int counter     = 0;
@@ -30,7 +30,7 @@ void thread_kernighanLin(const GraphPtr & graph, int num_partitions, std::vector
             // Calculate partitions weight
             std::vector<unsigned int> partitions_size(num_partitions, 0);
             for (auto& n : graph->nodes)
-                partitions_size[partitions->at(n->id)] += n->weight;
+                partitions_size[partitions.at(n->id)] += n->weight;
             weight_barrier.arrive_and_wait();
 
             std::vector<int> actual_nodes;
@@ -45,21 +45,21 @@ void thread_kernighanLin(const GraphPtr & graph, int num_partitions, std::vector
             for (auto n : actual_nodes) {
                 auto node = graph->nodes[n];
                 for (auto& neighbour : node->get_neighbors()) {
-                    if (partitions->at(neighbour->id) != partitions->at(node->id)) {
-                        int C_gain = gain(*partitions, ref(node), partitions->at(neighbour->id));
+                    if (partitions.at(neighbour->id) != partitions.at(node->id)) {
+                        int C_gain = gain(partitions, ref(node), partitions.at(neighbour->id));
                         if (C_gain >= 0)
-                            possible_changes.emplace(partitions->at(neighbour->id), ref(node), C_gain);
+                            possible_changes.emplace(partitions.at(neighbour->id), ref(node), C_gain);
                     }
                 }
             }
 
-            std::set<int> moved;
+            std::set<unsigned int> moved;
 
             while (true) {
                 // from the set select the best (if it leads to balanced partitions) gain movement and perform it (update "partitions" vector)
                 Change best_change;
                 for (auto &c : possible_changes) {    // consider the possibility of removing or not adding some possible changes to speed up subsequent iterations
-                    if (partitions_size[(*partitions)[c.node->id]] >= graph->node_weight_global / num_partitions &&
+                    if (partitions_size[partitions[c.node->id]] >= graph->node_weight_global / num_partitions &&
                         partitions_size[c.new_partition] <= graph->node_weight_global / num_partitions && !moved.contains(c.node->id)) {
                         best_change = c;
                         stuff_done  = true;
@@ -73,11 +73,11 @@ void thread_kernighanLin(const GraphPtr & graph, int num_partitions, std::vector
                     break;
 
                 // update the weights
-                partitions_size[(*partitions)[best_change.node->id]] -= best_change.node->weight;
+                partitions_size[partitions[best_change.node->id]] -= best_change.node->weight;
                 partitions_size[best_change.new_partition] += best_change.node->weight;
 
                 // apply the change
-                (*partitions)[best_change.node->id] = best_change.new_partition;
+                partitions[best_change.node->id] = best_change.new_partition;
                 possible_changes.erase(best_change);
             }
 
@@ -91,7 +91,7 @@ void thread_kernighanLin(const GraphPtr & graph, int num_partitions, std::vector
     color_barrier.arrive_and_drop();
 }
 
-void kernighanLin_p(const GraphPtr & graph, int num_partitions, std::vector<int> &partitions, int num_colors, std::vector<int> &colors, int num_threads) {
+void kernighanLin_p(const GraphPtr & graph, int num_partitions, std::vector<unsigned int> &partitions, unsigned int num_colors, std::vector<int> &colors, int num_threads) {
     /*
         divisione dei nodi ai singoli threads
         creazione dei threads
@@ -116,7 +116,7 @@ void kernighanLin_p(const GraphPtr & graph, int num_partitions, std::vector<int>
 
     std::vector<std::thread> kernighanLiners;
     for (int i = 0; i < num_threads; i++) {
-        kernighanLiners.emplace_back(thread_kernighanLin, ref(graph), num_partitions, &partitions, num_colors,
+        kernighanLiners.emplace_back(thread_kernighanLin, ref(graph), num_partitions, ref(partitions), num_colors,
                                      &colors, &nodes_per_thread[i], std::ref(weight_barrier), std::ref(color_barrier));
     }
 

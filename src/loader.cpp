@@ -7,6 +7,7 @@
 #include <barrier>
 #include <mutex>
 
+//struttura dati per salvare temporaneamente le informazioni sugli edge letti
 struct m_edge{
     unsigned int node1;
     unsigned int node2;
@@ -22,10 +23,18 @@ struct thread_data{
 };
 
 const unsigned int starting_offset = 3; //the size of num_nodes + num_edges in the first line of the file
-const unsigned int reading_step = 100000;
+unsigned int reading_step; //viene assegnato dopo
 unsigned int nodeCounter = 0;
 unsigned int edgeCounter = 0;
 
+/**
+ * Funzione che descrive il comportamento di un thread di lettura
+ * @param data una struttura dati che contiene il file da leggere e le sue caratteristiche
+ * @param bar una barriera
+ * @param mtx_n_counter un mutex per l'accesso esclusivo al nodeCounter
+ * @param mtx_e_counter un mutex per l'accesso esclusivo a edgeCounter
+ * @param mtx_e_adder un mutex per l'aggiunta di edge al grafo in maniera esclusiva
+ */
 void thread_reader(const thread_data& data, std::barrier<>& bar,
                    std::mutex& mtx_n_counter, std::mutex& mtx_e_counter, std::mutex& mtx_e_adder){
 
@@ -52,7 +61,10 @@ void thread_reader(const thread_data& data, std::barrier<>& bar,
     bar.arrive_and_wait();
 
     unsigned int edge_now = 0;
-    std::vector<m_edge> edges;
+
+    //questo buffer permette di leggere e accumulare un certo numero di edge e aggiungerli al grafo
+    //senza dover acquisire il mutex troppe volte, diminuendo così parte dell'overhead
+    std::vector<m_edge> e_buffer;
     while(edge_now < data.num_edges){
         mtx_e_counter.lock();
         edge_now = edgeCounter;
@@ -65,48 +77,55 @@ void thread_reader(const thread_data& data, std::barrier<>& bar,
             auto node1 = data.file_data[cursor];
             auto node2 = data.file_data[cursor + 1];
             auto weight = data.file_data[cursor + 2];
-            edges.emplace_back(node1, node2, weight);
+            e_buffer.emplace_back(node1, node2, weight);
             cursor += 3;
         }
 
+        //verificato sperimentalmente che questa mossa migliora notevolmente le prestazioni
         if(mtx_e_adder.try_lock()){
-            for(auto& e : edges)
+            for(auto& e : e_buffer)
                 data.g->add_edge(e.node1, e.node2, e.weight);
-            edges.clear();
+            e_buffer.clear();
             mtx_e_adder.unlock();
         }
     }
 
-    if(edges.empty()) return;
+    if(e_buffer.empty()) return;
 
     mtx_e_adder.lock();
-    for(auto& e : edges)
+    for(auto& e : e_buffer)
         data.g->add_edge(e.node1, e.node2, e.weight);
     mtx_e_adder.unlock();
 
 }
 
+//sperimentalmente dimostrato che se ogni thread legge il 10% dei nodi ad ogni iterazione è più veloce
 
+/**
+ *
+ * @param path il path del file binario che descrive il grafo
+ * @param num_threads il numero di thread con cui si vuole leggere il grafo
+ * @param myStep la percentuale di nodi che ogni thread leggerà ad ogni iterazione
+ * @return uno shared_ptr del grafo appena letto
+ */
+GraphPtr loadFromFile(const std::string& path,
+                      unsigned int num_threads = std::thread::hardware_concurrency(),
+                      unsigned int myStep = 10 ) {
 
-GraphPtr loadFromFile(const std::string& path, unsigned int num_threads = std::thread::hardware_concurrency()) {
-
-    //std::cout << "Loading graph from file: " << path << std::endl;
-
-    //unsigned int num_threads = std::thread::hardware_concurrency();
-
-    //auto start_time = std::chrono::high_resolution_clock::now();
     int fd = open(path.c_str(), O_RDONLY);
     if (fd == -1) throw std::invalid_argument("Impossible to open file");
 
     struct stat fileStat{};
     if (fstat(fd, &fileStat) == -1) throw std::invalid_argument("Impossible to get file size");
 
-
+    //con questa operazione il file viene letto una volta sola ma è possibile accedervi in maniera parallela
     auto intData = static_cast<unsigned int*>(mmap(nullptr, fileStat.st_size, PROT_READ, MAP_PRIVATE, fd, 0));
     if (intData == MAP_FAILED) throw std::invalid_argument("Impossible to map file");
 
     //la prima cella contiene il numero di nodi
     auto num_nodes = intData[0];
+    reading_step = num_nodes*myStep/100;
+
 
     //le due celle successive vengono castate in unsigned long che rappresenta il numero di archi
     auto num_edges = static_cast<unsigned long>(intData[2]) << sizeof(unsigned int)*8 | intData[1];
@@ -114,6 +133,7 @@ GraphPtr loadFromFile(const std::string& path, unsigned int num_threads = std::t
     auto g = std::make_shared<Graph>();
     g->nodes.resize(num_nodes);
 
+    //inizializzazione delle strutture dati per la lettura parallela
     std::vector<std::thread> readers;
     std::barrier bar(num_threads);
     std::mutex mtx_n_counter, mtx_e_counter, mtx_e_adder;
@@ -132,10 +152,6 @@ GraphPtr loadFromFile(const std::string& path, unsigned int num_threads = std::t
 
     munmap(intData, fileStat.st_size);
     close(fd);
-
-    //auto end_time = std::chrono::high_resolution_clock::now();
-    //auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count();
-    //std::cout << "Graph loaded in " << duration << " ms" << std::endl;
 
     return g;
 }

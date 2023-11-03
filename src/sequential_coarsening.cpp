@@ -40,10 +40,12 @@ GraphPtr coarseGraph_s(const GraphPtr & originalGraph){
     int index = 0;
     std::vector<bool> matchedNodes(originalGraph->V(), false);
 
+    // si itera su tutti i nodi del grafo ordinati in maniera crescente
     for(const auto&n: sortNodes(originalGraph->nodes)){
-        if(matchedNodes[n->id])
-            continue;
+        if(matchedNodes[n->id]) continue;
 
+        //se possibile, si prende l'edge più pesante collegato al nodo.
+        // Poi viene collassato al nodo a cui è collegato tramite quell'edge
         for(const auto&e : sortEdge(n->edges)){
             if(!matchedNodes[e->node1.lock()->id] && !matchedNodes[e->node2.lock()->id]){
                 auto n1 = e->node1.lock();
@@ -57,6 +59,7 @@ GraphPtr coarseGraph_s(const GraphPtr & originalGraph){
             }
         }
 
+        //se un nodo non trova un match, viene generato un suo child con le stesse caratteristiche
         if(!matchedNodes[n->id]){
            auto newNode = coarse_graph->add_node(index, n->weight);
             n->child = newNode;
@@ -64,6 +67,7 @@ GraphPtr coarseGraph_s(const GraphPtr & originalGraph){
         }
     }
 
+    //si calcolano le distanze tra i nodi del nuovo grafo
     for(const auto& e : originalGraph->edges)
         if(e->node1.lock()->child != e->node2.lock()->child)
             coarse_graph->add_or_sum_edge(e->node1.lock()->child, e->node2.lock()->child, e->weight);

@@ -2,6 +2,12 @@
 #include "../partitioning.h"
 #include "../timing/timing.h"
 
+/**
+ * Funzione che si occupa di testare la velocità media di partizionamento di un grafo in maniera sequenziale
+ * e la qualità delle partizioni
+ * @param argc numero di argomenti passati
+ * @param argv il primo param è il nome del programma, il secondo è il path del file
+ */
 int main(int argc, char**argv){
     if(argc < 2){
         std::cout << "Usage: " << argv[0] << " <input file>"  << std::endl;
