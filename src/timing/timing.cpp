@@ -6,11 +6,11 @@ timing::timing() : running(true) {
     begins.push_back(high_resolution_clock::now());
 }
 
-timing::timing(int flag) {
-    if (flag == TIMING_NOW) {
+timing::timing(timing_flag flag) {
+    if (flag == timing_flag::TIMING_NOW) {
         running = true;
         begins.push_back(high_resolution_clock::now());
-    } else if (flag == TIMING_DEFER)
+    } else if (flag == timing_flag::TIMING_DEFER)
         running = false;
 }
 

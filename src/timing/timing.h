@@ -1,21 +1,19 @@
 #ifndef TIMING_H
 #define TIMING_H
-#define TIMING_NOW   0
-#define TIMING_DEFER 1
-
 #include <chrono>
 #include <vector>
 
-using namespace std::chrono;
+enum class timing_flag { TIMING_NOW, TIMING_DEFER};
+
 class timing {
-    std::vector<time_point<high_resolution_clock>> begins;
-    std::vector<time_point<high_resolution_clock>> ends;
+    std::vector<std::chrono::time_point<std::chrono::high_resolution_clock>> begins;
+    std::vector<std::chrono::time_point<std::chrono::high_resolution_clock>> ends;
 
     bool running;
 
 public:
     timing();
-    timing(int flag);
+    explicit timing(timing_flag flag);
     void start();
     void stop();
     void reset();

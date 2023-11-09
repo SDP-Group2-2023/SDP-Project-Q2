@@ -2,19 +2,20 @@
 #define GRAPHPARTITIONING_PARTITIONING_H
 
 #include "Graph.h"
+#include <thread>
 
-Graph* loadFromFile(string path);
-Graph* coarseGraph_s(Graph* graph);
-Graph* coarseGraph_p(Graph* graph, int num_threads);
-vector<shared_ptr<Edge>> sortEdge(const vector<shared_ptr<Edge>>& edges);
-vector<Node*> sortNodes(const vector<Node*>& nodes);
-void partitioning_s(Graph*g, int requestedPartitions);
-void partitioning_p(Graph*g, int requestedPartitions, int num_threads);
-void kernighanLin(Graph* graph, int num_partitions, vector<int>& partitions);
-void kernighanLin_p(Graph *graph, int num_partitions, vector<int> &partitions, int num_colors, vector<int> &colors, int num_threads);
-void initial_partitioning_p(Graph *graph, vector<int> &partitions, int num_partitions, int num_threads);
-int gain(vector<int> &partitions, Node *node_to_move, int to_partition);
-unsigned long long calculateCutSize(Graph *graph, vector<int> &partitions);
-void save_to_file(string path, Graph *graph, const vector<int> &partitions, int requestedPartitions);
+GraphPtr loadFromFile(const std::string& path, unsigned int num_threads = std::thread::hardware_concurrency());
+GraphPtr coarseGraph_s(const GraphPtr& graph);
+GraphPtr coarseGraph_p( GraphPtr& graph, int num_threads);
+EdgePtrArr sortEdge(const EdgePtrArr& edges);
+NodePtrArr sortNodes(const NodePtrArr& nodes);
+void partitioning_s(const GraphPtr& g, int requestedPartitions);
+void partitioning_p(const GraphPtr& g, int requestedPartitions, int num_threads);
+void kernighanLin(const GraphPtr& g, int num_partitions, std::vector<int>& partitions);
+void kernighanLin_p(const GraphPtr& g, int num_partitions, std::vector<int> &partitions, int num_colors, std::vector<int> &colors, int num_threads);
+//void initial_partitioning_p(std::GraphPtr& g, std::vector<int> &partitions, int num_partitions, int num_threads);
+int gain(std::vector<int> &partitions, const NodePtr & node_to_move, int to_partition);
+unsigned long long calculateCutSize(const GraphPtr& g, std::vector<int> &partitions);
+void save_to_file(const std::string& path, const GraphPtr& g, const std::vector<int> &partitions, int requestedPartitions);
 
 #endif //GRAPHPARTITIONING_PARTITIONING_H

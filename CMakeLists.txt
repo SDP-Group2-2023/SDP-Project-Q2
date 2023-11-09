@@ -4,6 +4,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 set(CMAKE_CXX_FLAGS_DEBUG "-g")
 
 set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 add_executable(GraphPartitioning src/main.cpp
         src/Graph.h src/Graph.cpp
@@ -23,3 +24,19 @@ add_executable(main src/menu.cpp
         src/clusterCutSize.h src/clusterCutSize.cpp src/output.cpp)
 
 add_executable(testColoring src/testColoring.cpp src/parallel_coarsening.cpp src/Graph.cpp src/Graph.h)
+
+add_executable(readBin src/tools/read_bin.cpp)
+
+add_executable(ReadTester src/partitioning.h src/loader.cpp src/test/ReadTester.cpp src/Graph.h src/Graph.cpp)
+add_executable(SeqTester src/test/SeqTester.cpp src/Graph.h src/Graph.cpp
+        src/Change.h src/Change.cpp
+        src/timing/timing.h src/timing/timing.cpp
+        src/partitioning.h src/sequential_coarsening.cpp src/kernighanLin.cpp src/sequential_partitioning.cpp
+        src/parallel_partitioning.cpp src/parallel_coarsening.cpp src/loader.cpp src/parallel_kernighanLin.cpp
+        src/clusterCutSize.h src/clusterCutSize.cpp src/output.cpp )
+add_executable(ParTester src/test/ParTester.cpp src/Graph.h src/Graph.cpp
+        src/Change.h src/Change.cpp
+        src/timing/timing.h src/timing/timing.cpp
+        src/partitioning.h src/sequential_coarsening.cpp src/kernighanLin.cpp src/sequential_partitioning.cpp
+        src/parallel_partitioning.cpp src/parallel_coarsening.cpp src/loader.cpp src/parallel_kernighanLin.cpp
+        src/clusterCutSize.h src/clusterCutSize.cpp src/output.cpp )

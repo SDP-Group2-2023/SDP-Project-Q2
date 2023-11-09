@@ -14,9 +14,9 @@ using namespace std;
  * @param partitions The vector that specifies the partition number for each node
  * @return The weight of the partition
 */
-int countPartitionWeight(Graph *graph, int partition, vector<int> &partitions) {
+int countPartitionWeight(const GraphPtr& graph, int partition, std::vector<int> &partitions) {
     int weight = 0;
-    for (auto &n : graph->nodes) {
+    for (const auto &n : graph->nodes) {
         if (partitions[n->id] == partition) {
             weight += n->weight;
         }
@@ -30,13 +30,14 @@ int countPartitionWeight(Graph *graph, int partition, vector<int> &partitions) {
  * @param partitions The vector that specifies the partition number for each node
  * @return The total cut size of the graph
 */
-unsigned long long calculateCutSize(Graph *graph, vector<int> &partitions) {
+unsigned long long calculateCutSize(const GraphPtr& graph, std::vector<int> &partitions) {
     unsigned long long cutsize = 0;
-    for (auto &n : graph->nodes) {
-        for (auto &edge : n->edges) {
-            int source, dest;
-            source = edge->node1->id;
-            dest   = edge->node2->id;
+    for (const auto &n : graph->nodes) {
+        for (const auto &edge : n->edges) {
+            unsigned int source;
+            unsigned int dest;
+            source = edge->node1.lock()->id;
+            dest   = edge->node2.lock()->id;
             if (partitions[source] != partitions[dest])
                 cutsize += edge->weight >> 1;    // divided by 2
         }
@@ -51,16 +52,16 @@ unsigned long long calculateCutSize(Graph *graph, vector<int> &partitions) {
  * @param to_partition The destination partition.
  * @return The gain in cut size if the given node is moved to the given partition
 */
-int gain(vector<int> &partitions, Node *node_to_move, int to_partition) {
+int gain(std::vector<int> &partitions, const NodePtr& node_to_move, int to_partition) {
     if (partitions[node_to_move->id] == to_partition)
         return 0;
 
     int result = 0;
-    for (auto &e : node_to_move->edges) {
-        Node *other = (e->node1 == node_to_move) ? e->node2 : e->node1;
-        if (partitions[other->id] == to_partition)
+    for (const auto &e : node_to_move->edges) {
+        auto other = (e->node1.lock() == node_to_move) ? e->node2 : e->node1;
+        if (partitions[other.lock()->id] == to_partition)
             result += e->weight;
-        else if (partitions[other->id] == partitions[node_to_move->id])
+        else if (partitions[other.lock()->id] == partitions[node_to_move->id])
             result -= e->weight;
     }
 
@@ -68,17 +69,18 @@ int gain(vector<int> &partitions, Node *node_to_move, int to_partition) {
 }
 
 // Fiduccia and Mattheyses version KL-inspired was used to implement the kernighanLin function
+
 /**
  * @brief It implements the Fiduccia and Mattheyses version of the Kernighan Lin algorithm to do local refinement of the partitioning
  * @param graph the graph that has been partitioned
  * @param num_partitions the total number of partitions that are present
  * @param partitions the vector that contains the partition number for each node, and that at the end will contain the refined partitioning
 */
-void kernighanLin(Graph *graph, int num_partitions, vector<int> &partitions) {
+void kernighanLin(const GraphPtr & graph, int num_partitions, std::vector<int> &partitions) {
     bool improved;
     unsigned long long cut_size      = calculateCutSize(graph, partitions);
     unsigned long long best_cut_size = cut_size;
-    vector<int> best_partitions(partitions);
+    std::vector<int> best_partitions(partitions);
 
     /* Partition weight calculation has been anticipated outside the do-while in order to improve timing performance:
      * indeed "possible_changes" computation is proportional to V*P (number of nodes*number of partitions) and recomputing
@@ -87,30 +89,30 @@ void kernighanLin(Graph *graph, int num_partitions, vector<int> &partitions) {
      * We now observe the algorithm bottleneck is moved from "iteration 8" to "iteration 4", which is our new bottleneck, which
      * we are trying to resolve.
      */
-    graph->partitions_size = vector<int>(num_partitions);    // this could possible be made a graph attribute, so to speed up, since it doesn't change from iteration to iteration
+    graph->partitions_size = std::vector<int>(num_partitions);    // this could possible be made a graph attribute, so to speed up, since it doesn't change from iteration to iteration
     for (int i = 0; i < num_partitions; i++)
         graph->partitions_size[i] = countPartitionWeight(graph, i, partitions);
 
-    vector<int> best_partitions_weights(graph->partitions_size);
+    std::vector<int> best_partitions_weights(graph->partitions_size);
 
     do {
         improved = false;
 
         // constraint (see article explanation : each node must be moved only once inside the innermost loop so we mark it with a flag)
-        vector<bool> moved(graph->V(), false);
-        set<Change> possible_changes;
-        map<Node *, map<int, int>> node_gain_mapping;
+        std::vector<bool> moved(graph->V(), false);
+        std::set<Change> possible_changes;
+        std::map<NodePtr, std::map<int, int>> node_gain_mapping;
 
         timing choices_loop;
 
         // loop to calculate all initial gains
         for (int i = 0; i < graph->V(); i++) {
-            Node *current_node = graph->nodes[i];
+            auto current_node = graph->nodes[i];
 
-            for (auto n : current_node->get_neighbors()) {    // assign node to all possible partitions other than his
+            for (const auto& n : current_node->get_neighbors()) {    // assign node to all possible partitions other than his
                 if (partitions[n->id] != partitions[current_node->id]) {
                     possible_changes.emplace(partitions[n->id], current_node, gain(partitions, current_node, partitions[n->id]));
-                    node_gain_mapping[current_node][partitions[n->id]] = gain(partitions, current_node, partitions[n->id]);
+                    node_gain_mapping[current_node][partitions[n->id]] = gain(partitions, ref(current_node), partitions[n->id]);
                 }
             }
         }
@@ -124,7 +126,7 @@ void kernighanLin(Graph *graph, int num_partitions, vector<int> &partitions) {
 
         int num_iteration = 0;
         int iteration, max_iteration = 0, avg_iteration = 0;
-        timing choosing_loop(TIMING_DEFER);
+        timing choosing_loop(timing_flag::TIMING_DEFER);
 
         while (sum_of_gains >= stop_threshold && negative_gains < graph->max_node_degree()) {
             // from the set select the best (if it leads to balanced partitions) gain movement and perform it (update "partitions" vector)
@@ -219,5 +221,5 @@ void kernighanLin(Graph *graph, int num_partitions, vector<int> &partitions) {
 
     } while (improved);
 
-    cout << calculateCutSize(graph, partitions) << endl;
+    //std::cout << calculateCutSize(graph, partitions) << std::endl;
 }

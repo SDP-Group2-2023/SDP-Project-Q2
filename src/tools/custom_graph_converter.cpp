@@ -1,15 +1,14 @@
 #include <iostream>
 #include <fstream>
 
-using namespace std;
 int main(int argc, char**argv){
     if(argc < 3){
-        cout << "Usage: " << argv[0] << " <input file> <output file>"  << endl;
+        std::cout << "Usage: " << argv[0] << " <input file> <output file>"  << std::endl;
         return 1;
     }
 
-    ifstream input(argv[1], ios::in);
-    ofstream output(argv[2], ios::binary);
+    std::ifstream input(argv[1], std::ios::in);
+    std::ofstream output(argv[2], std::ios::binary);
     int num_nodes;
     int num_edges;
     input >> num_nodes >> num_edges;

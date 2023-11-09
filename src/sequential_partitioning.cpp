@@ -6,32 +6,31 @@
 #include <set>
 #include <vector>
 
-using namespace std;
 struct RetrieveKey {
     template<typename T> typename T::first_type operator()(T keyValuePair) const {
         return keyValuePair.first;
     }
 };
 
-vector<int> uncoarsenGraph(Graph *g, vector<int> &partitions) {
-    vector<int> newPartitions(g->V());
+std::vector<int> uncoarsenGraph(const GraphPtr& g, std::vector<int> &partitions) {
+    std::vector<int> newPartitions(g->V());
 
-    for (auto &n : g->nodes)
+    for (const auto &n : g->nodes)
         newPartitions[n->id] = partitions[n->child->id];
 
     return newPartitions;
 }
 
-void initial_partitioning_s(Graph *g, vector<int> &partitions, int partition_num) {
-    int partitions_tot = g->V();
-    map<int, map<int, int>> cluster_hashMap;
-    set<cluster_cut_size> cut_sizes;
+void initial_partitioning_s(const GraphPtr& g, std::vector<int> &partitions, int partition_num) {
+    auto partitions_tot = g->V();
+    std::map<int, std::map<int, int>> cluster_hashMap;
+    std::set<cluster_cut_size> cut_sizes;
 
     for (int i = 0; i < g->V(); i++) {    // first assign each node to its own partition
         partitions[i] = i;
     }
-    for (auto e : g->edges) {    // then populate the set and the hashmap
-        cluster_cut_size cluster(e->node1->id, e->node2->id, e->weight);
+    for (const auto& e : g->edges) {    // then populate the set and the hashmap
+        cluster_cut_size cluster(e->node1.lock()->id, e->node2.lock()->id, e->weight);
         cut_sizes.insert(cluster);
         cluster_hashMap[cluster.clusterA][cluster.clusterB] = cluster.cutSize;
         cluster_hashMap[cluster.clusterB][cluster.clusterA] = cluster.cutSize;
@@ -48,7 +47,8 @@ void initial_partitioning_s(Graph *g, vector<int> &partitions, int partition_num
             }
         }
 
-        vector<int> keys;
+        std::vector<int> keys;
+
 
         // Retrieve all keys
         // this function I copied from stack overflow to extract all the keys
@@ -78,7 +78,7 @@ void initial_partitioning_s(Graph *g, vector<int> &partitions, int partition_num
         cluster_hashMap.erase(selected.clusterB);    // I remove cluster B
     }
 
-    map<int, int> converter;
+    std::map<int, int> converter;
     int partition = 0;
     for (int i = 0; i < partitions.size(); i++) {
         if (converter.contains(partitions[i]))
@@ -89,34 +89,34 @@ void initial_partitioning_s(Graph *g, vector<int> &partitions, int partition_num
         }
     }
     if (partition != partition_num)                     // should ALWAYS BE FALSE
-        cout << "Error in the partitioning" << endl;    // To be removed once testing is done
+        std::cout << "Error in the partitioning" << std::endl;    // To be removed once testing is done
 }
 
-void partitioning_s(Graph *g, int requestedPartitions) {
-    int actual_num_partitions = g->V();
+void partitioning_s(const GraphPtr& g, int requestedPartitions) {
+    unsigned int actual_num_partitions = g->V();
 
-    vector<Graph *> allGraphs;
+    std::vector<GraphPtr> allGraphs;
     allGraphs.push_back(g);
 
     int iterations = 0;
     while (actual_num_partitions > requestedPartitions * 15 && iterations++ < 50) {
-        cout << "Iteration " << iterations << endl;
-        Graph *coarsedGraph = coarseGraph_s(allGraphs.back());
+        //std::cout << "Iteration " << iterations << std::endl;
+        auto coarsedGraph = coarseGraph_s(allGraphs.back());
         // coarsedGraph->print();
         actual_num_partitions = coarsedGraph->V();
-        cout << "Actual number of partitions: " << actual_num_partitions << endl;
+        //std::cout << "Actual number of partitions: " << actual_num_partitions << std::endl;
         allGraphs.push_back(coarsedGraph);
     }
 
-    Graph *coarsestGraph = allGraphs[allGraphs.size() - 1];
-    vector<int> partitions(coarsestGraph->V());
+    auto coarsestGraph = allGraphs[allGraphs.size() - 1];
+    std::vector<int> partitions(coarsestGraph->V());
     initial_partitioning_s(coarsestGraph, partitions, requestedPartitions);
 
     kernighanLin(coarsestGraph, requestedPartitions, partitions);
 
     for (auto i = (int) allGraphs.size() - 2; i >= 0; i--) {
         partitions = uncoarsenGraph(allGraphs[i], partitions);
-        cout << "Uncoarsening step " << i << endl;
+        //std::cout << "Uncoarsening step " << i << std::endl;
         allGraphs[i]->partitions_size = allGraphs[i + 1]->partitions_size;
         kernighanLin(allGraphs[i], requestedPartitions, partitions);
     }
@@ -127,7 +127,6 @@ void partitioning_s(Graph *g, int requestedPartitions) {
 
     save_to_file("OutputPartitions.txt", g, partitions, requestedPartitions);
     
-    for (int i = 1; i < allGraphs.size(); i++) {
-        delete allGraphs[i];
-    }
+    //for (int i = 1; i < allGraphs.size(); i++)
+    //    delete allGraphs[i];
 }

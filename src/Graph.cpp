@@ -1,84 +1,57 @@
 #include "Graph.h"
 #include <iostream>
 
-using namespace std;
+Node::Node(unsigned int id,unsigned int weight)
+: id(id), weight(weight) {}
 
-Node::Node(int id, int weight) {
-    this->id     = id;
-    this->weight = weight;
-    child        = nullptr;
-}
-
-vector<Node *> Node::get_neighbors() {
-    vector<Node *> neighbors;
-
-    for (auto &e : edges) {
-        neighbors.push_back((this == e->node1) ? e->node2 : e->node1);
-    }
-
+NodePtrArr Node::get_neighbors() const{
+    NodePtrArr neighbors;
+    for (const auto &e : edges)
+        neighbors.push_back((this->id == e->node1.lock()->id) ? e->node2.lock() : e->node1.lock());
     return neighbors;
 }
 
-Edge::Edge(int weight, Node *node1, Node *node2) {
-    this->weight = weight;
-    this->node1  = node1;
-    this->node2  = node2;
-    this->flag   = false;
-}
+Edge::Edge(unsigned int weight, const NodePtr & node1, const NodePtr & node2)
+: weight(weight), node1(node1), node2(node2){}
 
-Node *Graph::add_node(int id, int weight) {
-    Node *n = new Node(id, weight);
+/**
+ * @brief Add a node to the graph
+ * @param id the id of the node
+ * @param weight the weight of the node
+ * @return the created node
+ */
+NodePtr Graph::add_node(unsigned int id, unsigned int weight){
+    auto n = std::make_shared<Node>(id, weight);
     nodes.push_back(n);
     this->node_weight_global += weight;
     return n;
 }
 
-Node *Graph::add_node_with_index(int id, int weight) {
-    Node *n = new Node(id, weight);
-    nodes[id] = n;
+/**
+ * @brief Add a node to the graph with a specific index
+ * @param id
+ * @param weight
+ * @return
+ */
+NodePtr Graph::add_node_with_index( unsigned int id, unsigned int weight) {
+    nodes[id] = std::make_shared<Node>(id, weight);
     this->node_weight_global += weight;
-    return n;
+    return nodes[id];
 }
 
-shared_ptr<Edge> Graph::add_edge(int source, int dest, int distance) {
-    Node *node1        = nodes[source];
-    Node *node2        = nodes[dest];
-    shared_ptr<Edge> e = make_shared<Edge>(distance, node1, node2);
+EdgePtr Graph::add_edge(unsigned int source, unsigned int dest, unsigned int distance) {
+    auto node1        = nodes[source];
+    auto node2        = nodes[dest];
+    auto e = std::make_shared<Edge>(distance, node1, node2);
     edges.push_back(e);
     node1->edges.push_back(e);
     node2->edges.push_back(e);
     return e;
 }
 
-void Graph::print() {
-    cout << "Graph with " << V() << " nodes and " << E() << " edges" << endl;
-    for (int i = 0; i < V(); i++) {
-        Node *n = nodes[i];
-        cout << "Node " << n->id << " with weight " << n->weight << endl;
-        for (auto &edge : n->edges) {
-            int source, dest;
-            source = edge->node1->id;
-            dest   = edge->node2->id;
-            if (source != n->id)
-                swap(source, dest);
-            cout << "\tEdge " << source << " -> " << dest << " with weight " << edge->weight << endl;
-        }
-    }
-}
-
-Graph::~Graph() {
-    for (auto &node : nodes) {
-        for (auto &edge : node->edges) {
-            edge = nullptr;
-        }
-        delete node;
-        node = nullptr;
-    }
-}
-
-void Graph::add_or_sum_edge(Node *n1, Node *n2, int distance) {
-    for (auto &edge : n1->edges) {
-        if (edge->node1 == n2 || edge->node2 == n2) {
+void Graph::add_or_sum_edge(const NodePtr & n1, const NodePtr& n2, unsigned int distance) {
+    for (const auto &edge : n1->edges) {
+        if (edge->node1.lock() == n2 || edge->node2.lock() == n2) {
             edge->weight += distance;
             return;
         }
@@ -86,21 +59,20 @@ void Graph::add_or_sum_edge(Node *n1, Node *n2, int distance) {
     add_edge(n1->id, n2->id, distance);
 }
 
-int Graph::max_node_degree() {
+unsigned int Graph::max_node_degree() {
     if (_max_node_degree != 0)
         return _max_node_degree;
-    for (Node *n : nodes) {
+    for (const auto& n : nodes) {
         if (_max_node_degree < n->edges.size())
             _max_node_degree = n->edges.size();
     }
-
     return _max_node_degree;
 }
 
-int Graph::V(){
+unsigned int Graph::V() const{
     return (int)nodes.size();
 }
 
-int Graph::E(){
+unsigned long Graph::E() const{
     return (int)edges.size();
 }

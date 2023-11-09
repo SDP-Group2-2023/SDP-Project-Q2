@@ -1,13 +1,13 @@
 #include "Graph.h"
 #include "partitioning.h"
 #include <iostream>
-#include <mutex>
 #include <set>
 #include <thread>
 #include <vector>
-using namespace std;
+#include <mutex>
 
-void uncoarsen_graph_step(Graph *g, vector<int> &partitions, vector<int> &newPartitions, int num_nodes, int start, int step) {
+void uncoarsen_graph_step(const GraphPtr& g, std::vector<int> &partitions,
+                          std::vector<int> &newPartitions, int num_nodes, int start, int step) {
     int i = start;
     while (i < num_nodes) {
         newPartitions[g->nodes[i]->id] = partitions[g->nodes[i]->child->id];
@@ -15,13 +15,13 @@ void uncoarsen_graph_step(Graph *g, vector<int> &partitions, vector<int> &newPar
     }
 }
 
-vector<int> uncoarsen_graph_p(Graph *g, vector<int> &partitions, int num_thread) {
-    int num_nodes = g->V();
-    vector<int> newPartitions(num_nodes);
-    vector<thread> threads(num_thread);
+std::vector<int> uncoarsen_graph_p(const GraphPtr& g, std::vector<int> &partitions, int num_thread) {
+    unsigned int num_nodes = g->V();
+    std::vector<int> newPartitions(num_nodes);
+    std::vector<std::thread> threads(num_thread);
 
     for (int i = 0; i < num_thread; i++) {
-        threads[i] = thread(uncoarsen_graph_step, g, ref(partitions), ref(newPartitions), num_nodes, i, num_thread);
+        threads[i] = std::thread(uncoarsen_graph_step, ref(g), ref(partitions), ref(newPartitions), num_nodes, i, num_thread);
     }
     for (auto &t : threads) {
         t.join();
@@ -30,35 +30,37 @@ vector<int> uncoarsen_graph_p(Graph *g, vector<int> &partitions, int num_thread)
     return newPartitions;
 }
 
-void partitioning_p(Graph *g, int requestedPartitions, int num_threads) {
-    int actual_num_partitions = g->V();
+void partitioning_p(const GraphPtr & g, int requestedPartitions, int num_threads) {
+    unsigned int actual_num_partitions = g->V();
 
-    vector<Graph *> allGraphs;
+    std::vector<GraphPtr> allGraphs;
     allGraphs.push_back(g);
 
     int iterations = 0;
     while (actual_num_partitions > requestedPartitions * 15 && iterations++ < 50) {
-        cout << "Iteration " << iterations << endl;
-        auto start          = chrono::high_resolution_clock::now();
-        Graph *coarsedGraph = coarseGraph_p(allGraphs.back(), num_threads);
-        auto end            = chrono::high_resolution_clock::now();
-        cout << "Coarsening time: " << chrono::duration_cast<chrono::milliseconds>(end - start).count() << "ms" << endl;
+        //std::cout << "Iteration " << iterations << std::endl;
+        auto start          = std::chrono::high_resolution_clock::now();
+        auto coarsedGraph = coarseGraph_p(allGraphs.back(), num_threads);
+
+        //std::cout << "Coarsed graph: " << coarsedGraph->V() << std::endl;
+
+        auto end            = std::chrono::high_resolution_clock::now();
+        //std::cout << "Coarsening time: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms" << std::endl;
         // coarsedGraph->print();
         actual_num_partitions = coarsedGraph->V();
         allGraphs.push_back(coarsedGraph);
     }
 
-    Graph *coarsestGraph = allGraphs[allGraphs.size() - 1];
-    vector<int> partitions(coarsestGraph->V(), -1);
-    for (int i = 0; i < coarsestGraph->V(); i++) {
+    auto coarsestGraph = allGraphs[allGraphs.size() - 1];
+    std::vector<int> partitions(coarsestGraph->V(), -1);
+    for (int i = 0; i < coarsestGraph->V(); i++)
         partitions[i] = i % requestedPartitions;
-    }
 
     kernighanLin_p(coarsestGraph, requestedPartitions, partitions, coarsestGraph->num_colours, coarsestGraph->colours, num_threads);
 
     for (auto i = (int) allGraphs.size() - 2; i >= 0; i--) {
         partitions = uncoarsen_graph_p(allGraphs[i], partitions, num_threads);
-        cout << "Uncoarsening step " << allGraphs.size() - i - 1 << endl;
+        //std::cout << "Uncoarsening step " << allGraphs.size() - i - 1 << std::endl;
         allGraphs[i]->partitions_size = allGraphs[i + 1]->partitions_size;
         kernighanLin_p(allGraphs[i], requestedPartitions, partitions, coarsestGraph->num_colours, coarsestGraph->colours, num_threads);
     }
@@ -69,26 +71,27 @@ void partitioning_p(Graph *g, int requestedPartitions, int num_threads) {
 
     save_to_file("OutputPartitions.txt", g, partitions, requestedPartitions);
 
-    for (int i = 1; i < allGraphs.size(); i++)
-        delete allGraphs[i];
+    //for (int i = 1; i < allGraphs.size(); i++)
+    //    delete allGraphs[i];
 }
 
-bool Compare_Node(Node *a, Node *b) {
+bool Compare_Node(NodePtr a, NodePtr b) {
     if (a->weight > b->weight || (a->weight == b->weight && a->id > b->id))
         return true;
     else
         return false;
 }
 
-void partitioning_thread(Graph *graph, vector<int> *partitions, vector<mutex> *nodes_m, vector<int> *starting_nodes, int avg_p_weight, vector<int> *weight) {
+void partitioning_thread(GraphPtr &graph, std::vector<int> *partitions,
+                         std::vector<std::mutex> *nodes_m, std::vector<int> *starting_nodes,
+                         int avg_p_weight, std::vector<int> *weight) {
     // vector of sets
-    vector<set<Node *, bool (*)(Node *, Node *)>> queues_of_nodes;
-    for (int i = 0; i < starting_nodes->size(); i++) {
+    std::vector<std::set<NodePtr, bool (*)(NodePtr , NodePtr)>> queues_of_nodes;
+    for (int starting_node : *starting_nodes) {
         // collecting in a set all neighbours of my starting node that are still unassigned to a partition
-        set<Node *, bool (*)(Node *, Node *)> queue(Compare_Node);
-        for (auto n : graph->nodes[(*starting_nodes)[i]]->get_neighbors()) {
+        std::set<NodePtr, bool (*)(NodePtr, NodePtr)> queue(Compare_Node);
+        for (const auto& n : graph->nodes[starting_node]->get_neighbors())
             queue.insert(n);
-        }
 
         queues_of_nodes.push_back(queue);
     }
@@ -99,9 +102,9 @@ void partitioning_thread(Graph *graph, vector<int> *partitions, vector<mutex> *n
     int index           = 0;
     // weight of the partition we are forming by adding each neighbour to it
     while (!next_partition) {
-        for (auto neighbour = queues_of_nodes[index].begin(); neighbour != queues_of_nodes[index].end();) {
+        for ( auto neighbour = queues_of_nodes[index].begin(); neighbour != queues_of_nodes[index].end();) {
             // lock starting node and its neighbour
-            scoped_lock((*nodes_m)[(*neighbour)->id], (*nodes_m)[(*starting_nodes)[index]]);
+            auto sl = std::scoped_lock((*nodes_m)[(*neighbour)->id], (*nodes_m)[(*starting_nodes)[index]]);
             // we set 1.4 waiting to test if it's ok as a multiplication factor
             // if adding the neighbour to the partition does not exceed the avg and the neighbour hasn't been
             // assigned by another thread to another partition, assign it and remove it from the set
@@ -110,10 +113,10 @@ void partitioning_thread(Graph *graph, vector<int> *partitions, vector<mutex> *n
                 (*partitions)[(*neighbour)->id] = (*partitions)[(*starting_nodes)[index]];
                 (*weight)[index] += (*neighbour)->weight;
 
-                Node *s_neighbour = *neighbour;
+                auto s_neighbour = *neighbour;
 
                 // add neighbour's neighbours to the queue
-                for (auto n : s_neighbour->get_neighbors())
+                for (auto& n : s_neighbour->get_neighbors())
                     queues_of_nodes[index].insert(n);
 
                 // remove neighbour from unassigned
@@ -135,11 +138,12 @@ void partitioning_thread(Graph *graph, vector<int> *partitions, vector<mutex> *n
     }
 }
 
-void initial_partitioning_p(Graph *graph, vector<int> &partitions, int num_partitions, int num_threads) {
-    vector<vector<int>> starting_nodes(num_threads);
-    set<Node *, bool (*)(Node *, Node *)> ordered_nodes(graph->nodes.begin(), graph->nodes.end(), Compare_Node);
+void initial_partitioning_p(GraphPtr &graph, std::vector<int> &partitions,
+                            int num_partitions, int num_threads) {
+    std::vector<std::vector<int>> starting_nodes(num_threads);
+    std::set<NodePtr, bool (*)(NodePtr, NodePtr)> ordered_nodes(graph->nodes.begin(), graph->nodes.end(), Compare_Node);
     // one weight vector for each thread to operate on
-    vector<vector<int>> weights(num_threads);
+    std::vector<std::vector<int>> weights(num_threads);
 
     auto top_node = ordered_nodes.begin();
     // more partitions than threads available: anyway this is just the initial partitioning
@@ -153,12 +157,12 @@ void initial_partitioning_p(Graph *graph, vector<int> &partitions, int num_parti
             break;
     }
 
-    vector<mutex> nodes_m(graph->nodes.size());
+    std::vector<std::mutex> nodes_m(graph->nodes.size());
 
-    vector<thread> partitioners;
+    std::vector<std::thread> partitioners;
 
     for (int i = 0; i < num_threads; i++)
-        partitioners.emplace_back(partitioning_thread, graph, &partitions, &nodes_m, &starting_nodes[i], graph->node_weight_global / num_partitions, &weights[i]);
+        partitioners.emplace_back(partitioning_thread, ref(graph), &partitions, &nodes_m, &starting_nodes[i], graph->node_weight_global / num_partitions, &weights[i]);
 
     for (auto &t : partitioners)
         t.join();
@@ -168,8 +172,8 @@ void initial_partitioning_p(Graph *graph, vector<int> &partitions, int num_parti
     for (int i = 0; i < partitions.size(); i++) {
         if (partitions[i] == -1) {
             int w_lightest_partition  = -1;
-            vector<Node *> neighbours = graph->nodes[i]->get_neighbors();
-            for (auto s : neighbours) {
+            auto neighbours = graph->nodes[i]->get_neighbors();
+            for (const auto& s : neighbours) {
                 if (partitions[s->id] == -1)
                     continue;
                 if (w_lightest_partition == -1) {

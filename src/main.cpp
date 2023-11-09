@@ -1,18 +1,15 @@
 #include <iostream>
-#include <list>
 #include "partitioning.h"
 #include "timing/timing.h"
 
-#define PARALLEL_BUILD
-
-using namespace std;
 int main(int argc, char **argv){
     if(argc < 2){
-        cout << "Usage: " << argv[0] << " <input file>"  << endl;
+        std::cout << "Usage: " << argv[0] << " <input file>"  << std::endl;
         return 1;
     }
 
     auto g = loadFromFile(argv[1]);
+
     int requestedPartitions = 100;
     timing total_time;
     
@@ -24,7 +21,6 @@ int main(int argc, char **argv){
 
     total_time.stop();
     auto elapsed = total_time.getDuration();
-    cout << "Time elapsed: " << elapsed.count() << " ms" << endl;
+    std::cout << "Time elapsed: " << elapsed.count() << " ms" << std::endl;
 
-    delete g;
 }
