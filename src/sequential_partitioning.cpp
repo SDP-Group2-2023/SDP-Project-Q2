@@ -48,10 +48,6 @@ void initial_partitioning_s(Graph *g, vector<int> &partitions, int partition_num
             }
         }
 
-        if(!flag) {
-            cout << "Ahhhhhh" << endl;
-        }
-
         vector<int> keys;
 
         // Retrieve all keys
