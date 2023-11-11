@@ -21,6 +21,12 @@ std::vector<int> uncoarsenGraph(const GraphPtr& g, std::vector<int> &partitions)
     return newPartitions;
 }
 
+/**
+ * @brief Will partition the graph using a sequential algorithm
+ * @param g the graph to partition
+ * @param partitions the vector that weill contain the generated partitions
+ * @param partition_num the number of partitions to generate
+*/
 void initial_partitioning_s(const GraphPtr& g, std::vector<int> &partitions, int partition_num) {
     auto partitions_tot = g->V();
     std::map<int, std::map<int, int>> cluster_hashMap;
@@ -92,6 +98,11 @@ void initial_partitioning_s(const GraphPtr& g, std::vector<int> &partitions, int
         std::cout << "Error in the partitioning" << std::endl;    // To be removed once testing is done
 }
 
+/**
+ * @brief will partition the given graph
+ * @param g the graph to partition
+ * @param requestedPartitions the number of partitions to generate
+*/
 void partitioning_s(const GraphPtr& g, int requestedPartitions) {
     unsigned int actual_num_partitions = g->V();
 

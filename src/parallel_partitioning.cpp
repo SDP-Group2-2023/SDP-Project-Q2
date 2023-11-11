@@ -74,6 +74,12 @@ void partitioning_p(const GraphPtr &g, int requestedPartitions, int num_threads)
     //     delete allGraphs[i];
 }
 
+/**
+ * @brief compare two nodes and return true if the first has more weight than the second, or if the have the same weight it returns true if the first has a higher id
+ * @param a the first node
+ * @param b the second node
+ * @return true if a goes before b, false otherwise
+*/
 bool Compare_Node(const NodePtr &a, const NodePtr &b) {
     if (a->weight > b->weight || (a->weight == b->weight && a->id > b->id))
         return true;
@@ -81,6 +87,15 @@ bool Compare_Node(const NodePtr &a, const NodePtr &b) {
         return false;
 }
 
+/**
+ * @brief worker thread for the initial partitioning of the graph
+ * @param graph the graph to partition
+ * @param partitions the vector that will contain the final partitions of each node
+ * @param nodes_m vector of mutexes for each node
+ * @param starting_nodes vector of nodes assigned to this thread from where to begin
+ * @param avg_p_weight the average partitions weight for a partition
+ * @param weight vector where the weights of the generated partitions will be stored
+*/
 void partitioning_thread(GraphPtr &graph, std::vector<int> *partitions, std::vector<std::mutex> *nodes_m, std::vector<int> *starting_nodes, int avg_p_weight,
                          std::vector<int> *weight) {
     // vector of sets
@@ -136,6 +151,13 @@ void partitioning_thread(GraphPtr &graph, std::vector<int> *partitions, std::vec
     }
 }
 
+/**
+ * @brief will perform a multithread partitioning of the graph
+ * @param graph the graph to partition
+ * @param partitions the vector where the final partitions will be saved
+ * @param num_partitions number of desired partitions
+ * @param num_threads threads to use for this operation
+*/
 void initial_partitioning_p(GraphPtr &graph, std::vector<int> &partitions, int num_partitions, int num_threads) {
     std::vector<std::vector<int>> starting_nodes(num_threads);
     std::set<NodePtr, bool (*)(const NodePtr &,const NodePtr &)> ordered_nodes(graph->nodes.begin(), graph->nodes.end(), Compare_Node);

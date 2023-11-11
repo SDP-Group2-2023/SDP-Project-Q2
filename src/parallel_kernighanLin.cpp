@@ -5,9 +5,8 @@
 #include <barrier>
 #include <random>
 #include <set>
-#include <vector>
 #include <thread>
-
+#include <vector>
 
 /*serve grafo, num_partizioni, partizioni, num_threads
 colori, num_colors
@@ -23,11 +22,16 @@ adiacenti non si influenzano il gain a vicenda
 /**
  * @brief This functions should be launched in its own thread and is supposed to work with other threads to perform the kernighan Lin Algorithm
  * @param graph the graph for which the algorithm should be run
- * @param num_partitions the total number of partitions to create 
- * @param partitions 
-*/
-void thread_kernighanLin(const GraphPtr & graph, int num_partitions, std::vector<int> *partitions,
-                         int num_colors, std::vector<int> *colors, std::vector<int> *nodes, std::barrier<>& weight_barrier, std::barrier<>& color_barrier) {
+ * @param num_partitions the total number of partitions to create
+ * @param partitions the vector that contain the partition for each node
+ * @param num_colors the total number of colors in the graph
+ * @param colors the vector that contains the the color for each node
+ * @param nodes the nodes that are assigned to this thread
+ * @param weight_barrier the barrier used to synchronize the threads for operations on partitions weights
+ * @param color_barrier the barrier used to synchronize the threads for iterations over the colors
+ */
+void thread_kernighanLin(const GraphPtr &graph, int num_partitions, std::vector<int> *partitions, int num_colors, std::vector<int> *colors, std::vector<int> *nodes,
+                         std::barrier<> &weight_barrier, std::barrier<> &color_barrier) {
     bool stuff_done = true;
     int counter     = 0;
     while (stuff_done) {
@@ -35,7 +39,7 @@ void thread_kernighanLin(const GraphPtr & graph, int num_partitions, std::vector
         for (int color = 0; color < num_colors; color++) {
             // Calculate partitions weight
             std::vector<unsigned int> partitions_size(num_partitions, 0);
-            for (auto& n : graph->nodes)
+            for (auto &n : graph->nodes)
                 partitions_size[partitions->at(n->id)] += n->weight;
 
             std::vector<int> actual_nodes;
@@ -50,7 +54,7 @@ void thread_kernighanLin(const GraphPtr & graph, int num_partitions, std::vector
 
             for (auto n : actual_nodes) {
                 auto node = graph->nodes[n];
-                for (auto& neighbour : node->get_neighbors()) {
+                for (auto &neighbour : node->get_neighbors()) {
                     if (partitions->at(neighbour->id) != partitions->at(node->id)) {
                         int C_gain = gain(*partitions, ref(node), partitions->at(neighbour->id));
                         if (C_gain >= 0)
@@ -89,7 +93,7 @@ void thread_kernighanLin(const GraphPtr & graph, int num_partitions, std::vector
 
             color_barrier.arrive_and_wait();
         }
-        if(!stuff_done && counter++ < 20)
+        if (!stuff_done && counter++ < 20)
             stuff_done = true;
     }
     // da rivedere se fare così oppure no
@@ -97,7 +101,16 @@ void thread_kernighanLin(const GraphPtr & graph, int num_partitions, std::vector
     color_barrier.arrive_and_drop();
 }
 
-void kernighanLin_p(const GraphPtr & graph, int num_partitions, std::vector<int> &partitions, int num_colors, std::vector<int> &colors, int num_threads) {
+/**
+ * @brief parallel implementation of the kernighan Lin algorithm
+ * @param graph the graph for which we need to perform the refinement
+ * @param num_partitions the total number of partitions
+ * @param partitions the vector that contains the the partition for each node
+ * @param num_colors the total number of colors
+ * @param colors the vector that contains the color of each node
+ * @param num_threads the total number of threads to generate and use
+ */
+void kernighanLin_p(const GraphPtr &graph, int num_partitions, std::vector<int> &partitions, int num_colors, std::vector<int> &colors, int num_threads) {
     /*
         divisione dei nodi ai singoli threads
         creazione dei threads
@@ -122,14 +135,14 @@ void kernighanLin_p(const GraphPtr & graph, int num_partitions, std::vector<int>
 
     std::vector<std::thread> kernighanLiners;
     for (int i = 0; i < num_threads; i++) {
-        kernighanLiners.emplace_back(thread_kernighanLin, ref(graph), num_partitions, &partitions, num_colors,
-                                     &colors, &nodes_per_thread[i], std::ref(weight_barrier), std::ref(color_barrier));
+        kernighanLiners.emplace_back(thread_kernighanLin, ref(graph), num_partitions, &partitions, num_colors, &colors, &nodes_per_thread[i], std::ref(weight_barrier),
+                                     std::ref(color_barrier));
     }
 
     for (int i = 0; i < num_threads; i++)
         kernighanLiners[i].join();
 
-    graph->partitions_size.clear(); // assure that it is empty
+    graph->partitions_size.clear();    // assure that it is empty
 
     for (int i = 0; i < num_partitions; i++)
         graph->partitions_size.emplace_back(countPartitionWeight(graph, i, partitions));
