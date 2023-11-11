@@ -1,6 +1,7 @@
 #include "Change.h"
 #include "Graph.h"
 #include "timing/timing.h"
+#include <iostream>
 #include <map>
 #include <set>
 

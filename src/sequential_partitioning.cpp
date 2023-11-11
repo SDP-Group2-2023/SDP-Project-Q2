@@ -53,11 +53,8 @@ void initial_partitioning_s(const GraphPtr& g, std::vector<unsigned int> &partit
             }
         }
 
-        if(!flag) {
-            std::cout << "Ahhhhhh" << std::endl;
-        }
-
         std::vector<int> keys;
+
 
         // Retrieve all keys
         // this function I copied from stack overflow to extract all the keys
