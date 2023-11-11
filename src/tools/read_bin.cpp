@@ -29,42 +29,4 @@ int main(int argc, char**argv){
 
     return 0;
 
-
-    unsigned int node;
-    unsigned int node_weight;
-    for (int i = 0;  i<num_nodes ; i++) {
-        input.read((char*)&node, sizeof(unsigned int));
-        input.read((char*)&node_weight, sizeof(unsigned int));
-
-        //std::cout << node << " " << node_weight << std::endl;
-        output << node << " " << node_weight << std::endl;
-
-        if(node > num_nodes-1) {
-            std::cout << "Error: node " << node << " is greater than num_nodes " << num_nodes << std::endl;
-            return 1;
-        }
-
-    }
-
-
-    unsigned int source;
-    unsigned int dest;
-    unsigned int distance;
-    for(int i = 0; i<num_edges; i++){
-        input.read((char*)&source, sizeof(unsigned int));
-        input.read((char*)&dest, sizeof(unsigned int));
-        input.read((char*)&distance, sizeof(unsigned int));
-
-        if(source > num_nodes-1) {
-            std::cout << "Error: source " << source << " is greater than num_nodes " << num_nodes << std::endl;
-            return 1;
-        }
-        if(dest > num_nodes-1) {
-            std::cout << "Error: dest " << dest << " is greater than num_nodes " << num_nodes << std::endl;
-            return 1;
-        }
-
-        //std::cout << source << " " << dest << " " << distance << std::endl;
-        output << source << " " << dest << " " << distance << std::endl;
-    }
 }

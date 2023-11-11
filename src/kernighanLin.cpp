@@ -5,17 +5,8 @@
 #include <map>
 #include <set>
 
-using namespace std;
-
-/**
- * @brief It calculates the partition weight for the given partition
- * @param graph The graph struct.
- * @param partition The partition for which to calculate the weight
- * @param partitions The vector that specifies the partition number for each node
- * @return The weight of the partition
-*/
-int countPartitionWeight(const GraphPtr& graph, int partition, std::vector<int> &partitions) {
-    int weight = 0;
+unsigned int countPartitionWeight(const GraphPtr& graph, int partition, std::vector<unsigned int> &partitions) {
+    unsigned int weight = 0;
     for (const auto &n : graph->nodes) {
         if (partitions[n->id] == partition) {
             weight += n->weight;
@@ -24,13 +15,7 @@ int countPartitionWeight(const GraphPtr& graph, int partition, std::vector<int> 
     return weight;
 }
 
-/**
- * @brief It calculates the total cut size of the graph for the given partitions
- * @param graph The graph for which to perform the computation
- * @param partitions The vector that specifies the partition number for each node
- * @return The total cut size of the graph
-*/
-unsigned long long calculateCutSize(const GraphPtr& graph, std::vector<int> &partitions) {
+unsigned long long calculateCutSize(const GraphPtr& graph, std::vector<unsigned int> &partitions) {
     unsigned long long cutsize = 0;
     for (const auto &n : graph->nodes) {
         for (const auto &edge : n->edges) {
@@ -45,14 +30,7 @@ unsigned long long calculateCutSize(const GraphPtr& graph, std::vector<int> &par
     return cutsize;
 }
 
-/**
- * @brief Calculates the gain in that is obtained if the given node is moved fto the given partition
- * @param partitions The vector that specifies the partition number for each node
- * @param node_to_move The pointer to the node that needs to be moved
- * @param to_partition The destination partition.
- * @return The gain in cut size if the given node is moved to the given partition
-*/
-int gain(std::vector<int> &partitions, const NodePtr& node_to_move, int to_partition) {
+int gain(std::vector<unsigned int> &partitions, const NodePtr& node_to_move, int to_partition) {
     if (partitions[node_to_move->id] == to_partition)
         return 0;
 
@@ -70,17 +48,11 @@ int gain(std::vector<int> &partitions, const NodePtr& node_to_move, int to_parti
 
 // Fiduccia and Mattheyses version KL-inspired was used to implement the kernighanLin function
 
-/**
- * @brief It implements the Fiduccia and Mattheyses version of the Kernighan Lin algorithm to do local refinement of the partitioning
- * @param graph the graph that has been partitioned
- * @param num_partitions the total number of partitions that are present
- * @param partitions the vector that contains the partition number for each node, and that at the end will contain the refined partitioning
-*/
-void kernighanLin(const GraphPtr & graph, int num_partitions, std::vector<int> &partitions) {
+void kernighanLin(const GraphPtr & graph, int num_partitions, std::vector<unsigned int> &partitions) {
     bool improved;
     unsigned long long cut_size      = calculateCutSize(graph, partitions);
     unsigned long long best_cut_size = cut_size;
-    std::vector<int> best_partitions(partitions);
+    std::vector<unsigned int> best_partitions(partitions);
 
     /* Partition weight calculation has been anticipated outside the do-while in order to improve timing performance:
      * indeed "possible_changes" computation is proportional to V*P (number of nodes*number of partitions) and recomputing
@@ -101,7 +73,7 @@ void kernighanLin(const GraphPtr & graph, int num_partitions, std::vector<int> &
         // constraint (see article explanation : each node must be moved only once inside the innermost loop so we mark it with a flag)
         std::vector<bool> moved(graph->V(), false);
         std::set<Change> possible_changes;
-        std::map<NodePtr, std::map<int, int>> node_gain_mapping;
+        std::map<NodePtr, std::map<unsigned int, int>> node_gain_mapping;
 
         timing choices_loop;
 
@@ -166,7 +138,7 @@ void kernighanLin(const GraphPtr & graph, int num_partitions, std::vector<int> &
             graph->partitions_size[best_change.new_partition] += best_change.node->weight;
 
             // swap according to best change found
-            int old_partition                = partitions[best_change.node->id];
+            unsigned int old_partition                = partitions[best_change.node->id];
             partitions[best_change.node->id] = best_change.new_partition;
             possible_changes.erase(best_change);
 
@@ -174,9 +146,9 @@ void kernighanLin(const GraphPtr & graph, int num_partitions, std::vector<int> &
             sum_of_gains += best_change.gain;
 
             // update gains of all neighbouring nodes of new_change.node
-            for (auto n : best_change.node->get_neighbors()) {
-                for (auto neighbour : n->get_neighbors()) {
-                    int i = partitions[neighbour->id];
+            for (const auto& n : best_change.node->get_neighbors()) {
+                for (const auto& neighbour : n->get_neighbors()) {
+                    unsigned int i = partitions[neighbour->id];
                     // removing selected change from possible_changes set (remember that to remove elements from a set all details of the element must be provided to erase
                     // function)
                     if (i != partitions[n->id]) {

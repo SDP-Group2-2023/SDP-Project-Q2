@@ -84,6 +84,4 @@ int main() {
                 break;
         }
     } while (command != 'E');
-
-    //delete g;
 }
