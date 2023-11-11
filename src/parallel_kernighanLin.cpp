@@ -22,7 +22,9 @@ adiacenti non si influenzano il gain a vicenda
 
 /**
  * @brief This functions should be launched in its own thread and is supposed to work with other threads to perform the kernighan Lin Algorithm
- * @param graph the graph for which the 
+ * @param graph the graph for which the algorithm should be run
+ * @param num_partitions the total number of partitions to create 
+ * @param partitions 
 */
 void thread_kernighanLin(const GraphPtr & graph, int num_partitions, std::vector<int> *partitions,
                          int num_colors, std::vector<int> *colors, std::vector<int> *nodes, std::barrier<>& weight_barrier, std::barrier<>& color_barrier) {
@@ -127,6 +129,9 @@ void kernighanLin_p(const GraphPtr & graph, int num_partitions, std::vector<int>
     for (int i = 0; i < num_threads; i++)
         kernighanLiners[i].join();
 
+    graph->partitions_size.clear(); // assure that it is empty
 
-    //std::cout << calculateCutSize(graph, partitions) << std::endl;
+    for (int i = 0; i < num_partitions; i++)
+        graph->partitions_size.emplace_back(countPartitionWeight(graph, i, partitions));
+    // std::cout << calculateCutSize(graph, partitions) << std::endl;
 }

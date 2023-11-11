@@ -17,5 +17,6 @@ void kernighanLin_p(const GraphPtr& g, int num_partitions, std::vector<int> &par
 int gain(std::vector<int> &partitions, const NodePtr & node_to_move, int to_partition);
 unsigned long long calculateCutSize(const GraphPtr& g, std::vector<int> &partitions);
 void save_to_file(const std::string& path, const GraphPtr& g, const std::vector<int> &partitions, int requestedPartitions);
+int countPartitionWeight(const GraphPtr &graph, int partition, std::vector<int> &partitions);
 
 #endif //GRAPHPARTITIONING_PARTITIONING_H
