@@ -43,8 +43,8 @@ void read_test(std::string& graph_path, int num_iterations){
     std::cout << "READ TEST" << std::endl;
 
     auto filename = std::string("read_test_")
-            .append(graph_path)
-            .append(".csv");
+            .append(graph_path);
+    filename = filename.substr(0, filename.find_last_of('.')).append(".csv");
 
     std::ofstream outfile(filename);
     outfile << "threads,time" << std::endl;
@@ -88,8 +88,8 @@ void seq_test(std::string& graph_path, int num_iterations){
     auto g = loadFromFile(graph_path);
 
     auto filename = std::string("seq_test_")
-            .append(graph_path)
-            .append(".csv");
+            .append(graph_path);
+    filename = filename.substr(0, filename.find_last_of('.')).append(".csv");
 
     std::ofstream outfile(filename);
     outfile << "time,cutsize,min_partition,max_partition,avg_partition,median_partition,std_dev" << std::endl;
@@ -147,8 +147,8 @@ void par_test(std::string& graph_path, int num_iterations){
     auto g = loadFromFile(graph_path);
 
     auto filename = std::string("par_test_")
-            .append(graph_path)
-            .append(".csv");
+            .append(graph_path);
+    filename = filename.substr(0, filename.find_last_of('.')).append(".csv");
 
     std::ofstream outfile(filename);
     outfile << "threads,time,cutsize,min_partition,max_partition,avg_partition,median_partition,std_dev" << std::endl;
