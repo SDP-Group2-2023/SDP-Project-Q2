@@ -3,6 +3,35 @@
 #include "../partitioning.h"
 #include "../timing/timing.h"
 
+
+void calculatePartitionStats(const std::vector<int> &partition_size, unsigned long *min_partition, unsigned long *max_partition,
+                             unsigned long *avg_partition, unsigned long *median_partition, unsigned long long* std_dev_partition){
+    *min_partition = partition_size[0];
+    *max_partition = partition_size[0];
+    *avg_partition = 0;
+    for(int i = 1; i < partition_size.size(); i++){
+        *avg_partition += partition_size[i];
+        if(partition_size[i] < *min_partition)
+            *min_partition = partition_size[i];
+        if(partition_size[i] > *max_partition)
+            *max_partition = partition_size[i];
+    }
+    *avg_partition /= partition_size.size();
+    *std_dev_partition = 0;
+
+    for(int i : partition_size){
+        *std_dev_partition += (i - *avg_partition) * (i - *avg_partition);
+    }
+
+    *std_dev_partition /= partition_size.size();
+    *std_dev_partition = sqrt(*std_dev_partition);
+
+    std::vector<int> partition_size_copy = std::vector(partition_size);
+    std::sort(partition_size_copy.begin(), partition_size_copy.end());
+    *median_partition = partition_size_copy[partition_size_copy.size()/2];
+
+}
+
 /**
  * Funzione che si occupa di testare la velocità di lettura media di un grafo
  * al variare del numero di thread usati
@@ -34,16 +63,17 @@ void read_test(std::string& graph_path, int num_iterations){
             auto end_time = std::chrono::high_resolution_clock::now();
             auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count();
 
-            //outfile << j << ";" << duration << ";" << std::endl;
+            outfile << j << ";" << duration << ";" << std::endl;
 
         }
 
-        std::cout << "*done*" << std::endl;
+        std::cout << " *done*" << std::endl;
     }
 
     outfile.close();
 
-    std::cout << "TEST COMPLETED" << std::endl;}
+    std::cout << "TEST COMPLETED" << std::endl << std::endl;
+}
 
 /**
  * Funzione che si occupa di testare la velocità media di partizionamento di un grafo in maniera sequenziale
@@ -70,30 +100,38 @@ void seq_test(std::string& graph_path, int num_iterations){
 
         auto start_time = std::chrono::high_resolution_clock::now();
 
-        partitioning_s(g, 100);
+        auto partitions = partitioning_s(g, 100);
 
         auto end_time = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count();
 
         //calcolo dei valori statistici
 
-        long cutsize;
-        long min_partition;
-        long max_partition;
-        long avg_partition;
-        long median_partition;
-        long std_dev;
+        unsigned long long cutsize = calculateCutSize(g,partitions);
+        unsigned long min_partition;
+        unsigned long max_partition;
+        unsigned long avg_partition;
+        unsigned long median_partition;
+        unsigned long long std_dev;
+
+        calculatePartitionStats(g->partitions_size, &min_partition, &max_partition, &avg_partition, &median_partition, &std_dev);
 
         /*
-        outfile << j << ";" << duration << ";" << cutsize << ";" ;
+        std::cout << "cutsize " << cutsize << std::endl;
+        std::cout << "min: " << min_partition << " max: " << max_partition << std::endl;
+        std::cout << "avg: " << avg_partition << " median: " << median_partition << std::endl;
+        std::cout << "std_dev: " << std_dev << std::endl;
+        */
+
+        outfile << duration << ";" << cutsize << ";" ;
         outfile << min_partition << ";" << max_partition << ";" << avg_partition << ";";
         outfile << median_partition << ";" << std_dev << ";" << std::endl;
-        */
+
     }
 
     outfile.close();
 
-    std::cout << "TEST COMPLETED" << std::endl;
+    std::cout << "TEST COMPLETED" << std::endl << std::endl;
 }
 
 /**
@@ -125,45 +163,53 @@ void par_test(std::string& graph_path, int num_iterations){
 
             auto start_time = std::chrono::high_resolution_clock::now();
 
-            partitioning_p(g, 100, j);
+            std::vector<unsigned int> partitions = partitioning_p(g, 100, j);
 
             auto end_time = std::chrono::high_resolution_clock::now();
             auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count();
 
             //calcolo dei valori statistici
 
-            long cutsize;
-            long min_partition;
-            long max_partition;
-            long avg_partition;
-            long median_partition;
-            long std_dev;
+            unsigned long long cutsize = calculateCutSize(g,partitions);
+            unsigned long min_partition;
+            unsigned long max_partition;
+            unsigned long avg_partition;
+            unsigned long median_partition;
+            unsigned long long std_dev;
+
+            calculatePartitionStats(g->partitions_size, &min_partition, &max_partition,
+                                    &avg_partition, &median_partition, &std_dev);
 
             /*
+            std::cout << "cutsize " << cutsize << std::endl;
+            std::cout << "min: " << min_partition << " max: " << max_partition << std::endl;
+            std::cout << "avg: " << avg_partition << " median: " << median_partition << std::endl;
+            std::cout << "std_dev: " << std_dev << std::endl;
+            */
+
             outfile << j << ";" << duration << ";" << cutsize << ";" ;
             outfile << min_partition << ";" << max_partition << ";" << avg_partition << ";";
             outfile << median_partition << ";" << std_dev << ";" << std::endl;
-            */
+
 
         }
 
-        std::cout << "*done*" << std::endl;
-
+        std::cout << " *done*" << std::endl;
     }
 
     outfile.close();
 
-    std::cout << "TEST COMPLETED" << std::endl;
+    std::cout << "TEST COMPLETED" << std::endl << std::endl;
 }
 
 
 int main(int argc, char**argv){
-    if(argc < 3){
-        std::cout << "Usage: " << argv[0] << " <input file> <num_iterations>"  << std::endl;
+    if(argc < 2){
+        std::cout << "Usage: " << argv[0] << " <input file> opt:<num_iterations>"  << std::endl;
         return 1;
     }
 
-    const int num_iterations = atoi(argv[2]);
+    const int num_iterations = argc==3 ? atoi(argv[2]) : 1;
 
     std::string graph_path(argv[1]);
 

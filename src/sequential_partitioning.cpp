@@ -109,7 +109,7 @@ void initial_partitioning_s(const GraphPtr& g, std::vector<unsigned int> &partit
  * @param g the graph to partition
  * @param requestedPartitions the number of partitions to generate
 */
-void partitioning_s(const GraphPtr& g, int requestedPartitions) {
+std::vector<unsigned int>  partitioning_s(const GraphPtr& g, int requestedPartitions) {
     unsigned int actual_num_partitions = g->V();
 
     std::vector<GraphPtr> allGraphs;
@@ -137,7 +137,8 @@ void partitioning_s(const GraphPtr& g, int requestedPartitions) {
         kernighanLin(allGraphs[i], requestedPartitions, partitions);
     }
 
+    return partitions;
 
-    save_to_file("OutputPartitions.txt", g, partitions, requestedPartitions);
+    //save_to_file("OutputPartitions.txt", g, partitions, requestedPartitions);
 
 }

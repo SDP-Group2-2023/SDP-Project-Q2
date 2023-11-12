@@ -30,7 +30,7 @@ std::vector<unsigned int> uncoarsen_graph_p(const GraphPtr& g, std::vector<unsig
     return newPartitions;
 }
 
-void partitioning_p(const GraphPtr &g, int requestedPartitions, int num_threads) {
+std::vector<unsigned int> partitioning_p(const GraphPtr &g, int requestedPartitions, int num_threads) {
     unsigned int actual_num_partitions = g->V();
 
     std::vector<GraphPtr> allGraphs;
@@ -64,6 +64,8 @@ void partitioning_p(const GraphPtr &g, int requestedPartitions, int num_threads)
         allGraphs[i]->partitions_size = allGraphs[i + 1]->partitions_size;
         kernighanLin_p(allGraphs[i], requestedPartitions, partitions, coarsestGraph->num_colours, coarsestGraph->colours, num_threads);
     }
+
+    return partitions;
 
     /*for (int i = 0; i < partitions.size(); i++) {
         cout << "Node " << i << " in partition " << partitions[i] << endl;
