@@ -99,11 +99,11 @@ bool Compare_Node(const NodePtr &a, const NodePtr &b) {
  * @param avg_p_weight the average partitions weight for a partition
  * @param weight vector where the weights of the generated partitions will be stored
 */
-void partitioning_thread(GraphPtr &graph, std::vector<int> *partitions, std::vector<std::mutex> *nodes_m, std::vector<int> *starting_nodes, int avg_p_weight,
-                         std::vector<int> *weight) {
+void partitioning_thread(GraphPtr &graph, std::vector<int>& partitions, std::vector<std::mutex>& nodes_m, std::vector<int>& starting_nodes, int avg_p_weight,
+                         std::vector<int>& weight) {
     // vector of sets
     std::vector<std::set<NodePtr, bool (*)(const NodePtr &,const NodePtr &)>> queues_of_nodes;
-    for (int starting_node : *starting_nodes) {
+    for (int starting_node : starting_nodes) {
         // collecting in a set all neighbours of my starting node that are still unassigned to a partition
         std::set<NodePtr, bool (*)(const NodePtr &, const NodePtr &)> queue(Compare_Node);
         for (const auto &n : graph->nodes[starting_node]->get_neighbors())
@@ -120,14 +120,14 @@ void partitioning_thread(GraphPtr &graph, std::vector<int> *partitions, std::vec
     while (!next_partition) {
         for (auto neighbour = queues_of_nodes[index].begin(); neighbour != queues_of_nodes[index].end();) {
             // lock starting node and its neighbour
-            auto sl = std::scoped_lock((*nodes_m)[(*neighbour)->id], (*nodes_m)[(*starting_nodes)[index]]);
+            auto sl = std::scoped_lock(nodes_m[(*neighbour)->id], nodes_m[starting_nodes[index]]);
             // we set 1.4 waiting to test if it's ok as a multiplication factor
             // if adding the neighbour to the partition does not exceed the avg and the neighbour hasn't been
             // assigned by another thread to another partition, assign it and remove it from the set
             // of unassigned node
-            if ((*weight)[index] + (*neighbour)->weight <= avg_p_weight * 1.4 && (*partitions)[(*neighbour)->id] == -1) {
-                (*partitions)[(*neighbour)->id] = (*partitions)[(*starting_nodes)[index]];
-                (*weight)[index] += (*neighbour)->weight;
+            if (weight[index] + (*neighbour)->weight <= avg_p_weight * 1.4 && partitions[(*neighbour)->id] == -1) {
+                partitions[(*neighbour)->id] = partitions[starting_nodes[index]];
+                weight[index] += (*neighbour)->weight;
 
                 auto s_neighbour = *neighbour;
 
@@ -140,7 +140,7 @@ void partitioning_thread(GraphPtr &graph, std::vector<int> *partitions, std::vec
                 // reset iterator to the start of the set since we have added new neighbours to this set
                 neighbour = queues_of_nodes[index].begin();
 
-            } else if ((*partitions)[(*neighbour)->id] != -1) {
+            } else if (partitions[(*neighbour)->id] != -1) {
                 // if another thread assigned it already you can remove it from set of unassigned and release lock on it
                 queues_of_nodes[index].erase(neighbour);
             } else {
@@ -149,7 +149,7 @@ void partitioning_thread(GraphPtr &graph, std::vector<int> *partitions, std::vec
         }
         // move to next node in our starting pool
         index++;
-        if (index > starting_nodes->size())
+        if (index > starting_nodes.size())
             next_partition = true;
     }
 }
@@ -184,7 +184,8 @@ void initial_partitioning_p(GraphPtr &graph, std::vector<int> &partitions, int n
     std::vector<std::thread> partitioners;
 
     for (int i = 0; i < num_threads; i++)
-        partitioners.emplace_back(partitioning_thread, ref(graph), &partitions, &nodes_m, &starting_nodes[i], graph->node_weight_global / num_partitions, &weights[i]);
+        partitioners.emplace_back(partitioning_thread, ref(graph), std::ref(partitions), ref(nodes_m),
+                                  ref(starting_nodes[i]), graph->node_weight_global / num_partitions, ref(weights[i]));
 
     for (auto &t : partitioners)
         t.join();

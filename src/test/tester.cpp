@@ -47,7 +47,7 @@ void read_test(std::string& graph_path, int num_iterations){
             .append(".csv");
 
     std::ofstream outfile(filename);
-    outfile << "threads;time;" << std::endl;
+    outfile << "threads,time" << std::endl;
 
     for(int j = 1; j<= 8; j++) {
 
@@ -63,7 +63,7 @@ void read_test(std::string& graph_path, int num_iterations){
             auto end_time = std::chrono::high_resolution_clock::now();
             auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time).count();
 
-            outfile << j << ";" << duration << ";" << std::endl;
+            outfile << j << "," << duration << std::endl;
 
         }
 
@@ -92,7 +92,7 @@ void seq_test(std::string& graph_path, int num_iterations){
             .append(".csv");
 
     std::ofstream outfile(filename);
-    outfile << "time;cutsize;min_partition;max_partition;avg_partition;median_partition;std_dev;" << std::endl;
+    outfile << "time,cutsize,min_partition,max_partition,avg_partition,median_partition,std_dev" << std::endl;
 
     for(int i = 0; i< num_iterations; i++) {
 
@@ -123,9 +123,9 @@ void seq_test(std::string& graph_path, int num_iterations){
         std::cout << "std_dev: " << std_dev << std::endl;
         */
 
-        outfile << duration << ";" << cutsize << ";" ;
-        outfile << min_partition << ";" << max_partition << ";" << avg_partition << ";";
-        outfile << median_partition << ";" << std_dev << ";" << std::endl;
+        outfile << duration << "," << cutsize << "," ;
+        outfile << min_partition << "," << max_partition << "," << avg_partition << ",";
+        outfile << median_partition << "," << std_dev << std::endl;
 
     }
 
@@ -151,7 +151,7 @@ void par_test(std::string& graph_path, int num_iterations){
             .append(".csv");
 
     std::ofstream outfile(filename);
-    outfile << "threads;time;cutsize;min_partition;max_partition;avg_partition;median_partition;std_dev;" << std::endl;
+    outfile << "threads,time,cutsize,min_partition,max_partition,avg_partition,median_partition,std_dev" << std::endl;
 
     for(int j = 1; j <= 8; j++) {
 
@@ -187,9 +187,9 @@ void par_test(std::string& graph_path, int num_iterations){
             std::cout << "std_dev: " << std_dev << std::endl;
             */
 
-            outfile << j << ";" << duration << ";" << cutsize << ";" ;
-            outfile << min_partition << ";" << max_partition << ";" << avg_partition << ";";
-            outfile << median_partition << ";" << std_dev << ";" << std::endl;
+            outfile << j << "," << duration << "," << cutsize << "," ;
+            outfile << min_partition << "," << max_partition << "," << avg_partition << ",";
+            outfile << median_partition << "," << std_dev  << std::endl;
 
 
         }
