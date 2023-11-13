@@ -5,6 +5,13 @@
 #include <map>
 #include <set>
 
+/**
+ * @brief Calculates the weight of the given partition
+ * @param graph the graph
+ * @param partition the partition for which you want to calculate the weight
+ * @param partitions the vector that contains the partition number for each node
+ * @return the weight of the partition calculated as the sum of all the weights of the nodes that belong to it
+*/
 unsigned int countPartitionWeight(const GraphPtr& graph, int partition, std::vector<unsigned int> &partitions) {
     unsigned int weight = 0;
     for (const auto &n : graph->nodes) {
@@ -15,6 +22,12 @@ unsigned int countPartitionWeight(const GraphPtr& graph, int partition, std::vec
     return weight;
 }
 
+/**
+ * @brief calculates the cut size of the whole graph among all partitions
+ * @param graph the graph
+ * @param partitions the vector that associates at each node its partition number
+ * @return the cut size of the graph with the current partitioning
+*/
 unsigned long long calculateCutSize(const GraphPtr& graph, std::vector<unsigned int> &partitions) {
     unsigned long long cutsize = 0;
     for (const auto &n : graph->nodes) {
@@ -30,6 +43,13 @@ unsigned long long calculateCutSize(const GraphPtr& graph, std::vector<unsigned 
     return cutsize;
 }
 
+/**
+ * @brief calculates the gain or the reduction in cut size that is achieved by moving the node to the specified partition
+ * @param partitions the vector that assigns to each node its partition
+ * @param node_to_move the pointer to the node that we would want to move
+ * @param to_partition the partition we would like to move the node to
+ * @return the gain that would be obtained by moving the node to the partition
+*/
 int gain(std::vector<unsigned int> &partitions, const NodePtr& node_to_move, int to_partition) {
     if (partitions[node_to_move->id] == to_partition)
         return 0;
@@ -48,6 +68,12 @@ int gain(std::vector<unsigned int> &partitions, const NodePtr& node_to_move, int
 
 // Fiduccia and Mattheyses version KL-inspired was used to implement the kernighanLin function
 
+/**
+ * @brief Fiduccia and Mattheyses version KL-inspired was used to implement the kernighanLin function
+ * @param graph the graph
+ * @param num_partitions the total number of partitions
+ * @param partitions the vector that will contain the refined partitioning after the execution of the algorithm
+*/
 void kernighanLin(const GraphPtr & graph, int num_partitions, std::vector<unsigned int> &partitions) {
     bool improved;
     unsigned long long cut_size      = calculateCutSize(graph, partitions);
