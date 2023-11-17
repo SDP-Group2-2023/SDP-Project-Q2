@@ -1,6 +1,5 @@
 #include "Change.h"
 #include "Graph.h"
-#include "timing/timing.h"
 #include <iostream>
 #include <map>
 #include <set>
@@ -101,7 +100,7 @@ void kernighanLin(const GraphPtr & graph, int num_partitions, std::vector<unsign
         std::set<Change> possible_changes;
         std::map<NodePtr, std::map<unsigned int, int>> node_gain_mapping;
 
-        timing choices_loop;
+        //timing choices_loop;
 
         // loop to calculate all initial gains
         for (int i = 0; i < graph->V(); i++) {
@@ -114,7 +113,7 @@ void kernighanLin(const GraphPtr & graph, int num_partitions, std::vector<unsign
                 }
             }
         }
-        choices_loop.stop();
+        //choices_loop.stop();
 
         // stopping criterion (page 7 of "A Parallel Graph Partitioning algorithm for a message passing multiprocessor" explains this)
         int stop_threshold = -graph->max_node_degree();
@@ -124,13 +123,13 @@ void kernighanLin(const GraphPtr & graph, int num_partitions, std::vector<unsign
 
         int num_iteration = 0;
         int iteration, max_iteration = 0, avg_iteration = 0;
-        timing choosing_loop(timing_flag::TIMING_DEFER);
+        //timing choosing_loop(timing_flag::TIMING_DEFER);
 
         while (sum_of_gains >= stop_threshold && negative_gains < graph->max_node_degree()) {
             // from the set select the best (if it leads to balanced partitions) gain movement and perform it (update "partitions" vector)
             Change best_change;
             iteration = 0;
-            choosing_loop.start();
+            //choosing_loop.start();
             for (auto &c : possible_changes) {    // consider the possibility of removing or not adding some possible changes to speed up subsequent iterations
                 iteration++;
                 if (graph->partitions_size[partitions[c.node->id]] >= graph->node_weight_global / num_partitions &&
@@ -140,7 +139,7 @@ void kernighanLin(const GraphPtr & graph, int num_partitions, std::vector<unsign
                     break;
                 }
             }
-            choosing_loop.stop();
+            //choosing_loop.stop();
 
             if (iteration > max_iteration)
                 max_iteration = iteration;

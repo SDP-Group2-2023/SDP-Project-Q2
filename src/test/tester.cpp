@@ -1,7 +1,6 @@
 #include <iostream>
 #include <fstream>
 #include "../partitioning.h"
-#include "../timing/timing.h"
 
 
 void calculatePartitionStats(const std::vector<int> &partition_size, unsigned long *min_partition, unsigned long *max_partition,
