@@ -26,19 +26,6 @@ y2 = [
 1840910.75
 ]
 
-# Dati di esempio per la terza linea
-x3 = [1, 2, 3, 4, 5, 6, 7, 8]
-y3 = [
-1309577.23,
-1309763.36,
-1309749.85,
-1309459.63,
-1309635.15,
-1309394.35,
-1309432.93,
-1309680.65
-]
-
 # Dati di esempio per la quart linea
 x4 = [1, 2, 3, 4, 5, 6, 7, 8]
 y4 = [
@@ -55,7 +42,6 @@ y4 = [
 # Creazione del grafico con due linee
 plt.plot(x1, y1, label='Min-partition', marker='o', linestyle='-')
 plt.plot(x2, y2, label='Max-partition', marker='s', linestyle='--')
-plt.plot(x3, y3, label='Avg-partition', marker='^', linestyle='-.')
 plt.plot(x4, y4, label='Median-partition', marker='D', linestyle=':')
 
 # Aggiunta di etichette agli assi, titolo al grafico e legenda

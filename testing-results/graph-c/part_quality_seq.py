@@ -1,11 +1,10 @@
 import matplotlib.pyplot as plt
 
 # Dati di esempio
-categorie = ['Min-partition', 'Max-partition', 'Avg-partition', 'Median-partition']
+categorie = ['Min-partition', 'Max-partition', 'Median-partition']
 valori = [
 1872556.05,
 106740682.6,
-31013970,
 31385968.44
 ]
 
