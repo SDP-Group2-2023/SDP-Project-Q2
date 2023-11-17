@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <math.h>
 #include "../partitioning.h"
 #include "../timing/timing.h"
 
