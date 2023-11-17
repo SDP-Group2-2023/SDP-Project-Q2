@@ -46,16 +46,22 @@ void read_test(std::string& graph_path, int num_iterations){
             .append(graph_path);
     filename = filename.substr(0, filename.find_last_of('.')).append(".csv");
 
-    std::ofstream outfile(filename);
+    std::ofstream outfile(filename, std::ios::out);
+
+    if(!outfile.is_open()){
+        std::cout << "Error opening file" << std::endl;
+        return;
+    }
+
     outfile << "threads,time" << std::endl;
 
     for(int j = 1; j<= 8; j++) {
 
-        std::cout << "THREADS: " << j;
+        std::cout << "THREADS: " << j << std::endl;
 
         for (int i = 0; i < num_iterations; i++) {
 
-            //(i*100)/num_iterations % 5 == 0 ? std::cout << (i*100)/num_iterations << "%" << std::endl : std::cout ;
+            (i*100)/num_iterations % 5 == 0 ? std::cout << (i*100)/num_iterations << "%" << std::endl : std::cout ;
 
             auto start_time = std::chrono::high_resolution_clock::now();
             auto g = loadFromFile(graph_path, j);
@@ -67,7 +73,7 @@ void read_test(std::string& graph_path, int num_iterations){
 
         }
 
-        std::cout << " *done*" << std::endl;
+        std::cout << "DONE" << std::endl;
     }
 
     outfile.close();
@@ -91,12 +97,17 @@ void seq_test(std::string& graph_path, int num_iterations){
             .append(graph_path);
     filename = filename.substr(0, filename.find_last_of('.')).append(".csv");
 
-    std::ofstream outfile(filename);
+    std::ofstream outfile(filename, std::ios::out);
+    if(!outfile.is_open()){
+        std::cout << "Error opening file" << std::endl;
+        return;
+    }
+
     outfile << "time,cutsize,min_partition,max_partition,avg_partition,median_partition,std_dev" << std::endl;
 
     for(int i = 0; i< num_iterations; i++) {
 
-        //(i*100)/num_iterations % 5 == 0 ? std::cout << (i*100)/num_iterations << "%" << std::endl : std::cout ;
+        (i*100)/num_iterations % 5 == 0 ? std::cout << (i*100)/num_iterations << "%" << std::endl : std::cout ;
 
         auto start_time = std::chrono::high_resolution_clock::now();
 
@@ -150,16 +161,21 @@ void par_test(std::string& graph_path, int num_iterations){
             .append(graph_path);
     filename = filename.substr(0, filename.find_last_of('.')).append(".csv");
 
-    std::ofstream outfile(filename);
+    std::ofstream outfile(filename, std::ios::out);
+    if(!outfile.is_open()){
+        std::cout << "Error opening file" << std::endl;
+        return;
+    }
+
     outfile << "threads,time,cutsize,min_partition,max_partition,avg_partition,median_partition,std_dev" << std::endl;
 
     for(int j = 1; j <= 8; j++) {
 
-        std::cout << "THREADS: " << j;
+        std::cout << "THREADS: " << j << std::endl;
 
         for (int i = 0; i < num_iterations; i++) {
 
-            //(i * 100) / num_iterations % 5 == 0 ? std::cout << (i * 100) / num_iterations << "%" << std::endl : std::cout;
+            (i * 100) / num_iterations % 5 == 0 ? std::cout << (i * 100) / num_iterations << "%" << std::endl : std::cout;
 
             auto start_time = std::chrono::high_resolution_clock::now();
 
@@ -194,7 +210,7 @@ void par_test(std::string& graph_path, int num_iterations){
 
         }
 
-        std::cout << " *done*" << std::endl;
+        std::cout << "DONE" << std::endl;
     }
 
     outfile.close();
