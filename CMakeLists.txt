@@ -20,7 +20,6 @@ add_executable(main src/menu.cpp
         src/parallel_partitioning.cpp src/parallel_coarsening.cpp src/loader.cpp src/parallel_kernighanLin.cpp
         src/clusterCutSize.h src/clusterCutSize.cpp src/output.cpp)
 
-
 add_executable(Tester src/test/tester.cpp src/partitioning.h src/loader.cpp src/Graph.h src/Graph.cpp src/Graph.h src/Graph.cpp
         src/Change.h src/Change.cpp
         src/partitioning.h src/sequential_coarsening.cpp src/kernighanLin.cpp src/sequential_partitioning.cpp
@@ -28,4 +27,9 @@ add_executable(Tester src/test/tester.cpp src/partitioning.h src/loader.cpp src/
         src/output.cpp src/Graph.h src/Graph.cpp
         src/clusterCutSize.h src/clusterCutSize.cpp src/output.cpp)
 
-link_libraries(Tester m)
+add_executable(Memory_Tester src/test/memory-tester.cpp src/partitioning.h src/loader.cpp src/Graph.h src/Graph.cpp src/Graph.h src/Graph.cpp
+        src/Change.h src/Change.cpp
+        src/partitioning.h src/sequential_coarsening.cpp src/kernighanLin.cpp src/sequential_partitioning.cpp
+        src/parallel_partitioning.cpp src/parallel_coarsening.cpp src/loader.cpp src/parallel_kernighanLin.cpp
+        src/output.cpp src/Graph.h src/Graph.cpp
+        src/clusterCutSize.h src/clusterCutSize.cpp src/output.cpp)
