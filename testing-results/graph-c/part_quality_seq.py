@@ -9,7 +9,7 @@ valori = [
 ]
 
 # Creazione del grafico a barre
-plt.bar(categorie, valori, color='blue')
+plt.bar(categorie, valori, color=['blue','orange','green'])
 
 # Aggiunta di etichette agli assi e titolo al grafico
 #plt.xlabel('Categorie')
