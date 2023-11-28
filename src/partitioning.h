@@ -3,6 +3,7 @@
 
 #include "Graph.h"
 #include <thread>
+#include <cmath>
 
 GraphPtr loadFromFile(const std::string& path, unsigned int num_threads = std::thread::hardware_concurrency(), unsigned int myStep = 10);
 GraphPtr coarseGraph_s(const GraphPtr& graph);
@@ -18,5 +19,12 @@ int countPartitionWeight(const GraphPtr &graph, int partition, std::vector<unsig
 int gain(std::vector<unsigned int> &partitions, const NodePtr & node_to_move, int to_partition);
 unsigned long long calculateCutSize(const GraphPtr& g, std::vector<unsigned int> &partitions);
 void save_to_file(const std::string& path, const GraphPtr& g, const std::vector<unsigned int> &partitions, int requestedPartitions);
+
+unsigned int calculate_end_condition(unsigned int num_nodes, unsigned int num_partitions){
+    auto x =std::max(30*num_partitions, num_nodes/(40* (unsigned int)log2(num_partitions)));
+    std::cout << x << std::endl;
+    return x;
+}
+
 
 #endif //GRAPHPARTITIONING_PARTITIONING_H

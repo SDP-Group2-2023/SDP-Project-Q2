@@ -37,7 +37,10 @@ std::vector<unsigned int> partitioning_p(const GraphPtr &g, int requestedPartiti
     allGraphs.push_back(g);
 
     int iterations = 0;
-    while (actual_num_partitions > requestedPartitions * 15 && iterations++ < 50) {
+    while (actual_num_partitions >
+            calculate_end_condition(g->V(), requestedPartitions)
+            //requestedPartitions * 15
+            && iterations++ < 50) {
         // std::cout << "Iteration " << iterations << std::endl;
         auto start        = std::chrono::high_resolution_clock::now();
         auto coarsedGraph = coarseGraph_p(allGraphs.back(), num_threads);
