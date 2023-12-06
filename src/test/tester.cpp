@@ -2,7 +2,7 @@
 #include <fstream>
 #include <math.h>
 #include "../partitioning.h"
-
+const int NUM_THREAD = std::thread::hardware_concurrency();
 
 void calculatePartitionStats(const std::vector<int> &partition_size, unsigned long *min_partition, unsigned long *max_partition,
                              unsigned long *avg_partition, unsigned long *median_partition, unsigned long long* std_dev_partition){
@@ -55,7 +55,7 @@ void read_test(std::string& graph_path, int num_iterations){
 
     outfile << "threads,time" << std::endl;
 
-    for(int j = 1; j<= 8; j++) {
+    for(int j = 1; j<= NUM_THREAD; j++) {
 
         std::cout << "THREADS: " << j << std::endl;
 
@@ -153,6 +153,7 @@ void seq_test(std::string& graph_path, int num_iterations){
 */
 void par_test(std::string& graph_path, int num_iterations){
 
+
     std::cout << "PARALLEL PARTITIONING TEST" << std::endl;
 
     auto g = loadFromFile(graph_path);
@@ -169,7 +170,7 @@ void par_test(std::string& graph_path, int num_iterations){
 
     outfile << "threads,time,cutsize,min_partition,max_partition,avg_partition,median_partition,std_dev" << std::endl;
 
-    for(int j = 1; j <= 8; j++) {
+    for(int j = 1; j <= NUM_THREAD; j++) {
 
         std::cout << "THREADS: " << j << std::endl;
 

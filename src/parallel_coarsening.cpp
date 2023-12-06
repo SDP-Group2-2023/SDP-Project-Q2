@@ -66,12 +66,10 @@ void colourGraphThread(GraphPtr &g, std::vector<unsigned int>&randVal, int start
         b.arrive_and_wait();
 
         thread_lock.lock();
-        if(!buffer.empty()) {
-            for (auto minNode: buffer) {
-                randVal[minNode] = INT_MAX;
-                g->colours[minNode] = last_color;
-                colored++;
-            }
+        for (auto& minNode: buffer) {
+            randVal[minNode] = UINT_MAX	;
+            g->colours[minNode] = last_color;
+            colored++;
         }
         iterations++;
         if(iterations == num_threads){
@@ -105,9 +103,7 @@ unsigned int colourGraph(GraphPtr&g, int num_threads){
                                  std::ref(b), std::ref(color_mtx) ,
                                  std::ref(colored), std::ref(last_color), std::ref(iterations));
 
-    for(auto&t : threads)
-        t.join();
-
+    for(auto&t : threads) t.join();
     return last_color;
 }
 
@@ -148,7 +144,7 @@ void coarse_step(const GraphPtr& original_graph, const GraphPtr& coarse_graph, i
                     matched_index[e->node1.lock()->id] = e->node2.lock()->id;
                     matched_index[e->node2.lock()->id] = e->node1.lock()->id;
                 }
-                catch (...){
+                catch (std::runtime_error& e){
                     std::unique_lock lock2(mtx);
                     matched_nodes[i] = true;
                     n->child = coarse_graph->add_node(n_index++, n->weight);

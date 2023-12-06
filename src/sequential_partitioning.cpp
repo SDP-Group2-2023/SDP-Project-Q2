@@ -6,6 +6,11 @@
 #include <set>
 #include <vector>
 
+
+unsigned int calculate_end_condition_s(unsigned int num_nodes, unsigned int num_partitions){
+    return std::max(30*num_partitions, num_nodes/(40* (unsigned int)log2(num_partitions)));
+}
+
 struct RetrieveKey {
     template<typename T> typename T::first_type operator()(T keyValuePair) const {
         return keyValuePair.first;
@@ -116,12 +121,10 @@ std::vector<unsigned int>  partitioning_s(const GraphPtr& g, int requestedPartit
     allGraphs.push_back(g);
 
     int iterations = 0;
-    while (actual_num_partitions > requestedPartitions * 15 && iterations++ < 50) {
-        //std::cout << "Iteration " << iterations << std::endl;
+    while (actual_num_partitions > calculate_end_condition_s(g->V(), requestedPartitions)
+        && iterations++ < 50) {
         auto coarsedGraph = coarseGraph_s(allGraphs.back());
-        // coarsedGraph->print();
         actual_num_partitions = coarsedGraph->V();
-        //std::cout << "Actual number of partitions: " << actual_num_partitions << std::endl;
         allGraphs.push_back(coarsedGraph);
     }
 

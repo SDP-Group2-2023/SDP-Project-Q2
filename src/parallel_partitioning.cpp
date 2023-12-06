@@ -6,6 +6,10 @@
 #include <thread>
 #include <vector>
 
+unsigned int calculate_end_condition_p(unsigned int num_nodes, unsigned int num_partitions){
+    return std::max(30*num_partitions, num_nodes/(40* (unsigned int)log2(num_partitions)));
+}
+
 void uncoarsen_graph_step(const GraphPtr& g, std::vector<unsigned int> &partitions,
                           std::vector<unsigned int> &newPartitions, int num_nodes, int start, int step) {
     int i = start;
@@ -37,19 +41,10 @@ std::vector<unsigned int> partitioning_p(const GraphPtr &g, int requestedPartiti
     allGraphs.push_back(g);
 
     int iterations = 0;
-    while (actual_num_partitions >
-            calculate_end_condition(g->V(), requestedPartitions)
-            //requestedPartitions * 15
-            && iterations++ < 50) {
-        // std::cout << "Iteration " << iterations << std::endl;
-        auto start        = std::chrono::high_resolution_clock::now();
+    while (actual_num_partitions >calculate_end_condition_p(g->V(), requestedPartitions)
+            && iterations++ < 50)
+    {
         auto coarsedGraph = coarseGraph_p(allGraphs.back(), num_threads);
-
-        // std::cout << "Coarsed graph: " << coarsedGraph->V() << std::endl;
-
-        auto end = std::chrono::high_resolution_clock::now();
-        // std::cout << "Coarsening time: " << std::chrono::duration_cast<std::chrono::milliseconds>(end - start).count() << "ms" << std::endl;
-        //  coarsedGraph->print();
         actual_num_partitions = coarsedGraph->V();
         allGraphs.push_back(coarsedGraph);
     }
@@ -63,21 +58,11 @@ std::vector<unsigned int> partitioning_p(const GraphPtr &g, int requestedPartiti
 
     for (auto i = (int) allGraphs.size() - 2; i >= 0; i--) {
         partitions = uncoarsen_graph_p(allGraphs[i], partitions, num_threads);
-        // std::cout << "Uncoarsening step " << allGraphs.size() - i - 1 << std::endl;
         allGraphs[i]->partitions_size = allGraphs[i + 1]->partitions_size;
         kernighanLin_p(allGraphs[i], requestedPartitions, partitions, coarsestGraph->num_colours, coarsestGraph->colours, num_threads);
     }
 
     return partitions;
-
-    /*for (int i = 0; i < partitions.size(); i++) {
-        cout << "Node " << i << " in partition " << partitions[i] << endl;
-    }*/
-
-    //save_to_file("OutputPartitions.txt", g, partitions, requestedPartitions);
-
-    // for (int i = 1; i < allGraphs.size(); i++)
-    //     delete allGraphs[i];
 }
 
 /**
