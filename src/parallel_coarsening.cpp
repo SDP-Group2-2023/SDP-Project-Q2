@@ -107,7 +107,7 @@ unsigned int colourGraph(GraphPtr&g, int num_threads){
     return last_color;
 }
 
-EdgePtr get_max_edge(const EdgePtrArr& edges, std::vector<bool>& matched_nodes){
+EdgePtr old_get_max_edge(const EdgePtrArr& edges, std::vector<bool>& matched_nodes){
     unsigned int max_edge_weight = 0;
 
     EdgePtr max_edge = nullptr;
@@ -125,6 +125,29 @@ EdgePtr get_max_edge(const EdgePtrArr& edges, std::vector<bool>& matched_nodes){
     return max_edge;
 }
 
+
+bool get_max_edge(const EdgePtrArr& edges, std::vector<bool>& matched_nodes, EdgePtr& retVal){
+    unsigned int max_edge_weight = 0;
+
+    EdgePtr max_edge = nullptr;
+    for(const auto&e: edges){
+        if(matched_nodes[e->node1.lock()->id] || matched_nodes[e->node2.lock()->id]) continue;
+        if(e->weight > max_edge_weight){
+            max_edge_weight = e->weight;
+            max_edge = e;
+        }
+    }
+
+    if(max_edge == nullptr) {
+        return false;
+    }
+
+    retVal = max_edge;
+
+    return true;
+}
+
+
 void coarse_step(const GraphPtr& original_graph, const GraphPtr& coarse_graph, int start, int num_threads,
                  std::mutex&mtx, std::barrier<>&b,  int max_colour, std::vector<bool>&matched_nodes,
                  std::vector<unsigned int>&matched_index, int&n_index){
@@ -139,12 +162,12 @@ void coarse_step(const GraphPtr& original_graph, const GraphPtr& coarse_graph, i
 
             if(original_graph->colours[i] == colour){
                 const auto n = original_graph->nodes[i];
-                try {
-                    const auto e = get_max_edge(n->edges, matched_nodes);
+                EdgePtr e;
+                bool result = get_max_edge(n->edges, matched_nodes,e);
+                if(result){
                     matched_index[e->node1.lock()->id] = e->node2.lock()->id;
                     matched_index[e->node2.lock()->id] = e->node1.lock()->id;
-                }
-                catch (std::runtime_error& e){
+                }else{
                     std::unique_lock lock2(mtx);
                     matched_nodes[i] = true;
                     n->child = coarse_graph->add_node(n_index++, n->weight);
