@@ -65,8 +65,6 @@ int gain(std::vector<unsigned int> &partitions, const NodePtr& node_to_move, int
     return result;
 }
 
-// Fiduccia and Mattheyses version KL-inspired was used to implement the kernighanLin function
-
 /**
  * @brief Fiduccia and Mattheyses version KL-inspired was used to implement the kernighanLin function
  * @param graph the graph
@@ -99,8 +97,6 @@ void kernighanLin(const GraphPtr & graph, int num_partitions, std::vector<unsign
         std::vector<bool> moved(graph->V(), false);
         std::set<Change> possible_changes;
         std::map<NodePtr, std::map<unsigned int, int>> node_gain_mapping;
-
-        //timing choices_loop;
 
         // loop to calculate all initial gains
         for (int i = 0; i < graph->V(); i++) {
