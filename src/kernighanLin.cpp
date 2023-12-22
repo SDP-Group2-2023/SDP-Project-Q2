@@ -142,7 +142,7 @@ void kernighanLin(const GraphPtr & graph, int num_partitions, std::vector<unsign
             avg_iteration += iteration;
 
             // if no change satisfies swapping criteria exit loop
-            if (best_change.new_partition == -1)
+            if (!best_change.valid)
                 break;
 
             // increment moves for this cycle
@@ -176,6 +176,7 @@ void kernighanLin(const GraphPtr & graph, int num_partitions, std::vector<unsign
                         Change new_change;
                         new_change.node          = n;
                         new_change.new_partition = i;
+                        new_change.valid         = true;
 
                         if (node_gain_mapping.contains(n) && node_gain_mapping[n].contains(i)) {
                             new_change.gain = node_gain_mapping[n][i];

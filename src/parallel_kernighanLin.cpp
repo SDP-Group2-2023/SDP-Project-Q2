@@ -69,7 +69,7 @@ void thread_kernighanLin(const GraphPtr & graph, int num_partitions, std::vector
                 }
 
                 // if no change satisfies swapping criteria exit loop
-                if (best_change.new_partition == -1)
+                if (!best_change.valid)
                     break;
 
                 // update the weights

@@ -5,10 +5,12 @@
 struct Change{
     Change(int new_partition,const NodePtr& node, int gain);
     Change();
-    int new_partition; //TODO
+    unsigned int new_partition;
+    bool valid;
     NodePtr node;
     int gain;
     bool operator< (const Change &other) const;
+    Change(unsigned int new_partition, const NodePtr &node, int gain);
 };
 
 #endif
