@@ -107,6 +107,10 @@ unsigned int colourGraph(GraphPtr&g, int num_threads){
     return last_color;
 }
 
+
+/**
+TODO
+*/
 EdgePtr old_get_max_edge(const EdgePtrArr& edges, std::vector<bool>& matched_nodes){
     unsigned int max_edge_weight = 0;
 
@@ -125,7 +129,9 @@ EdgePtr old_get_max_edge(const EdgePtrArr& edges, std::vector<bool>& matched_nod
     return max_edge;
 }
 
-
+/**
+TODO
+*/
 bool get_max_edge(const EdgePtrArr& edges, std::vector<bool>& matched_nodes, EdgePtr& retVal){
     unsigned int max_edge_weight = 0;
 
@@ -147,7 +153,9 @@ bool get_max_edge(const EdgePtrArr& edges, std::vector<bool>& matched_nodes, Edg
     return true;
 }
 
-
+/**
+TODO
+*/
 void coarse_step(const GraphPtr& original_graph, const GraphPtr& coarse_graph, int start, int num_threads,
                  std::mutex&mtx, std::barrier<>&b,  int max_colour, std::vector<bool>&matched_nodes,
                  std::vector<unsigned int>&matched_index, int&n_index){

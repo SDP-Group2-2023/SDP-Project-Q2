@@ -2,7 +2,9 @@
 #include <list>
 #include "partitioning.h"
 
-
+/**
+TODO
+*/
 GraphPtr commandLoadFile(){
     GraphPtr g = nullptr;
     std::cout << "Enter graph path" << std::endl;
@@ -17,7 +19,9 @@ GraphPtr commandLoadFile(){
     }
     return g;
 }
-
+/**
+TODO
+*/
 void partitioning_s_test(GraphPtr& g, int requestedPartitions){
     auto start_time_s = std::chrono::high_resolution_clock::now();
     partitioning_s(g, requestedPartitions);
@@ -26,6 +30,9 @@ void partitioning_s_test(GraphPtr& g, int requestedPartitions){
     std::cout << "Sequential partitioning done in " << duration_s << " ms" << std::endl << std::endl;
 }
 
+/**
+TODO
+*/
 void partitioning_p_test(GraphPtr& g, int requestedPartitions){
     for(int i = 2; i<= 8; i++){
         auto start_time_s = std::chrono::high_resolution_clock::now();
@@ -93,9 +100,12 @@ int main() {
                 std::cout << "Running sequential partitioning - (Multilevel KL)" << std::endl;
                 std::cout << "How many partitions should be found in graph?" << std::endl;
                 std::cin >> requestedPartitions;
+                try{
                 partitioning_s(g, requestedPartitions);
                 std::cout << "Partitioning done" << std::endl << std::endl;
-
+                }catch(std::runtime_error &e){
+                        std::cout << e.what() << std::endl << std::endl;
+                }
                 break;
             case 'P':
                 if (g == nullptr) {
@@ -106,8 +116,12 @@ int main() {
                 std::cin >> requestedPartitions;
                 std::cout << "How many threads should be employed?" << std::endl;
                 std::cin >> numThreads;
+                try{
                 partitioning_p(g, requestedPartitions, numThreads);
                 std::cout << "Partitioning done" << std::endl << std::endl;
+                }catch(std::runtime_error &e){
+                        std::cout << e.what() << std::endl << std::endl;
+                }
 
                 break;
             case 'C':

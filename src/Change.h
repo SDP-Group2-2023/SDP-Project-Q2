@@ -5,7 +5,7 @@
 struct Change{
     Change(int new_partition,const NodePtr& node, int gain);
     Change();
-    int new_partition;
+    int new_partition; //TODO
     NodePtr node;
     int gain;
     bool operator< (const Change &other) const;

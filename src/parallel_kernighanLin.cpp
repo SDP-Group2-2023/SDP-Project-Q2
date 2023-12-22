@@ -8,16 +8,6 @@
 #include <thread>
 #include <vector>
 
-/*serve grafo, num_partizioni, partizioni, num_threads
-colori, num_colors
-0-dividi nodi in modo casuale tra tutti i thread
-  si comincia da un colore: ogni thread controlla tra i propri nodi
-1-Computano il gain per i nodi del colore x e quali tra questi spostare (
-    se c'è un nodo di quel colore che conviene spostare,
-    considerando quello con gain positivo o gain=0 ma che migliorano il balance)
-2-Due nodi dello stesso colore non sono adiacenti quindi possiamo spostarli insieme: non essendo
-adiacenti non si influenzano il gain a vicenda
-3-attendi terminazione dei thread e ripeti con un altro colore*/
 
 /**
  * @brief This functions should be launched in its own thread and is supposed to work with other threads to perform the kernighan Lin Algorithm
@@ -68,7 +58,7 @@ void thread_kernighanLin(const GraphPtr & graph, int num_partitions, std::vector
             while (true) {
                 // from the set select the best (if it leads to balanced partitions) gain movement and perform it (update "partitions" vector)
                 Change best_change;
-                for (auto &c : possible_changes) {    // consider the possibility of removing or not adding some possible changes to speed up subsequent iterations
+                for (auto &c : possible_changes) {    
                     if (partitions_size[partitions[c.node->id]] >= graph->node_weight_global / num_partitions &&
                         partitions_size[c.new_partition] <= graph->node_weight_global / num_partitions && !moved.contains(c.node->id)) {
                         best_change = c;
@@ -96,7 +86,6 @@ void thread_kernighanLin(const GraphPtr & graph, int num_partitions, std::vector
         if (!stuff_done && counter++ < 20)
             stuff_done = true;
     }
-    // da rivedere se fare così oppure no
     weight_barrier.arrive_and_drop();
     color_barrier.arrive_and_drop();
 }

@@ -6,11 +6,16 @@
 #include <set>
 #include <vector>
 
-
+/**
+TODO
+*/
 unsigned int calculate_end_condition_s(unsigned int num_nodes, unsigned int num_partitions){
     return std::max(30*num_partitions, num_nodes/(40* (unsigned int)log2(num_partitions)));
 }
 
+/**
+TODO
+*/
 struct RetrieveKey {
     template<typename T> typename T::first_type operator()(T keyValuePair) const {
         return keyValuePair.first;
@@ -68,7 +73,6 @@ void initial_partitioning_s(const GraphPtr& g, std::vector<unsigned int> &partit
 
 
         // Retrieve all keys
-        // this function I copied from stack overflow to extract all the keys
         transform(cluster_hashMap[selected.clusterB].begin(), cluster_hashMap[selected.clusterB].end(), back_inserter(keys), RetrieveKey());
         
         for (auto key : keys) {                      // for each cluster that was connect to B
@@ -105,8 +109,7 @@ void initial_partitioning_s(const GraphPtr& g, std::vector<unsigned int> &partit
             partitions[i]            = partition++;
         }
     }
-    if (partition != partition_num)                     // should ALWAYS BE FALSE
-        std::cout << "Error in the partitioning" << std::endl;    // To be removed once testing is done
+    
 }
 
 /**
@@ -116,7 +119,10 @@ void initial_partitioning_s(const GraphPtr& g, std::vector<unsigned int> &partit
 */
 std::vector<unsigned int>  partitioning_s(const GraphPtr& g, int requestedPartitions) {
     unsigned int actual_num_partitions = g->V();
-
+    
+     if(g->V()<requestedPartitions){
+        throw std::runtime_error("Number of nodes should be higher than the number of requested partitions");
+    }
     std::vector<GraphPtr> allGraphs;
     allGraphs.push_back(g);
 
@@ -142,6 +148,5 @@ std::vector<unsigned int>  partitioning_s(const GraphPtr& g, int requestedPartit
 
     return partitions;
 
-    //save_to_file("OutputPartitions.txt", g, partitions, requestedPartitions);
-
+    
 }

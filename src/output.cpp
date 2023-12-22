@@ -3,7 +3,9 @@
 #include <fstream>
 #include <vector>
 
-
+/**
+TODO
+*/
 void save_to_file(const std::string& path, const GraphPtr & graph,
                   const std::vector<unsigned int> &partitions,int requestedPartitions) {
     std::ofstream output_file(path);
@@ -27,8 +29,7 @@ void save_to_file(const std::string& path, const GraphPtr & graph,
 
     avg /= requestedPartitions;
 
-    //std::cout << "Max partitions: " << max << " Min partition: " << min << " avg partitions " << avg << " expected average: " << graph->node_weight_global / requestedPartitions << std::endl;
-
+    
     for (int i = 0; i < graph->nodes.size(); i++)
         output_file << "Node: " << i << " in partition: " << partitions[i] << "." << std::endl;
 

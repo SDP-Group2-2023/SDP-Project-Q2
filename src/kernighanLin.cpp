@@ -65,7 +65,6 @@ int gain(std::vector<unsigned int> &partitions, const NodePtr& node_to_move, int
     return result;
 }
 
-// Fiduccia and Mattheyses version KL-inspired was used to implement the kernighanLin function
 
 /**
  * @brief Fiduccia and Mattheyses version KL-inspired was used to implement the kernighanLin function
@@ -86,7 +85,7 @@ void kernighanLin(const GraphPtr & graph, int num_partitions, std::vector<unsign
      * We now observe the algorithm bottleneck is moved from "iteration 8" to "iteration 4", which is our new bottleneck, which
      * we are trying to resolve.
      */
-    graph->partitions_size = std::vector<int>(num_partitions);    // this could possible be made a graph attribute, so to speed up, since it doesn't change from iteration to iteration
+    graph->partitions_size = std::vector<int>(num_partitions);  
     for (int i = 0; i < num_partitions; i++)
         graph->partitions_size[i] = countPartitionWeight(graph, i, partitions);
 
@@ -95,12 +94,12 @@ void kernighanLin(const GraphPtr & graph, int num_partitions, std::vector<unsign
     do {
         improved = false;
 
-        // constraint (see article explanation : each node must be moved only once inside the innermost loop so we mark it with a flag)
+        // constraint (see article explanation : 
+        //each node must be moved only once inside the innermost loop so we mark it with a flag)
         std::vector<bool> moved(graph->V(), false);
         std::set<Change> possible_changes;
         std::map<NodePtr, std::map<unsigned int, int>> node_gain_mapping;
 
-        //timing choices_loop;
 
         // loop to calculate all initial gains
         for (int i = 0; i < graph->V(); i++) {
@@ -113,9 +112,8 @@ void kernighanLin(const GraphPtr & graph, int num_partitions, std::vector<unsign
                 }
             }
         }
-        //choices_loop.stop();
 
-        // stopping criterion (page 7 of "A Parallel Graph Partitioning algorithm for a message passing multiprocessor" explains this)
+        // stopping criterion 
         int stop_threshold = -graph->max_node_degree();
         int sum_of_gains   = 0;
         int tot_moves      = 0;
@@ -123,14 +121,14 @@ void kernighanLin(const GraphPtr & graph, int num_partitions, std::vector<unsign
 
         int num_iteration = 0;
         int iteration, max_iteration = 0, avg_iteration = 0;
-        //timing choosing_loop(timing_flag::TIMING_DEFER);
+    
 
         while (sum_of_gains >= stop_threshold && negative_gains < graph->max_node_degree()) {
             // from the set select the best (if it leads to balanced partitions) gain movement and perform it (update "partitions" vector)
             Change best_change;
             iteration = 0;
-            //choosing_loop.start();
-            for (auto &c : possible_changes) {    // consider the possibility of removing or not adding some possible changes to speed up subsequent iterations
+            
+            for (auto &c : possible_changes) {    
                 iteration++;
                 if (graph->partitions_size[partitions[c.node->id]] >= graph->node_weight_global / num_partitions &&
                     graph->partitions_size[c.new_partition] <= graph->node_weight_global / num_partitions && !moved[c.node->id] && c.gain != 0) {
@@ -139,7 +137,7 @@ void kernighanLin(const GraphPtr & graph, int num_partitions, std::vector<unsign
                     break;
                 }
             }
-            //choosing_loop.stop();
+            
 
             if (iteration > max_iteration)
                 max_iteration = iteration;
@@ -174,8 +172,8 @@ void kernighanLin(const GraphPtr & graph, int num_partitions, std::vector<unsign
             for (const auto& n : best_change.node->get_neighbors()) {
                 for (const auto& neighbour : n->get_neighbors()) {
                     unsigned int i = partitions[neighbour->id];
-                    // removing selected change from possible_changes set (remember that to remove elements from a set all details of the element must be provided to erase
-                    // function)
+                    // removing selected change from possible_changes set
+
                     if (i != partitions[n->id]) {
                         Change new_change;
                         new_change.node          = n;
@@ -211,12 +209,9 @@ void kernighanLin(const GraphPtr & graph, int num_partitions, std::vector<unsign
         cut_size               = best_cut_size;
         graph->partitions_size = best_partitions_weights;
 
-        // cout << "With " << tot_moves << " moves, we moved the cut size to " << cut_size << endl;
-        // cout << "last iterations: " << iteration << " max_iteration: " << max_iteration << " avg_iteration " << avg_iteration / num_iteration << endl;
-        // cout << "Total time spent creating choices: " << choices_loop.getDuration().count() << " - total time spent making choices: " << choosing_loop.getDuration().count() <<
-        // endl;
+        
 
     } while (improved);
 
-    //std::cout << calculateCutSize(graph, partitions) << std::endl;
+
 }

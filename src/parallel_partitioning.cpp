@@ -6,10 +6,16 @@
 #include <thread>
 #include <vector>
 
+/**
+TODO
+*/
 unsigned int calculate_end_condition_p(unsigned int num_nodes, unsigned int num_partitions){
     return std::max(30*num_partitions, num_nodes/(40* (unsigned int)log2(num_partitions)));
 }
 
+/**
+TODO
+*/
 void uncoarsen_graph_step(const GraphPtr& g, std::vector<unsigned int> &partitions,
                           std::vector<unsigned int> &newPartitions, int num_nodes, int start, int step) {
     int i = start;
@@ -19,6 +25,9 @@ void uncoarsen_graph_step(const GraphPtr& g, std::vector<unsigned int> &partitio
     }
 }
 
+/**
+TODO
+*/
 std::vector<unsigned int> uncoarsen_graph_p(const GraphPtr& g, std::vector<unsigned int> &partitions, int num_thread) {
     unsigned int num_nodes = g->V();
     std::vector<unsigned int> newPartitions(num_nodes);
@@ -34,8 +43,15 @@ std::vector<unsigned int> uncoarsen_graph_p(const GraphPtr& g, std::vector<unsig
     return newPartitions;
 }
 
+/**
+TODO
+*/
 std::vector<unsigned int> partitioning_p(const GraphPtr &g, int requestedPartitions, int num_threads) {
     unsigned int actual_num_partitions = g->V();
+
+    if(g->V()<requestedPartitions){
+        throw std::runtime_error("Number of nodes should be higher than the number of requested partitions");
+    }
 
     std::vector<GraphPtr> allGraphs;
     allGraphs.push_back(g);
@@ -109,7 +125,7 @@ void partitioning_thread(GraphPtr &graph, std::vector<int>& partitions, std::vec
         for (auto neighbour = queues_of_nodes[index].begin(); neighbour != queues_of_nodes[index].end();) {
             // lock starting node and its neighbour
             auto sl = std::scoped_lock(nodes_m[(*neighbour)->id], nodes_m[starting_nodes[index]]);
-            // we set 1.4 waiting to test if it's ok as a multiplication factor
+        
             // if adding the neighbour to the partition does not exceed the avg and the neighbour hasn't been
             // assigned by another thread to another partition, assign it and remove it from the set
             // of unassigned node
@@ -196,7 +212,7 @@ void initial_partitioning_p(GraphPtr &graph, std::vector<int> &partitions, int n
                 }
             }
             partitions[i] = partitions[w_lightest_partition];
-            // if it crashes because w_lightest_partition == -1 still, try changing factor 1.4 above
+            
         }
     }
 }

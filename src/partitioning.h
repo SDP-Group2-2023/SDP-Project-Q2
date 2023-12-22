@@ -14,7 +14,6 @@ std::vector<unsigned int> partitioning_s(const GraphPtr& g, int requestedPartiti
 std::vector<unsigned int>  partitioning_p(const GraphPtr& g, int requestedPartitions, int num_threads);
 void kernighanLin(const GraphPtr& g, int num_partitions, std::vector<unsigned int>& partitions);
 void kernighanLin_p(const GraphPtr& g, int num_partitions, std::vector<unsigned int> &partitions, unsigned int num_colors, std::vector<int> &colors, int num_threads);
-//void initial_partitioning_p(std::GraphPtr& g, std::vector<int> &partitions, int num_partitions, int num_threads);
 int countPartitionWeight(const GraphPtr &graph, int partition, std::vector<unsigned int> &partitions);
 int gain(std::vector<unsigned int> &partitions, const NodePtr & node_to_move, int to_partition);
 unsigned long long calculateCutSize(const GraphPtr& g, std::vector<unsigned int> &partitions);
