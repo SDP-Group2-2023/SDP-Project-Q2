@@ -1,5 +1,6 @@
 #include <iostream>
 #include <list>
+#include <ctime>
 #include "partitioning.h"
 
 /**
@@ -48,7 +49,7 @@ int main() {
     int requestedPartitions;
     char command;// = 's';
     GraphPtr g = nullptr;
-
+    std::vector<unsigned int> result;
     int numThreads;
 
     do {
@@ -101,7 +102,10 @@ int main() {
                 std::cout << "How many partitions should be found in graph?" << std::endl;
                 std::cin >> requestedPartitions;
                 try{
-                partitioning_s(g, requestedPartitions);
+                result = partitioning_s(g, requestedPartitions);
+
+                save_to_file(g, result, requestedPartitions);
+                result.clear();
                 std::cout << "Partitioning done" << std::endl << std::endl;
                 }catch(std::runtime_error &e){
                         std::cout << e.what() << std::endl << std::endl;
@@ -113,11 +117,14 @@ int main() {
                     break;
                 }
                 std::cout << "Running parallel partitioning - ()" << std::endl;
+                std::cout << "How many partitions should be found in graph?" << std::endl;
                 std::cin >> requestedPartitions;
                 std::cout << "How many threads should be employed?" << std::endl;
                 std::cin >> numThreads;
                 try{
-                partitioning_p(g, requestedPartitions, numThreads);
+                result = partitioning_p(g, requestedPartitions, numThreads);
+                save_to_file(g, result, requestedPartitions);
+                result.clear();
                 std::cout << "Partitioning done" << std::endl << std::endl;
                 }catch(std::runtime_error &e){
                         std::cout << e.what() << std::endl << std::endl;

@@ -1,14 +1,17 @@
 #include "Graph.h"
-#include "partitioning.h"
 #include <fstream>
 #include <vector>
+#include <ctime>
+#include <sstream>
 
-/**
-TODO
-*/
-void save_to_file(const std::string& path, const GraphPtr & graph,
-                  const std::vector<unsigned int> &partitions,int requestedPartitions) {
-    std::ofstream output_file(path);
+
+void save_to_file(const GraphPtr & graph, const std::vector<unsigned int> &partitions,int requestedPartitions) {
+    std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
+    std::time_t now_c = std::chrono::system_clock::to_time_t(now);
+    std::ostringstream oss;
+    oss << std::put_time(std::localtime(&now_c), "%F-%T");
+    std::string dateTimeString = oss.str();
+    std::ofstream output_file(dateTimeString + ".txt");
 
     std::vector<unsigned int> partitions_sizes(requestedPartitions, 0);
 
@@ -29,10 +32,15 @@ void save_to_file(const std::string& path, const GraphPtr & graph,
 
     avg /= requestedPartitions;
 
-    
     for (int i = 0; i < graph->nodes.size(); i++)
-        output_file << "Node: " << i << " in partition: " << partitions[i] << "." << std::endl;
+        output_file << "Node " << i << " in partition " << partitions[i] << std::endl;
 
-    output_file << "END" << std::endl << std::endl;
-    output_file << "Max partitions: " << max << " Min partition: " << min << " avg partitions " << avg << " expected average: " << graph->node_weight_global / requestedPartitions<< std::endl;
+    output_file << std::endl;
+    output_file << "Max partitions: " << max << std::endl;
+    output_file << "Min partition: " << min << std::endl;
+    output_file << "Avg partitions " << avg << std::endl;
+    output_file << "Expected average: " << graph->node_weight_global / requestedPartitions<< std::endl;
+
+    output_file.close();
+    std::cout << "Result saved in file: " << dateTimeString << ".txt" << std::endl;
 }

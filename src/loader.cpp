@@ -99,7 +99,6 @@ void thread_reader(const thread_data& data, std::barrier<>& bar,
 
 }
 
-//sperimentalmente dimostrato che se ogni thread legge il 10% dei nodi ad ogni iterazione è più veloce
 
 /**
  *
@@ -133,7 +132,7 @@ GraphPtr loadFromFile(const std::string& path,
     auto g = std::make_shared<Graph>();
     g->nodes.resize(num_nodes);
 
-    //inizializzazione delle strutture dati per la lettura parallela
+    //initialization of data structures for parallel reading
     std::vector<std::thread> readers;
     std::barrier bar(num_threads);
     std::mutex mtx_n_counter, mtx_e_counter, mtx_e_adder;

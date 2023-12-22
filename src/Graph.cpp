@@ -18,7 +18,7 @@ Edge::Edge(unsigned int weight, const NodePtr & node1, const NodePtr & node2)
  * @brief Add a node to the graph
  * @param id the id of the node
  * @param weight the weight of the node
- * @return the created node
+ * @return ptr to the created node
  */
 NodePtr Graph::add_node(unsigned int id, unsigned int weight){
     auto n = std::make_shared<Node>(id, weight);
@@ -31,7 +31,7 @@ NodePtr Graph::add_node(unsigned int id, unsigned int weight){
  * @brief Add a node to the graph with a specific index
  * @param id
  * @param weight
- * @return
+ * @return ptr to the created node
  */
 NodePtr Graph::add_node_with_index( unsigned int id, unsigned int weight) {
     nodes[id] = std::make_shared<Node>(id, weight);
