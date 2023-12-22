@@ -50,5 +50,7 @@ CMakeCache.txt
 cmake_install.cmake
 Makefile
 
+.idea
+
 .DS_Store
 
