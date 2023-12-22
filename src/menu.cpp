@@ -4,8 +4,9 @@
 #include "partitioning.h"
 
 /**
-TODO
-*/
+ * @brief load a graph from a file
+ * @return ptr to the graph
+ */
 GraphPtr commandLoadFile(){
     GraphPtr g = nullptr;
     std::cout << "Enter graph path" << std::endl;
@@ -20,9 +21,11 @@ GraphPtr commandLoadFile(){
     }
     return g;
 }
+
 /**
-TODO
-*/
+ * @brief execute the sequential partitioning algorithm
+ * for comparison purposes
+ */
 void partitioning_s_test(GraphPtr& g, int requestedPartitions){
     auto start_time_s = std::chrono::high_resolution_clock::now();
     partitioning_s(g, requestedPartitions);
@@ -32,8 +35,9 @@ void partitioning_s_test(GraphPtr& g, int requestedPartitions){
 }
 
 /**
-TODO
-*/
+ * @brief execute the parallel partitioning algorithm
+ * for comparison purposes
+ */
 void partitioning_p_test(GraphPtr& g, int requestedPartitions){
     for(int i = 2; i<= 8; i++){
         auto start_time_s = std::chrono::high_resolution_clock::now();
@@ -47,7 +51,7 @@ void partitioning_p_test(GraphPtr& g, int requestedPartitions){
 int main() {
 
     int requestedPartitions;
-    char command;// = 's';
+    char command;
     GraphPtr g = nullptr;
     std::vector<unsigned int> result;
     int numThreads;

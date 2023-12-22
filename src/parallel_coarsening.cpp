@@ -107,30 +107,12 @@ unsigned int colourGraph(GraphPtr&g, int num_threads){
     return last_color;
 }
 
-
 /**
-TODO
-*/
-EdgePtr old_get_max_edge(const EdgePtrArr& edges, std::vector<bool>& matched_nodes){
-    unsigned int max_edge_weight = 0;
-
-    EdgePtr max_edge = nullptr;
-    for(const auto&e: edges){
-        if(matched_nodes[e->node1.lock()->id] || matched_nodes[e->node2.lock()->id]) continue;
-        if(e->weight > max_edge_weight){
-            max_edge_weight = e->weight;
-            max_edge = e;
-        }
-    }
-
-    if(max_edge == nullptr)
-        throw std::runtime_error("No max edge found");
-
-    return max_edge;
-}
-
-/**
-TODO
+* @brief find the maximum edge in the graph that is not connected to a matched node
+ * @param edges the edges to search
+ * @param matched_nodes the nodes that are already matched
+ * @param retVal the edge to return
+ * @return true if an edge was found, false otherwise
 */
 bool get_max_edge(const EdgePtrArr& edges, std::vector<bool>& matched_nodes, EdgePtr& retVal){
     unsigned int max_edge_weight = 0;
@@ -154,8 +136,18 @@ bool get_max_edge(const EdgePtrArr& edges, std::vector<bool>& matched_nodes, Edg
 }
 
 /**
-TODO
-*/
+ * @brief a step of the coarsening algorithm
+ * @param original_graph the original graph
+ * @param coarse_graph the coarse graph to build
+ * @param start
+ * @param num_threads the number of threads to use
+ * @param mtx the mutex to use
+ * @param b the barrier to use
+ * @param max_colour
+ * @param matched_nodes
+ * @param matched_index
+ * @param n_index
+ */
 void coarse_step(const GraphPtr& original_graph, const GraphPtr& coarse_graph, int start, int num_threads,
                  std::mutex&mtx, std::barrier<>&b,  int max_colour, std::vector<bool>&matched_nodes,
                  std::vector<unsigned int>&matched_index, int&n_index){
@@ -226,17 +218,17 @@ void coarse_step(const GraphPtr& original_graph, const GraphPtr& coarse_graph, i
 }
 
 /**
- * Si calcola un coarsed graph in maniera parallela
- * @param g il grafo di partenza
- * @param num_threads il numero di thread da usare
- * @return il grafo calcolato
+ * Computes a coarsened graph in a parallel manner.
+ * @param g The input graph
+ * @param num_threads The number of threads to use
+ * @return The computed graph
  */
 GraphPtr coarseGraph_p(GraphPtr&g, int num_threads){
 
     g->colours = std::vector<int>(g->V(), -1);
 
-    //prima si colora il grafo attraverso una versione modificata dell'algoritmo di Luby
-    g->num_colours = colourGraph(g, num_threads);
+//first we color the graph through a modified version of Luby's algorithm
+g->num_colours = colourGraph(g, num_threads);
     auto coarse_graph = std::make_shared<Graph>();
 
     std::mutex mtx;
@@ -247,8 +239,7 @@ GraphPtr coarseGraph_p(GraphPtr&g, int num_threads){
     int n_index = 0;
     std::vector<std::thread> threads;
 
-    //vengono instanziati un tot di thread per effettuare il partizionamento basato sul colore
-    for(int i = 0; i<num_threads; i++)
+//a number of threads are instantiated to perform color-based partitioning    for(int i = 0; i<num_threads; i++)
         threads.emplace_back(coarse_step, std::ref(g), std::ref(coarse_graph), i,
                                  num_threads, std::ref(mtx), std::ref(b), g->num_colours,
                                  std::ref(matched_nodes), std::ref(matched_index), std::ref(n_index));
@@ -256,7 +247,7 @@ GraphPtr coarseGraph_p(GraphPtr&g, int num_threads){
     for(auto&t: threads)
         t.join();
 
-    //vengono calcolate le distanze tra i nodi nel nuovo grafo
+//the distances between nodes in the new graph are calculated
     for(const auto& e : g->edges){
         if(e->node1.lock()->child->id != e->node2.lock()->child->id)
             coarse_graph->add_or_sum_edge(e->node1.lock()->child, e->node2.lock()->child, e->weight);

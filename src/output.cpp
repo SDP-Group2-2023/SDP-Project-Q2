@@ -5,8 +5,11 @@
 #include <sstream>
 
 /**
-TODO
-*/
+ * @brief save partitioning results to a file
+ * @param graph
+ * @param partitions
+ * @param requestedPartitions
+ */
 void save_to_file(const GraphPtr & graph, const std::vector<unsigned int> &partitions,int requestedPartitions) {
     std::chrono::system_clock::time_point now = std::chrono::system_clock::now();
     std::time_t now_c = std::chrono::system_clock::to_time_t(now);

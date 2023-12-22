@@ -7,15 +7,15 @@
 #include <vector>
 
 /**
-TODO
-*/
+* @brief verify if end condition is reached, based on metis implementation
+ * @param num_nodes number of nodes in the graph
+ * @param num_partitions number of partitions
+ * @return true if end condition is reached, false otherwise
+ */
 unsigned int calculate_end_condition_s(unsigned int num_nodes, unsigned int num_partitions){
     return std::max(30*num_partitions, num_nodes/(40* (unsigned int)log2(num_partitions)));
 }
 
-/**
-TODO
-*/
 struct RetrieveKey {
     template<typename T> typename T::first_type operator()(T keyValuePair) const {
         return keyValuePair.first;
@@ -23,10 +23,10 @@ struct RetrieveKey {
 };
 
 /**
- * Funzione che aggiorna le partizioni di un grafo padre basandosi sui valori del grafo figlio
- * @param g grafo padre
- * @param partitions vettore partizioni del grafo figlio
- * @return vettore partizioni del grafo padre
+ * Function that updates the partitions of a parent graph based on the values of the child graph.
+ * @param g Parent graph
+ * @param partitions Vector of partitions of the child graph
+ * @return Vector of partitions of the parent graph
  */
 std::vector<unsigned int> uncoarsenGraph(const GraphPtr& g, std::vector<unsigned int> &partitions) {
     std::vector<unsigned int> newPartitions(g->V());
@@ -70,7 +70,6 @@ void initial_partitioning_s(const GraphPtr& g, std::vector<unsigned int> &partit
         }
 
         std::vector<int> keys;
-
 
         // Retrieve all keys
         transform(cluster_hashMap[selected.clusterB].begin(), cluster_hashMap[selected.clusterB].end(), back_inserter(keys), RetrieveKey());
@@ -147,6 +146,4 @@ std::vector<unsigned int>  partitioning_s(const GraphPtr& g, int requestedPartit
     }
 
     return partitions;
-
-    
 }

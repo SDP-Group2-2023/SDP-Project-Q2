@@ -7,15 +7,24 @@
 #include <vector>
 
 /**
-TODO
-*/
+* @brief verify if end condition is reached, based on metis implementation
+ * @param num_nodes number of nodes in the graph
+ * @param num_partitions number of partitions
+ * @return true if end condition is reached, false otherwise
+ */
 unsigned int calculate_end_condition_p(unsigned int num_nodes, unsigned int num_partitions){
     return std::max(30*num_partitions, num_nodes/(40* (unsigned int)log2(num_partitions)));
 }
 
 /**
-TODO
-*/
+ * @brief One step of the parallel uncorsening algorithm
+ * @param g
+ * @param partitions
+ * @param newPartitions
+ * @param num_nodes
+ * @param start
+ * @param step
+ */
 void uncoarsen_graph_step(const GraphPtr& g, std::vector<unsigned int> &partitions,
                           std::vector<unsigned int> &newPartitions, int num_nodes, int start, int step) {
     int i = start;
@@ -25,9 +34,7 @@ void uncoarsen_graph_step(const GraphPtr& g, std::vector<unsigned int> &partitio
     }
 }
 
-/**
-TODO
-*/
+
 std::vector<unsigned int> uncoarsen_graph_p(const GraphPtr& g, std::vector<unsigned int> &partitions, int num_thread) {
     unsigned int num_nodes = g->V();
     std::vector<unsigned int> newPartitions(num_nodes);
