@@ -1,5 +1,4 @@
 #include "../partitioning.h"
-#include <ctype.h>
 #include <fstream>
 #include <iostream>
 #include <math.h>

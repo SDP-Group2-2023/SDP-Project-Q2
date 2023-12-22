@@ -1,8 +1,8 @@
 #include <iostream>
 #include <fstream>
-#include <math.h>
+#include <cmath>
 #include "../partitioning.h"
-const int NUM_THREAD = std::thread::hardware_concurrency();
+const unsigned int NUM_THREAD = std::thread::hardware_concurrency();
 
 void calculatePartitionStats(const std::vector<int> &partition_size, unsigned long *min_partition, unsigned long *max_partition,
                              unsigned long *avg_partition, unsigned long *median_partition, unsigned long long* std_dev_partition){
