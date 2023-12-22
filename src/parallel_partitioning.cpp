@@ -51,8 +51,12 @@ std::vector<unsigned int> uncoarsen_graph_p(const GraphPtr& g, std::vector<unsig
 }
 
 /**
-TODO
-*/
+    * @brief Will partition the graph using a parallel algorithm
+    * @param g the graph to partition
+    * @param partitions the vector that weill contain the generated partitions
+    * @param partition_num the number of partitions to generate
+    * @param num_threads the number of threads to use
+    */
 std::vector<unsigned int> partitioning_p(const GraphPtr &g, int requestedPartitions, int num_threads) {
     unsigned int actual_num_partitions = g->V();
 
