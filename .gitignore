@@ -51,6 +51,9 @@ cmake_install.cmake
 Makefile
 
 .idea
-
+venv
+TESTS
+testing-results
+print tests results.sh
 .DS_Store
 
