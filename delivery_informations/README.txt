@@ -8,4 +8,4 @@ To compile the project, the procedure is:
 - make         #to compile the project
 
 In the build folder there will be the executable file "main" that can be run with the command:
-- ./main
+- ./partitioner
