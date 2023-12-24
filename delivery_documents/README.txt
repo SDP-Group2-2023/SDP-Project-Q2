@@ -7,5 +7,5 @@ To compile the project, the procedure is:
 - cmake ..     #to create the makefile
 - make         #to compile the project
 
-In the build folder there will be the executable file "main" that can be run with the command:
+In the build folder there will be the executable file "partitioner" that can be run with the command:
 - ./partitioner
