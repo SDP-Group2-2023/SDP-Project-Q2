@@ -102,7 +102,7 @@ int main() {
                     std::cout << "Please load graph first" << std::endl << std::endl;
                     break;
                 }
-                std::cout << "Running sequential partitioning - (Multilevel KL)" << std::endl;
+                std::cout << "Running sequential partitioning" << std::endl;
                 std::cout << "How many partitions should be found in graph?" << std::endl;
                 std::cin >> requestedPartitions;
                 try{
@@ -120,7 +120,7 @@ int main() {
                     std::cout << "Please load graph first" << std::endl;
                     break;
                 }
-                std::cout << "Running parallel partitioning - ()" << std::endl;
+                std::cout << "Running parallel partitioning" << std::endl;
                 std::cout << "How many partitions should be found in graph?" << std::endl;
                 std::cin >> requestedPartitions;
                 std::cout << "How many threads should be employed?" << std::endl;
@@ -143,10 +143,10 @@ int main() {
                 std::cout << "How many partitions should be found in graph?" << std::endl;
                 std::cin >> requestedPartitions;
 
-                std::cout << "Running sequential partitioning - (Multilevel KL)" << std::endl;
+                std::cout << "Running sequential partitioning" << std::endl;
                 partitioning_s_test(g, requestedPartitions);
 
-                std::cout << "Running parallel partitioning - (Multilevel KL) - 2->8 threads" << std::endl;
+                std::cout << "Running parallel partitioning - 2->8 threads" << std::endl;
                 partitioning_p_test(g, requestedPartitions);
                 std::cout << std::endl;
                 break;
