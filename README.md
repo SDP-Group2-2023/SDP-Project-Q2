@@ -10,5 +10,4 @@
 #### in the `graph` folder there are the input files 
 #### in the `delivery_documents` folder there are:
 - the report of the project
-- the slides of the presentation
 - the README.md for the instructions to run the project
